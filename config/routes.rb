@@ -5,4 +5,5 @@ Rails.application.routes.draw do
   end
   resources :configurations, only: [:index]
   resources :wordpresses
+  resources :aliexpress_data
 end
