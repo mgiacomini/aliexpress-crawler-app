@@ -1,5 +1,5 @@
 class ProductsController < ApplicationController
-  before_action :set_product, only: [:edit, :update, :show]
+  before_action :set_product, only: [:edit, :update, :show, :destroy]
  # before_action :authenticate_user!, except: [:show]
   def index
     @products = Product.all
@@ -29,6 +29,7 @@ class ProductsController < ApplicationController
   end
 
   def destroy
+    @product.destroy
   end
 
   def import
