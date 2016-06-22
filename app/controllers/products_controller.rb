@@ -1,6 +1,10 @@
 class ProductsController < ApplicationController
   before_action :set_product, only: [:edit, :update, :show]
  # before_action :authenticate_user!, except: [:show]
+  def index
+    @products = Product.all
+  end
+
   def new
     @product = Product.new
   end
@@ -22,6 +26,12 @@ class ProductsController < ApplicationController
 
   def show
     respond_with @product
+  end
+
+  def destroy
+  end
+
+  def import
   end
 
   private
