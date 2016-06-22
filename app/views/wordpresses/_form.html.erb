@@ -1,0 +1,12 @@
+<%= simple_form_for @wordpress, :html => { :class => 'form-horizontal' } do |f| %>
+  <%= f.input :url %>
+  <%= error_span(@wordpress[:url]) %>
+  <%= f.input :consumer_key %>
+  <%= error_span(@wordpress[:consumer_key]) %>
+  <%= f.input :consumer_secret %>
+  <%= error_span(@wordpress[:consumer_secret]) %>
+
+  <%= f.button :submit, :class => 'btn-primary' %>
+  <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+                wordpresses_path, :class => 'btn btn-default' %>
+<% end %>

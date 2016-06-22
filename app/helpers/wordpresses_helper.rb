@@ -1,0 +1,2 @@
+module WordpressesHelper
+end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160622162408) do
+ActiveRecord::Schema.define(version: 20160622225130) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -24,6 +24,15 @@ ActiveRecord::Schema.define(version: 20160622162408) do
     t.integer  "option_2"
     t.integer  "option_3"
     t.integer  "shipping"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.integer  "wordpress_id"
+  end
+
+  create_table "wordpresses", force: :cascade do |t|
+    t.string   "url"
+    t.string   "consumer_key"
+    t.string   "consumer_secret"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
   end
