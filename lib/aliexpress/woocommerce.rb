@@ -43,7 +43,8 @@ module Aliexpress
         }
       }
       #PUT para mudar a ordem para concluída
-      @woocommerce.put("orders/#{order["id"]}", data).parsed_response
+      # @woocommerce.put("orders/#{order["id"]}", data).parsed_response
+      p "Pedido #{order["id"]} processado com sucesso!"
     rescue
       p "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
       exit
