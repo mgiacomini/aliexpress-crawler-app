@@ -169,6 +169,6 @@ class Crawler < ActiveRecord::Base
     sleep 5
   rescue
     @message = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
-    exit
+    # exit
   end
 end
