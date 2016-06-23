@@ -68,6 +68,7 @@ class Crawler < ActiveRecord::Base
       @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       p @error
     end
+    @b.close
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
   rescue

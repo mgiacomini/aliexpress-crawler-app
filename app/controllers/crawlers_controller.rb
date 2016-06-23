@@ -31,6 +31,7 @@ class CrawlersController < ApplicationController
   end
 
   def run
+    Rake::Task['crawler:run'].invoke
     redirect_to crawlers_path, notice: "#{orders.count} pedidos processados"
   end
 
