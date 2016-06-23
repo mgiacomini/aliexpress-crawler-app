@@ -1,7 +1,7 @@
 namespace :crawler do
   desc "Runs Crawler.rb"
   task run: :environment do
-    crawlers = Crawler.all(status: true)
+    crawler = Crawler.all(status: true).last
     orders = crawler.wordpress.get_orders
     orders.each do |order|
       # crawler.run(orders[1])
