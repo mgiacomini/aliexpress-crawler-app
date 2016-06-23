@@ -50,7 +50,6 @@ class Crawler < ActiveRecord::Base
       rescue
         p "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
-      @b.close
     end
   end
 
