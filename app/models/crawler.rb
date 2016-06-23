@@ -12,6 +12,7 @@ class Crawler < ActiveRecord::Base
 
   def run
     @b = self.login
+    p @b
     self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
     @message = self.wordpress.message
@@ -54,7 +55,8 @@ class Crawler < ActiveRecord::Base
         self.wordpress.update_order(order, order_nos)
         p "chegou ao final"
       rescue
-        p "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        p @message
       end
     end
   end
