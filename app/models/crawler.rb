@@ -64,7 +64,9 @@ class Crawler < ActiveRecord::Base
   #Efetua login no site da Aliexpresss usando user e password
   def login
     @b = Watir::Browser.new :phantomjs
+    p @b
     @b.goto "https://login.aliexpress.com/"
+    p @b
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
