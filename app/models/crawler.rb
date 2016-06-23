@@ -50,8 +50,7 @@ class Crawler < ActiveRecord::Base
             end
           rescue
             p 'erro no produto'
-            @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-            break
+            raise product
           end
         end
         #Finaliza pedido
@@ -72,6 +71,7 @@ class Crawler < ActiveRecord::Base
     end
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
+  rescue
   end
 
   #Efetua login no site da Aliexpresss usando user e password
