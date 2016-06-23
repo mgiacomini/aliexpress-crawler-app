@@ -1,6 +1,7 @@
 class CreateWordpresses < ActiveRecord::Migration
   def change
     create_table :wordpresses do |t|
+      t.string :name
       t.string :url
       t.string :consumer_key
       t.string :consumer_secret

@@ -26,6 +26,10 @@ class WordpressesController < ApplicationController
     @wordpresses = Wordpress.all
   end
 
+  def destroy
+    @wordpress.destroy
+  end
+
   private
 
   def set_wordpress
@@ -33,6 +37,6 @@ class WordpressesController < ApplicationController
   end
 
   def wordpress_params
-    params.require(:wordpress).permit(:url, :consumer_key, :consumer_secret)
+    params.require(:wordpress).permit(:name, :url, :consumer_key, :consumer_secret)
   end
 end

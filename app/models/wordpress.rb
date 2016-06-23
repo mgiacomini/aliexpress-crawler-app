@@ -1,6 +1,8 @@
 require 'woocommerce_api'
 
 class Wordpress < ActiveRecord::Base
+  validates :name, :url, :consumer_key, :consumer_secret, presence: true
+  has_many :crawlers
   def woocommerce
     woocommerce = WooCommerce::API.new(
       self.url, #Url do site

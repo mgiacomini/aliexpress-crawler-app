@@ -20,6 +20,7 @@ class ProductsController < ApplicationController
 
   def destroy
     @product.destroy
+    redirect_to products_path, notice: "Product Deleted"
   end
 
   def import

@@ -26,6 +26,10 @@ class AliexpressesController < ApplicationController
     @aliexpresses = Aliexpress.all
   end
 
+  def destroy
+    @aliexpress.destroy
+  end
+
   private
 
   def set_aliexpress
