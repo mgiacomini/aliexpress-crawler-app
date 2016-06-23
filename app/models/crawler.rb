@@ -74,7 +74,6 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
     sleep 5
-    end
     #Levanta erro caso o login falhe (caso de captchas)
     binding.pry
     raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
