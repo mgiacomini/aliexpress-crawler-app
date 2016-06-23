@@ -10,12 +10,9 @@ class Crawler < ActiveRecord::Base
     @message
   end
 
-  def tries
-    @tries
-  end
-
   def run
     @b = self.login
+    raise login if @b.nil?
     self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
     @message = self.wordpress.message
@@ -48,7 +45,7 @@ class Crawler < ActiveRecord::Base
               self.add_to_cart @b
             end
           rescue
-            @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+            raise product
             self.empty_cart
             break
           end
@@ -59,6 +56,10 @@ class Crawler < ActiveRecord::Base
         raise if order_nos.count == 0
         self.wordpress.update_order(order, order_nos)
         p "chegou ao final"
+      rescue => login
+        @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
+      rescue => product
+        @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
       rescue
         @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
@@ -80,8 +81,7 @@ class Crawler < ActiveRecord::Base
     @message = "Executado com sucesso"
     @b
   rescue
-    @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
-    p @message
+    p "Falha no login, verifique as informações ou tente novamente mais tarde"
   end
 
   #Adiciona item ao carrinho
