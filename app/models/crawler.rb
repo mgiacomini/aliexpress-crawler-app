@@ -20,13 +20,15 @@ class Crawler < ActiveRecord::Base
     orders = self.wordpress.get_orders
     @message = self.wordpress.message
     # orders.each do |order| #Loop para todos os pedidos
-    order = orders.select{|order| order['product_id'] = 8931}.first
+    order = orders.select{|order| order['id'] = 8862}.first
       begin
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
           begin
             quantity = item["quantity"]
             product = Product.find_by_wordpress_id(item["product_id"])
+            p product
+            p @b
             @b.goto product.aliexpress_link #Abre link do produto
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
@@ -74,11 +76,12 @@ class Crawler < ActiveRecord::Base
     frame.button(name: 'submit-btn').click
     sleep 5
     #Levanta erro caso o login falhe (caso de captchas)
-    raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
+    # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @message = "Executado com sucesso"
     @b
   rescue
     @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
+    @b
   end
 
   #Adiciona item ao carrinho
