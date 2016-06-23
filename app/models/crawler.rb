@@ -26,7 +26,6 @@ class Crawler < ActiveRecord::Base
     begin
       customer = order["shipping_address"] #Loop para todos os produtos
       order["line_items"].each do |item|
-        p item
         begin
           quantity = item["quantity"]
           product = Product.find_by_wordpress_id(item["product_id"])
@@ -56,10 +55,9 @@ class Crawler < ActiveRecord::Base
       #Finaliza pedido
       unless @error.nil?
         order_nos = self.complete_order(@b,customer)
-        p "pedido completo"
+        p "Pedido completado"
         raise if order_nos.count == 0
         self.wordpress.update_order(order, order_nos)
-        p "chegou ao final"
         @error = self.wordpress.error
         @processed << order["id"] if @error.nil?
       end
@@ -78,7 +76,7 @@ class Crawler < ActiveRecord::Base
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
-    p 'efetuando login'
+    p 'Efetuando login'
     @b = Watir::Browser.new :phantomjs
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
@@ -125,12 +123,11 @@ class Crawler < ActiveRecord::Base
 
   #finaliza pedido com informações do cliente
   def complete_order browser, customer
-    p 'indo ao carrinho'
     browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
-    p 'preenchendo informações'
+    p 'Preenchendo informações'
     browser.text_field(name: "contactPerson").set customer["first_name"]+" "+customer["last_name"]
     browser.select_list(name: "country").select 'Brazil'
     browser.text_field(name: "address").set to_english(customer["address_1"])
@@ -190,6 +187,7 @@ class Crawler < ActiveRecord::Base
 
   #Esvazia carrinho
   def empty_cart browser
+    p 'Esvaziando carrinho'
     browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     empty = browser.link(class: "remove-all-product")
     empty.click if empty.present?

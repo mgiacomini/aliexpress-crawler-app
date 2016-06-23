@@ -35,7 +35,7 @@ class CrawlersController < ApplicationController
     orders.each do |order|
       @crawler.run(order)
     end
-    redirect_to crawlers_path, notice: @crawler.error
+    redirect_to crawlers_path, notice: "#{orders.count} pedidos processados"
   end
 
   private
