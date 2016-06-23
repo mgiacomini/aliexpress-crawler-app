@@ -20,7 +20,7 @@
         <td><%= wordpress.url %></td>
         <td><%= wordpress.consumer_key %></td>
         <td><%= wordpress.consumer_secret %></td>
-        <td><%=l wordpress.created_at %></td>
+        <td><%= wordpress.created_at.strftime('%a, %d %b %Y %H:%M:%S') %></td>
         <td>
           <%= link_to t('.edit', :default => t("helpers.links.edit")),
                       edit_wordpress_path(wordpress), :class => 'btn btn-default btn-xs' %>

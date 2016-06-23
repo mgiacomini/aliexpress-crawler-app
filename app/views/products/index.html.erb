@@ -31,7 +31,7 @@ import_products_path, method: :post,
         <td><%= product.option_2 %></td>
         <td><%= product.option_3 %></td>
         <td><%= product.shipping %></td>
-        <td><%=l product.created_at %></td>
+        <td><%= product.created_at.strftime('%a, %d %b %Y %H:%M:%S') %></td>
         <td>
           <%= link_to t('.edit', :default => t("helpers.links.edit")),
                       edit_product_path(product), :class => 'btn btn-default btn-xs' %>

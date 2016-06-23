@@ -1,23 +1,23 @@
-<%- model_class = AliexpressDatum -%>
+<%- model_class = Aliexpress -%>
 <div class="page-header">
   <h1><%=t '.title', :default => model_class.model_name.human.titleize %></h1>
 </div>
 
 <dl class="dl-horizontal">
   <dt><strong><%= model_class.human_attribute_name(:name) %>:</strong></dt>
-  <dd><%= @aliexpress_datum.name %></dd>
+  <dd><%= @aliexpress.name %></dd>
   <dt><strong><%= model_class.human_attribute_name(:email) %>:</strong></dt>
-  <dd><%= @aliexpress_datum.email %></dd>
+  <dd><%= @aliexpress.email %></dd>
   <dt><strong><%= model_class.human_attribute_name(:password) %>:</strong></dt>
-  <dd><%= @aliexpress_datum.password %></dd>
+  <dd><%= @aliexpress.password %></dd>
 </dl>
 
 <%= link_to t('.back', :default => t("helpers.links.back")),
-              aliexpress_data_path, :class => 'btn btn-default'  %>
+              aliexpresses_path, :class => 'btn btn-default'  %>
 <%= link_to t('.edit', :default => t("helpers.links.edit")),
-              edit_aliexpress_datum_path(@aliexpress_datum), :class => 'btn btn-default' %>
+              edit_aliexpress_path(@aliexpress), :class => 'btn btn-default' %>
 <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
-              aliexpress_datum_path(@aliexpress_datum),
+              aliexpress_path(@aliexpress),
               :method => 'delete',
               :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
               :class => 'btn btn-danger' %>

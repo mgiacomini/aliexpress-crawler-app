@@ -1,6 +1,6 @@
-class CreateAliexpressData < ActiveRecord::Migration
+class CreateAliexpress < ActiveRecord::Migration
   def change
-    create_table :aliexpress_data do |t|
+    create_table :aliexpresses do |t|
       t.string :name
       t.string :email
       t.string :password

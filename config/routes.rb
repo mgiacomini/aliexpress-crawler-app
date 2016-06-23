@@ -3,7 +3,6 @@ Rails.application.routes.draw do
   resources :products, except:[:new] do
     collection { post :import }
   end
-  resources :configurations, only: [:index]
   resources :wordpresses
-  resources :aliexpress_data
+  resources :aliexpresses
 end
