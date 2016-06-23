@@ -31,10 +31,7 @@ class CrawlersController < ApplicationController
   end
 
   def run
-    orders = @crawler.wordpress.get_orders
-    orders.each do |order|
-      @crawler.run(order)
-    end
+    Rake::Task['crawler.run'].invoke
     redirect_to crawlers_path, notice: "#{orders.count} pedidos processados"
   end
 
