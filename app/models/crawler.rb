@@ -59,8 +59,7 @@ class Crawler < ActiveRecord::Base
         self.wordpress.update_order(order, order_nos)
         p "chegou ao final"
       rescue
-          @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-          @b.close
+        @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
     # end
   end
@@ -75,13 +74,11 @@ class Crawler < ActiveRecord::Base
     frame.button(name: 'submit-btn').click
     sleep 5
     #Levanta erro caso o login falhe (caso de captchas)
-    binding.pry
     raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @message = "Executado com sucesso"
     @b
   rescue
-      @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
-      @b.close
+    @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
   end
 
   #Adiciona item ao carrinho
