@@ -71,6 +71,7 @@ class Crawler < ActiveRecord::Base
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
+    binding.pry
     frame.button(name: 'submit-btn').click
     p @b
     sleep 5
