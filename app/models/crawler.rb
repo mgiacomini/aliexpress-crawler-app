@@ -48,7 +48,7 @@ class Crawler < ActiveRecord::Base
               p 'Adicionando ao carrinho'
               self.add_to_cart @b
             end
-          rescue => product
+          rescue
             p 'erro no produto'
             @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
             break
@@ -62,12 +62,16 @@ class Crawler < ActiveRecord::Base
         p "chegou ao final"
         @error = self.wordpress.error
         @processed << order["id"] if @error.nil?
-      rescue => login
-        @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
+      rescue => product
+        @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+        break
       rescue
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        break
       end
     end
+  rescue => login
+    @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
   end
 
   #Efetua login no site da Aliexpresss usando user e password
