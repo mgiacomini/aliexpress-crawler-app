@@ -16,19 +16,19 @@ class Crawler < ActiveRecord::Base
 
   def run
     @b = self.login
-    p @b
-    p 'esvaziando carrinho'
     self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
     @message = self.wordpress.message
     # orders.each do |order| #Loop para todos os pedidos
     order = orders.select{|order| order['id'] = 8862}.first
+    p order
       begin
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
           begin
             quantity = item["quantity"]
             product = Product.find_by_wordpress_id(item["product_id"])
+            p product
             @b.goto product.aliexpress_link #Abre link do produto
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
