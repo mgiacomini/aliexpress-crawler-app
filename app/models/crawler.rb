@@ -67,7 +67,7 @@ class Crawler < ActiveRecord::Base
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
-    @b = Watir::Browser.new :firefox
+    @b = Watir::Browser.new :phantomjs
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
@@ -83,7 +83,6 @@ class Crawler < ActiveRecord::Base
   rescue
       @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
       @b.close
-    end
   end
 
   #Adiciona item ao carrinho
