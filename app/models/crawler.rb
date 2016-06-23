@@ -125,6 +125,7 @@ class Crawler < ActiveRecord::Base
     browser.text_field(name: "city").set to_english(customer["city"])
     arr = self.state.assoc(customer["state"])
     browser.div(class: "sa-province-group").select_list.select arr[1]
+    browser.checkbox.clear
     browser.text_field(name: "zip").set customer["postcode"]
     browser.text_field(name: "mobileNo").set '5511959642036'
     browser.div(class: "sa-form").links[1].click #Botão Salvar
