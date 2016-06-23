@@ -64,15 +64,19 @@ class Crawler < ActiveRecord::Base
     rescue => product
       @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
       p @error
+      @b.close
     rescue
       @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       p @error
+      @b.close
     end
     @b.close
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
+    @b.close
   rescue
     @error = "Erro desconhecido"
+    @b.close
   end
 
   #Efetua login no site da Aliexpresss usando user e password
