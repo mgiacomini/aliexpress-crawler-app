@@ -21,15 +21,15 @@ class Crawler < ActiveRecord::Base
     # orders = self.wordpress.get_orders
     # @error = self.wordpress.error
     # orders.each do |order| #Loop para todos os pedidos
-    self.empty_cart @b #Esvazia Carrinho
-    p order
     begin
+      self.empty_cart @b #Esvazia Carrinho
+      p order['id']
       customer = order["shipping_address"] #Loop para todos os produtos
       order["line_items"].each do |item|
         begin
           quantity = item["quantity"]
           product = Product.find_by_wordpress_id(item["product_id"])
-          p product
+          p product['name']
           @b.goto product.aliexpress_link #Abre link do produto
           raise product if product.aliexpress_link.nil?
           stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
@@ -56,7 +56,6 @@ class Crawler < ActiveRecord::Base
       unless @error.nil?
         order_nos = self.complete_order(@b,customer)
         p "Pedido completado"
-        raise if order_nos.count == 0
         self.wordpress.update_order(order, order_nos)
         @error = self.wordpress.error
         @processed << order["id"] if @error.nil?
@@ -70,7 +69,7 @@ class Crawler < ActiveRecord::Base
       p @error
       @b.close
     end
-    @b.close
+  @b.close
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
     @b.close
