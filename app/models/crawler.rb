@@ -22,7 +22,9 @@ class Crawler < ActiveRecord::Base
           begin
             quantity = item["quantity"]
             product = Product.find_by_wordpress_id(item["product_id"])
+            p product
             @b.goto product.aliexpress_link #Abre link do produto
+            p product.aliexpress_link
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
               @message =  'Erro de estoque, produto não disponível!'
@@ -30,10 +32,13 @@ class Crawler < ActiveRecord::Base
               break
             else
               #Ações dos produtos
+              p 'Adicionando quantidade'
               self.add_quantity @b, quantity
+              p 'Selecionando opções'
               user_options = [product.option_1,product.option_3,product.option_3]
               self.set_options @b, user_options
               # self.set_shipping @b, user_options
+              p 'Adicionando ao carrinho'
               self.add_to_cart @b
             end
           rescue
