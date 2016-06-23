@@ -23,7 +23,7 @@ class WordpressesController < ApplicationController
   end
 
   def index
-    @wordpresses = Wordpress.all
+    @wordpresses = Wordpress.all.order(:name)
   end
 
   def destroy

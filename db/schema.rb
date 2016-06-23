@@ -40,12 +40,12 @@ ActiveRecord::Schema.define(version: 20160623013140) do
     t.string   "link"
     t.integer  "wordpress_id"
     t.string   "aliexpress_link"
-    t.integer  "option_1",        default: 1
-    t.integer  "option_2",        default: 1
-    t.integer  "option_3",        default: 1
+    t.integer  "option_1"
+    t.integer  "option_2"
+    t.integer  "option_3"
     t.integer  "shipping"
-    t.datetime "created_at",                  null: false
-    t.datetime "updated_at",                  null: false
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
   create_table "wordpresses", force: :cascade do |t|

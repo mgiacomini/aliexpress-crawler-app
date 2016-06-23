@@ -1,7 +1,7 @@
 class CrawlersController < ApplicationController
-  before_action :set_crawler, only: [:edit, :update, :show, :destroy]
+  before_action :set_crawler, only: [:edit, :update, :show, :destroy, :run]
   def index
-    @crawlers = Crawler.all
+    @crawlers = Crawler.all.order(:created_at)
   end
   def new
     @crawler = Crawler.new
@@ -28,6 +28,11 @@ class CrawlersController < ApplicationController
   def destroy
     @crawler.destroy
     redirect_to crawlers_path, notice: "Crawler Deleted"
+  end
+
+  def run
+    @crawler.run
+    redirect_to crawlers_path, notice: @crawler.message
   end
 
   private

@@ -3,6 +3,12 @@ require 'woocommerce_api'
 class Wordpress < ActiveRecord::Base
   validates :name, :url, :consumer_key, :consumer_secret, presence: true
   has_many :crawlers
+  @message
+
+  def message
+    @message
+  end
+
   def woocommerce
     woocommerce = WooCommerce::API.new(
       self.url, #Url do site
@@ -20,17 +26,8 @@ class Wordpress < ActiveRecord::Base
     products['products']
   end
 
-  #Retorna o link do produto da planilha, usando o id do produto
-  def get_product_link product_id
-    #Obtém do wordpress o link(permalink) de um produto pelo seu id
-    product = woocommerce.get("products/#{product_id}?fields=permalink").parsed_response
-    #Converte o resultado para string
-    product.first[1]["permalink"]
-  rescue
-    p "Erro ao pegar link do produto, verificar planilha."
-  end
-
   def update_order order, order_nos
+    binding.pry
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
     string = ""
     order_nos.each do |order_no|
@@ -53,7 +50,7 @@ class Wordpress < ActiveRecord::Base
     # @woocommerce.put("orders/#{order["id"]}", data).parsed_response
     p "Pedido #{order["id"]} processado com sucesso!"
   rescue
-    p "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
+    @message = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
     exit
   end
 
@@ -64,7 +61,7 @@ class Wordpress < ActiveRecord::Base
     #Converção para array
     all_orders["orders"]
   rescue
-    p "Erro ao importar pedidos do Wordpress, favor verificar configurações."
+    @message =  "Erro ao importar pedidos do Wordpress, favor verificar configurações."
     exit
   end
 end

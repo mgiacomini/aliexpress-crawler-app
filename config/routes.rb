@@ -7,5 +7,7 @@ Rails.application.routes.draw do
   end
   resources :wordpresses
   resources :aliexpresses
-  resources :crawlers
+  resources :crawlers do
+    member { post :run }
+  end
 end

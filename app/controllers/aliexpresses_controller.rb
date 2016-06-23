@@ -23,7 +23,7 @@ class AliexpressesController < ApplicationController
   end
 
   def index
-    @aliexpresses = Aliexpress.all
+    @aliexpresses = Aliexpress.all.order(:name)
   end
 
   def destroy
