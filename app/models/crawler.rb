@@ -5,7 +5,6 @@ class Crawler < ActiveRecord::Base
   validates :aliexpress_id, :wordpress_id, presence: true
 
   @message = ""
-  @tries = 0
 
   def message
     @message
@@ -68,17 +67,13 @@ class Crawler < ActiveRecord::Base
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
-    @b = Watir::Browser.new :phantomjs
+    @b = Watir::Browser.new :firefox
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
     sleep 5
-    if frame.div(id:"nocaptcha").present? && self.tries < 3
-      sleep 30
-      @b.close
-      self.login
     end
     #Levanta erro caso o login falhe (caso de captchas)
     binding.pry
@@ -86,11 +81,6 @@ class Crawler < ActiveRecord::Base
     @message = "Executado com sucesso"
     @b
   rescue
-    if self.tries < 3
-      sleep 30
-      @b.close
-      retry
-    else
       @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
       @b.close
     end
