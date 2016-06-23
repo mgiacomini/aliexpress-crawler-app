@@ -117,6 +117,7 @@ class Crawler < ActiveRecord::Base
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
     p 'preenchendo informações'
+    binding.pry
     browser.text_field(name: "contactPerson").set customer["first_name"]+" "+customer["last_name"]
     browser.select_list(name: "country").select 'Brazil'
     browser.text_field(name: "address").set to_english(customer["address_1"])
