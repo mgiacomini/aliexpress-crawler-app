@@ -27,8 +27,6 @@ class Crawler < ActiveRecord::Base
           begin
             quantity = item["quantity"]
             product = Product.find_by_wordpress_id(item["product_id"])
-            p product
-            p @b
             @b.goto product.aliexpress_link #Abre link do produto
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
@@ -66,6 +64,7 @@ class Crawler < ActiveRecord::Base
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
+    p 'efetuando login'
     @b = Watir::Browser.new :phantomjs
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
@@ -112,10 +111,12 @@ class Crawler < ActiveRecord::Base
 
   #finaliza pedido com informações do cliente
   def complete_order browser, customer
+    p 'indo ao carrinho'
     browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
+    p 'preenchendo informações'
     browser.text_field(name: "contactPerson").set customer["first_name"]+" "+customer["last_name"]
     browser.select_list(name: "country").select 'Brazil'
     browser.text_field(name: "address").set to_english(customer["address_1"])
@@ -124,10 +125,12 @@ class Crawler < ActiveRecord::Base
     arr = self.state.assoc(customer["state"])
     browser.div(class: "sa-province-group").select_list.select arr[1]
     browser.text_field(name: "zip").set customer["postcode"]
-
+    browser.text_field(name: "mobileNo").set '5511959642036'
     browser.div(class: "sa-form").links[1].click #Botão Salvar
+    p 'Salvando'
     sleep 5
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
+    'Pedido finalizado'
     browser.spans(class:"order-no") #Retorna os números dos pedidos
   end
 
