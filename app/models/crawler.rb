@@ -16,6 +16,8 @@ class Crawler < ActiveRecord::Base
 
   def run
     @b = self.login
+    p @b
+    p 'esvaziando carrinho'
     self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
     @message = self.wordpress.message
@@ -78,6 +80,7 @@ class Crawler < ActiveRecord::Base
     @b
   rescue
     @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
+    p @message
   end
 
   #Adiciona item ao carrinho
