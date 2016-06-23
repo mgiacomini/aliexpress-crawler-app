@@ -4,11 +4,11 @@ class Crawler < ActiveRecord::Base
   belongs_to :wordpress
   validates :aliexpress_id, :wordpress_id, presence: true
 
-  @message = nil
-  @processed = 0
+  @error = nil
+  @processed = []
 
-  def message
-    @message
+  def error
+    @error
   end
 
   def processed
@@ -19,7 +19,7 @@ class Crawler < ActiveRecord::Base
     @b = self.login
     raise login if @b.nil?
     orders = self.wordpress.get_orders
-    @message = self.wordpress.message
+    @error = self.wordpress.error
     orders.each do |order| #Loop para todos os pedidos
       self.empty_cart @b #Esvazia Carrinho
       p order
@@ -35,7 +35,7 @@ class Crawler < ActiveRecord::Base
             raise product if product.aliexpress_link.nil?
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
-              @message =  'Erro de estoque, produto não disponível!'
+              @error =  'Erro de estoque, produto não disponível!'
               break
             else
               #Ações dos produtos
@@ -50,7 +50,7 @@ class Crawler < ActiveRecord::Base
             end
           rescue => product
             p 'erro no produto'
-            @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+            @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
             break
           end
         end
@@ -60,10 +60,12 @@ class Crawler < ActiveRecord::Base
         raise if order_nos.count == 0
         self.wordpress.update_order(order, order_nos)
         p "chegou ao final"
+        @error = self.wordpress.error
+        @processed << order["id"] if @error.nil?
       rescue => login
-        @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
+        @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
       rescue
-        @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
     end
   end
@@ -80,7 +82,7 @@ class Crawler < ActiveRecord::Base
     sleep 5
     #Levanta erro caso o login falhe (caso de captchas)
     # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
-    @message = "Executado com sucesso"
+    @error = "Executado com sucesso"
     @b
   rescue
     p "Falha no login, verifique as informações ou tente novamente mais tarde"
@@ -189,7 +191,7 @@ class Crawler < ActiveRecord::Base
     ok.click if ok.present?
     sleep 5
   rescue
-    @message = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
+    @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
     # exit
   end
 end

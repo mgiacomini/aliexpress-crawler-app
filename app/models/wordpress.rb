@@ -3,10 +3,11 @@ require 'woocommerce_api'
 class Wordpress < ActiveRecord::Base
   validates :name, :url, :consumer_key, :consumer_secret, presence: true
   has_many :crawlers
-  @message
 
-  def message
-    @message
+  @error = nil
+
+  def error
+    @error
   end
 
   def woocommerce
@@ -49,7 +50,7 @@ class Wordpress < ActiveRecord::Base
     # @woocommerce.put("orders/#{order["id"]}", data).parsed_response
     p "Pedido #{order["id"]} processado com sucesso!"
   rescue
-    @message = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
+    @error = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
     exit
   end
 
@@ -60,7 +61,7 @@ class Wordpress < ActiveRecord::Base
     #Converção para array
     all_orders["orders"]
   rescue
-    @message =  "Erro ao importar pedidos do Wordpress, favor verificar configurações."
+    @error =  "Erro ao importar pedidos do Wordpress, favor verificar configurações."
     exit
   end
 end

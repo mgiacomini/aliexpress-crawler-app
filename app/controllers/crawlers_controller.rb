@@ -32,7 +32,7 @@ class CrawlersController < ApplicationController
 
   def run
     @crawler.run
-    redirect_to crawlers_path, notice: @crawler.message
+    redirect_to crawlers_path, notice: @crawler.error
   end
 
   private
