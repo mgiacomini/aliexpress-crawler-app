@@ -31,7 +31,10 @@ class CrawlersController < ApplicationController
   end
 
   def run
-    @crawler.run
+    orders = @crawler.wordpress.get_orders
+    orders.each do |order|
+      @crawler.run(order)
+    end
     redirect_to crawlers_path, notice: @crawler.error
   end
 

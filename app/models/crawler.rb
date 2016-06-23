@@ -15,45 +15,46 @@ class Crawler < ActiveRecord::Base
     @processed
   end
 
-  def run
+  def run(order)
     @b = self.login
     raise login if @b.nil?
-    orders = self.wordpress.get_orders
-    @error = self.wordpress.error
-    orders.each do |order| #Loop para todos os pedidos
-      self.empty_cart @b #Esvazia Carrinho
-      p order
-      begin
-        customer = order["shipping_address"] #Loop para todos os produtos
-        order["line_items"].each do |item|
-          p item
-          begin
-            quantity = item["quantity"]
-            product = Product.find_by_wordpress_id(item["product_id"])
-            p product
-            @b.goto product.aliexpress_link #Abre link do produto
-            raise product if product.aliexpress_link.nil?
-            stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
-            if quantity > stock #Verifica estoque
-              @error =  'Erro de estoque, produto não disponível!'
-              break
-            else
-              #Ações dos produtos
-              p 'Adicionando quantidade'
-              self.add_quantity @b, quantity
-              p 'Selecionando opções'
-              user_options = [product.option_1,product.option_3,product.option_3]
-              self.set_options @b, user_options
-              # self.set_shipping @b, user_options
-              p 'Adicionando ao carrinho'
-              self.add_to_cart @b
-            end
-          rescue
-            p 'erro no produto'
-            raise product
+    # orders = self.wordpress.get_orders
+    # @error = self.wordpress.error
+    # orders.each do |order| #Loop para todos os pedidos
+    self.empty_cart @b #Esvazia Carrinho
+    p order
+    begin
+      customer = order["shipping_address"] #Loop para todos os produtos
+      order["line_items"].each do |item|
+        p item
+        begin
+          quantity = item["quantity"]
+          product = Product.find_by_wordpress_id(item["product_id"])
+          p product
+          @b.goto product.aliexpress_link #Abre link do produto
+          raise product if product.aliexpress_link.nil?
+          stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
+          if quantity > stock #Verifica estoque
+            @error =  'Erro de estoque, produto não disponível!'
+            break
+          else
+            #Ações dos produtos
+            p 'Adicionando quantidade'
+            self.add_quantity @b, quantity
+            p 'Selecionando opções'
+            user_options = [product.option_1,product.option_3,product.option_3]
+            self.set_options @b, user_options
+            # self.set_shipping @b, user_options
+            p 'Adicionando ao carrinho'
+            self.add_to_cart @b
           end
+        rescue
+          @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+          raise product
         end
-        #Finaliza pedido
+      end
+      #Finaliza pedido
+      unless @error.nil?
         order_nos = self.complete_order(@b,customer)
         p "pedido completo"
         raise if order_nos.count == 0
@@ -61,17 +62,18 @@ class Crawler < ActiveRecord::Base
         p "chegou ao final"
         @error = self.wordpress.error
         @processed << order["id"] if @error.nil?
-      rescue => product
-        @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-        break
-      rescue
-        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        break
       end
+    rescue => product
+      @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+      p @error
+    rescue
+      @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+      p @error
     end
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
   rescue
+    @error = "Erro desconhecido"
   end
 
   #Efetua login no site da Aliexpresss usando user e password
