@@ -27,7 +27,7 @@ class Wordpress < ActiveRecord::Base
   end
 
   def update_order order, order_nos
-    binding.pry
+    p "Update"
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
     string = ""
     order_nos.each do |order_no|

@@ -44,9 +44,10 @@ class Crawler < ActiveRecord::Base
         end
         #Finaliza pedido
         order_nos = self.complete_order(@b,customer)
-        binding.pry
+        p "pedido completo"
         raise if order_nos.count == 0
-        self.woocommerce.update_order(order, order_nos)
+        self.wordpress.update_order(order, order_nos)
+        p "chegou ao final"
       rescue
         p "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
