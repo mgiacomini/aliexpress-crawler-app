@@ -27,6 +27,7 @@ class CrawlersController < ApplicationController
 
   def destroy
     @crawler.destroy
+    redirect_to crawlers_path, notice: "Crawler Deleted"
   end
 
   private

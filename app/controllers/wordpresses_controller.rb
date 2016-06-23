@@ -28,6 +28,7 @@ class WordpressesController < ApplicationController
 
   def destroy
     @wordpress.destroy
+    redirect_to wordpresses_path, notice: "Wordpress configuration deleted"
   end
 
   private

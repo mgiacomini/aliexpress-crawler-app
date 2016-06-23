@@ -28,6 +28,7 @@ class AliexpressesController < ApplicationController
 
   def destroy
     @aliexpress.destroy
+    redirect_to aliexpresses_path, notice: "Aliexpress configuration deleted"
   end
 
   private
