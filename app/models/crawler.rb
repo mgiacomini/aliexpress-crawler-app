@@ -15,8 +15,10 @@ class Crawler < ActiveRecord::Base
     p @b
     self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
+    binding.pry
     @message = self.wordpress.message
-    orders.each do |order| #Loop para todos os pedidos
+    # orders.each do |order| #Loop para todos os pedidos
+    order = orders.select{|order| order['product_id'] = 8931}
       begin
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
@@ -42,10 +44,10 @@ class Crawler < ActiveRecord::Base
               p 'Adicionando ao carrinho'
               self.add_to_cart @b
             end
-          rescue
-            @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-            self.empty_cart
-            break
+          # rescue
+          #   @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+          #   self.empty_cart
+          #   break
           end
         end
         #Finaliza pedido
@@ -54,11 +56,12 @@ class Crawler < ActiveRecord::Base
         raise if order_nos.count == 0
         self.wordpress.update_order(order, order_nos)
         p "chegou ao final"
-      rescue
-        @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        p @message
+      # rescue
+      #   @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+      #   p @message
+        # break
       end
-    end
+    # end
   end
 
   #Efetua login no site da Aliexpresss usando user e password
@@ -75,8 +78,8 @@ class Crawler < ActiveRecord::Base
     raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @message = "Executado com sucesso"
     @b
-  rescue
-    @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
+  # rescue
+  #   @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
   end
 
   #Adiciona item ao carrinho
