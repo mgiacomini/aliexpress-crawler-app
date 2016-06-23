@@ -4,34 +4,38 @@ class Crawler < ActiveRecord::Base
   belongs_to :wordpress
   validates :aliexpress_id, :wordpress_id, presence: true
 
-  @message = ""
+  @message = nil
+  @processed = 0
 
   def message
     @message
   end
 
+  def processed
+    @processed
+  end
+
   def run
     @b = self.login
     raise login if @b.nil?
-    self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
     @message = self.wordpress.message
     orders.each do |order| #Loop para todos os pedidos
-    # order = orders.select{|order| order['id'] = 8862}.first
-    # p order
+      self.empty_cart @b #Esvazia Carrinho
+      p order
       begin
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
+          p item
           begin
             quantity = item["quantity"]
             product = Product.find_by_wordpress_id(item["product_id"])
             p product
             @b.goto product.aliexpress_link #Abre link do produto
-            raise if product.aliexpress_link.nil?
+            raise product if product.aliexpress_link.nil?
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
               @message =  'Erro de estoque, produto não disponível!'
-              self.empty_cart @b
               break
             else
               #Ações dos produtos
@@ -44,9 +48,9 @@ class Crawler < ActiveRecord::Base
               p 'Adicionando ao carrinho'
               self.add_to_cart @b
             end
-          rescue
-            raise product
-            self.empty_cart
+          rescue => product
+            p 'erro no produto'
+            @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
             break
           end
         end
@@ -58,8 +62,6 @@ class Crawler < ActiveRecord::Base
         p "chegou ao final"
       rescue => login
         @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
-      rescue => product
-        @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
       rescue
         @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
@@ -135,7 +137,7 @@ class Crawler < ActiveRecord::Base
     p 'Salvando'
     sleep 5
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
-    'Pedido finalizado'
+    sleep 5
     browser.spans(class:"order-no") #Retorna os números dos pedidos
   end
 
