@@ -73,10 +73,11 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'password').set self.aliexpress.password
     binding.pry
     frame.button(name: 'submit-btn').click
+    p "catcha!" if frame.div(id:"nocaptcha").present?
     p @b
-    sleep 5
+    # sleep 5
     #Levanta erro caso o login falhe (caso de captchas)
-    raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
+    # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @message = "Executado com sucesso"
     @b
   # rescue
