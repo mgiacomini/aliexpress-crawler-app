@@ -19,9 +19,9 @@ class Crawler < ActiveRecord::Base
     self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
     @message = self.wordpress.message
-    # orders.each do |order| #Loop para todos os pedidos
-    order = orders.select{|order| order['id'] = 8862}.first
-    p order
+    orders.each do |order| #Loop para todos os pedidos
+    # order = orders.select{|order| order['id'] = 8862}.first
+    # p order
       begin
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
@@ -61,7 +61,7 @@ class Crawler < ActiveRecord::Base
       rescue
         @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
-    # end
+    end
   end
 
   #Efetua login no site da Aliexpresss usando user e password
