@@ -60,7 +60,7 @@ class Crawler < ActiveRecord::Base
         p "chegou ao final"
       rescue
           @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-          @b.close if @b
+          @b.close
       end
     # end
   end
