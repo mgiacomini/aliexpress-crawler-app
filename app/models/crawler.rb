@@ -39,11 +39,9 @@ class Crawler < ActiveRecord::Base
               #Ações dos produtos
               p 'Adicionando quantidade'
               self.add_quantity @b, quantity
-              sleep 2
               p 'Selecionando opções'
               user_options = [product.option_1,product.option_3,product.option_3]
               self.set_options @b, user_options
-              sleep 2
               # self.set_shipping @b, user_options
               p 'Adicionando ao carrinho'
               self.add_to_cart @b
@@ -81,13 +79,12 @@ class Crawler < ActiveRecord::Base
     @b
   rescue
     @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
-    @b
   end
 
   #Adiciona item ao carrinho
   def add_to_cart browser
     browser.link(id: "j-add-cart-btn").click
-    sleep 5
+    sleep 10
   end
 
   #Adiciona quantidade certa do item
@@ -109,6 +106,7 @@ class Crawler < ActiveRecord::Base
         option.as[selected].click
       end
       count +=1
+      sleep 10
     end
   end
 
