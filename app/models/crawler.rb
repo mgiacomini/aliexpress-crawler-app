@@ -12,13 +12,11 @@ class Crawler < ActiveRecord::Base
 
   def run
     @b = self.login
-    p @b
     self.empty_cart @b #Esvazia Carrinho
     orders = self.wordpress.get_orders
-    binding.pry
     @message = self.wordpress.message
     # orders.each do |order| #Loop para todos os pedidos
-    order = orders.select{|order| order['product_id'] = 8931}
+    order = orders.select{|order| order['product_id'] = 8931}.first
       begin
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
@@ -37,9 +35,11 @@ class Crawler < ActiveRecord::Base
               #Ações dos produtos
               p 'Adicionando quantidade'
               self.add_quantity @b, quantity
+              sleep 2
               p 'Selecionando opções'
               user_options = [product.option_1,product.option_3,product.option_3]
               self.set_options @b, user_options
+              sleep 2
               # self.set_shipping @b, user_options
               p 'Adicionando ao carrinho'
               self.add_to_cart @b
@@ -66,15 +66,18 @@ class Crawler < ActiveRecord::Base
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
-    @b = Watir::Browser.new :phantomjs
+    @b = Watir::Browser.new :firefox
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
-    binding.pry
     frame.button(name: 'submit-btn').click
-    p "catcha!" if frame.div(id:"nocaptcha").present?
-    p @b
+    sleep 5
+    if frame.div(id:"nocaptcha").present?
+      @b.close
+      sleep 10
+      self.login
+    end
     # sleep 5
     #Levanta erro caso o login falhe (caso de captchas)
     # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
@@ -82,6 +85,7 @@ class Crawler < ActiveRecord::Base
     @b
   # rescue
   #   @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
+  # @b.close
   end
 
   #Adiciona item ao carrinho
