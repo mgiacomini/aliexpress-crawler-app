@@ -11,6 +11,10 @@ class Crawler < ActiveRecord::Base
     @message
   end
 
+  def tries
+    @tries
+  end
+
   def run
     @b = self.login
     self.empty_cart @b #Esvazia Carrinho
@@ -57,6 +61,7 @@ class Crawler < ActiveRecord::Base
         p "chegou ao final"
       rescue
           @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+          @b.close if @b
       end
     # end
   end
@@ -70,17 +75,18 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
     sleep 5
-    if frame.div(id:"nocaptcha").present? && @tries < 3
+    if frame.div(id:"nocaptcha").present? && tries < 3
       sleep 30
       @b.close
       self.login
     end
     #Levanta erro caso o login falhe (caso de captchas)
+    binding.pry
     raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @message = "Executado com sucesso"
     @b
   rescue
-    if @tries < 3
+    if tries < 3
       sleep 30
       @b.close
       retry
