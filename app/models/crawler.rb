@@ -5,6 +5,7 @@ class Crawler < ActiveRecord::Base
   validates :aliexpress_id, :wordpress_id, presence: true
 
   @message = ""
+  @tries = 0
 
   def message
     @message
@@ -23,9 +24,7 @@ class Crawler < ActiveRecord::Base
           begin
             quantity = item["quantity"]
             product = Product.find_by_wordpress_id(item["product_id"])
-            p product
             @b.goto product.aliexpress_link #Abre link do produto
-            p product.aliexpress_link
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
               @message =  'Erro de estoque, produto não disponível!'
@@ -44,10 +43,10 @@ class Crawler < ActiveRecord::Base
               p 'Adicionando ao carrinho'
               self.add_to_cart @b
             end
-          # rescue
-          #   @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-          #   self.empty_cart
-          #   break
+          rescue
+            @message = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+            self.empty_cart
+            break
           end
         end
         #Finaliza pedido
@@ -56,10 +55,8 @@ class Crawler < ActiveRecord::Base
         raise if order_nos.count == 0
         self.wordpress.update_order(order, order_nos)
         p "chegou ao final"
-      # rescue
-      #   @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-      #   p @message
-        # break
+      rescue
+          @message = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
       end
     # end
   end
@@ -73,19 +70,24 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
     sleep 5
-    if frame.div(id:"nocaptcha").present?
+    if frame.div(id:"nocaptcha").present? && @tries < 3
+      sleep 30
       @b.close
-      sleep 10
       self.login
     end
-    # sleep 5
     #Levanta erro caso o login falhe (caso de captchas)
-    # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
+    raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @message = "Executado com sucesso"
     @b
-  # rescue
-  #   @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
-  # @b.close
+  rescue
+    if @tries < 3
+      sleep 30
+      @b.close
+      retry
+    else
+      @message = "Falha no login, verifique as informações ou tente novamente mais tarde"
+      @b.close
+    end
   end
 
   #Adiciona item ao carrinho
