@@ -75,7 +75,7 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
     sleep 5
-    if frame.div(id:"nocaptcha").present? && tries < 3
+    if frame.div(id:"nocaptcha").present? && self.tries < 3
       sleep 30
       @b.close
       self.login
@@ -86,7 +86,7 @@ class Crawler < ActiveRecord::Base
     @message = "Executado com sucesso"
     @b
   rescue
-    if tries < 3
+    if self.tries < 3
       sleep 30
       @b.close
       retry
