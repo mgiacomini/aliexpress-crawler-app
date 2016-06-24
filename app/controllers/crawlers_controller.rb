@@ -33,7 +33,9 @@ class CrawlersController < ApplicationController
   end
 
   def run
-    Rake::Task['crawler:run'].invoke
+    # crawler = Crawler.where(enabled: true).last
+    orders = @crawler.wordpress.get_orders
+    @crawler.run(orders)
     redirect_to crawlers_path
   end
 

@@ -19,6 +19,7 @@ class Crawler < ActiveRecord::Base
     @b = self.login
     raise login_error if @b.nil?
     orders.each do |order|
+      @error = nil
       begin
         self.empty_cart @b #Esvazia Carrinho
         p order['id']
@@ -29,7 +30,7 @@ class Crawler < ActiveRecord::Base
             product = Product.find_by_wordpress_id(item["product_id"])
             p product['name']
             @b.goto product.aliexpress_link #Abre link do produto
-            raise product if product.aliexpress_link.nil?
+            raise if product.aliexpress_link.nil?
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
               @error =  'Erro de estoque, produto não disponível!'
@@ -48,19 +49,22 @@ class Crawler < ActiveRecord::Base
           rescue
             @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
             break
+            raise order_error
             p @error
           end
         end
         #Finaliza pedido
-        unless @error.nil?
+        if @error.nil?
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
           raise if order_nos.count == 0
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @processed << order["id"] if @error.nil?
+        else
+          raise order_error
         end
-      rescue
+      rescue => order_error
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         next
         p @error
