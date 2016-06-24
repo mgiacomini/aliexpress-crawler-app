@@ -1,17 +1,13 @@
 <%= simple_form_for @product, :html => { :class => 'form-horizontal' } do |f| %>
-  <%= f.input :name %>
-  <%= error_span(@product[:name]) %>
-  <%= f.input :link %>
-  <%= error_span(@product[:link]) %>
-  <%= f.input :aliexpress_link %>
+  <%= f.input :aliexpress_link, placeholder: 'http://pt.aliexpress.com/item/' %>
   <%= error_span(@product[:aliexpress_link]) %>
-  <%= f.input :option_1 %>
+  <%= f.input :option_1, placeholder: 'Opção numérica da esquerda para a direita' %>
   <%= error_span(@product[:option_1]) %>
-  <%= f.input :option_2 %>
+  <%= f.input :option_2, placeholder: 'Opção numérica da esquerda para a direita' %>
   <%= error_span(@product[:option_2]) %>
-  <%= f.input :option_3 %>
+  <%= f.input :option_3, placeholder: 'Opção numérica da esquerda para a direita' %>
   <%= error_span(@product[:option_3]) %>
-  <%= f.input :shipping %>
+  <%= f.input :shipping, placeholder: 'Opção numérica de cima para baixo' %>
   <%= error_span(@product[:shipping]) %>
 
   <%= f.button :submit, :class => 'btn-primary' %>

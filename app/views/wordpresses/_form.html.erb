@@ -1,11 +1,11 @@
 <%= simple_form_for @wordpress, :html => { :class => 'form-horizontal' } do |f| %>
-  <%= f.input :name %>
+  <%= f.input :name, placeholder: 'Nome do site' %>
   <%= error_span(@wordpress[:name]) %>
-  <%= f.input :url %>
+  <%= f.input :url, placeholder: 'http://exemple.com' %>
   <%= error_span(@wordpress[:url]) %>
-  <%= f.input :consumer_key %>
+  <%= f.input :consumer_key, placeholder: 'ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' %>
   <%= error_span(@wordpress[:consumer_key]) %>
-  <%= f.input :consumer_secret %>
+  <%= f.input :consumer_secret, placeholder: 'cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' %>
   <%= error_span(@wordpress[:consumer_secret]) %>
 
   <%= f.button :submit, :class => 'btn-primary' %>
