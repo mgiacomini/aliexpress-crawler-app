@@ -1,11 +1,7 @@
 class ProductsController < ApplicationController
   before_action :set_product, only: [:edit, :update, :show, :destroy]
   def index
-    if (params[:product] && Product.all.collect(&:store).include?(params[:product][:name]))
-      @products = Product.send(params[:product][:store])
-    else
-      @products = Product.all.order(:name)
-    end
+    @products = Product.all.order(:name)
   end
 
   def edit
