@@ -16,20 +16,20 @@ class Crawler < ActiveRecord::Base
   end
 
   def run(orders)
+    raise if orders.count == 0
     @b = self.login
     raise login_error if @b.nil?
     orders.each do |order|
       @error = nil
-      p "Error: #{@error}"
       begin
         self.empty_cart @b #Esvazia Carrinho
-        p order['id']
+        p "Processando pedido ##{order['id']}"
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
           begin
             quantity = item["quantity"]
             product = Product.find_by_wordpress_id(item["product_id"])
-            p product['name']
+            p "Procurando #{product['name']}"
             @b.goto product.aliexpress_link #Abre link do produto
             raise if product.aliexpress_link.nil?
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
@@ -38,7 +38,7 @@ class Crawler < ActiveRecord::Base
               break
             else
               #Ações dos produtos
-              p 'Adicionando quantidade'
+              p "Adicionando #{quantity} ao carrinho"
               self.add_quantity @b, quantity
               p 'Selecionando opções'
               user_options = [product.option_1,product.option_3,product.option_3]
@@ -59,9 +59,8 @@ class Crawler < ActiveRecord::Base
           p "Pedido completado"
           raise order_error if order_nos.count == 0
           self.wordpress.update_order(order, order_nos)
-          p "Pedido #{order["id"]} processado com sucesso!"
           @error = self.wordpress.error
-          @processed << order["id"] if @error.nil?
+          p "Pedido #{order["id"]} processado com sucesso!"
         else
           raise order_error
         end
@@ -74,9 +73,10 @@ class Crawler < ActiveRecord::Base
   @b.close
   rescue => login_error
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
-    p "Falha no login, verifique as informações ou tente novamente mais tarde"
+    p @error
   rescue
-    @error = "Erro desconhecido"
+    @error = "Não há pedidos a serem executados"
+    p @error
   end
 
   #Efetua login no site da Aliexpresss usando user e password

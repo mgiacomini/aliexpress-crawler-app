@@ -16,7 +16,7 @@ namespace :crawler do
 
   desc "Runs every hour"
   task hourly: :environment do
-    @crawler = Crawler.where(schedule: 'hourly').last
+    @crawler = Crawler.where(schedule: 'hourly',enabled: true).last
     unless @crawler.nil?
       Rake::Task['crawler:run'].execute
     end
@@ -24,7 +24,7 @@ namespace :crawler do
 
   desc "Runs every day"
   task daily: :environment do
-    @crawler = Crawler.where(schedule: 'daily').last
+    @crawler = Crawler.where(schedule: 'daily',enabled: true).last
     unless @crawler.nil?
       Rake::Task['crawler:run'].execute
     end
