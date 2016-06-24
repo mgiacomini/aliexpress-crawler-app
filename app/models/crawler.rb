@@ -90,7 +90,6 @@ class Crawler < ActiveRecord::Base
     frame.button(name: 'submit-btn').click
     #Levanta erro caso o login falhe (caso de captchas)
     # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
-    @error = "Executado com sucesso"
     @b.div(class:"user-account-info").wait_until_present
     @b
   rescue
