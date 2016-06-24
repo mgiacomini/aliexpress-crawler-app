@@ -3,8 +3,8 @@ namespace :crawler do
   task run: :environment d
     crawler = Crawler.where(enabled: true).last
     orders = crawler.wordpress.get_orders
-    orders.each do |order|
-      crawler.run(order)
-    end
+    crawler.run(orders)
+      # orders.each do |order|
+    # end
   end
 end
