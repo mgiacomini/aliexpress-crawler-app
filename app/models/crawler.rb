@@ -20,6 +20,7 @@ class Crawler < ActiveRecord::Base
     raise login_error if @b.nil?
     orders.each do |order|
       @error = nil
+      p @error
       begin
         self.empty_cart @b #Esvazia Carrinho
         p order['id']
@@ -50,11 +51,10 @@ class Crawler < ActiveRecord::Base
             @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
             p @error
             break
-            raise order_error
           end
         end
         #Finaliza pedido
-        # if @error.nil?
+        if @error.nil?
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
           raise if order_nos.count == 0
@@ -62,9 +62,9 @@ class Crawler < ActiveRecord::Base
           p "Pedido #{order["id"]} processado com sucesso!"
           @error = self.wordpress.error
           @processed << order["id"] if @error.nil?
-        # else
-          # raise order_error
-        # end
+        else
+          raise order_error
+        end
       rescue => order_error
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         p @error
