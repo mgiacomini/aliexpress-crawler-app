@@ -18,18 +18,15 @@ class Crawler < ActiveRecord::Base
   def run(order)
     @b = self.login
     raise login if @b.nil?
-    # orders = self.wordpress.get_orders
-    # @error = self.wordpress.error
-    # orders.each do |order| #Loop para todos os pedidos
     self.empty_cart @b #Esvazia Carrinho
-    p order
+    p order['id']
     begin
       customer = order["shipping_address"] #Loop para todos os produtos
       order["line_items"].each do |item|
         begin
           quantity = item["quantity"]
           product = Product.find_by_wordpress_id(item["product_id"])
-          p product
+          p product['name']
           @b.goto product.aliexpress_link #Abre link do produto
           raise product if product.aliexpress_link.nil?
           stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
