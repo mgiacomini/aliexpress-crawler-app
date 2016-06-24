@@ -18,54 +18,56 @@ class Crawler < ActiveRecord::Base
   def run(order)
     @b = self.login
     raise login if @b.nil?
-    self.empty_cart @b #Esvazia Carrinho
-    p order['id']
-    begin
-      customer = order["shipping_address"] #Loop para todos os produtos
-      order["line_items"].each do |item|
-        begin
-          quantity = item["quantity"]
-          product = Product.find_by_wordpress_id(item["product_id"])
-          p product['name']
-          @b.goto product.aliexpress_link #Abre link do produto
-          raise product if product.aliexpress_link.nil?
-          stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
-          if quantity > stock #Verifica estoque
-            @error =  'Erro de estoque, produto não disponível!'
-            break
-          else
-            #Ações dos produtos
-            p 'Adicionando quantidade'
-            self.add_quantity @b, quantity
-            p 'Selecionando opções'
-            user_options = [product.option_1,product.option_3,product.option_3]
-            self.set_options @b, user_options
-            # self.set_shipping @b, user_options
-            p 'Adicionando ao carrinho'
-            self.add_to_cart @b
+    orders.each do |order|
+      begin
+        self.empty_cart @b #Esvazia Carrinho
+        p order['id']
+        customer = order["shipping_address"] #Loop para todos os produtos
+        order["line_items"].each do |item|
+          begin
+            quantity = item["quantity"]
+            product = Product.find_by_wordpress_id(item["product_id"])
+            p product['name']
+            @b.goto product.aliexpress_link #Abre link do produto
+            raise product if product.aliexpress_link.nil?
+            stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
+            if quantity > stock #Verifica estoque
+              @error =  'Erro de estoque, produto não disponível!'
+              break
+            else
+              #Ações dos produtos
+              p 'Adicionando quantidade'
+              self.add_quantity @b, quantity
+              p 'Selecionando opções'
+              user_options = [product.option_1,product.option_3,product.option_3]
+              self.set_options @b, user_options
+              # self.set_shipping @b, user_options
+              p 'Adicionando ao carrinho'
+              self.add_to_cart @b
+            end
+          rescue
+            @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+            raise product
           end
-        rescue
-          @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-          raise product
         end
+        #Finaliza pedido
+        unless @error.nil?
+          order_nos = self.complete_order(@b,customer)
+          p "Pedido completado"
+          raise if order_nos.count == 0
+          self.wordpress.update_order(order, order_nos)
+          @error = self.wordpress.error
+          @processed << order["id"] if @error.nil?
+        end
+      rescue => product
+        @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+        p @error
+      rescue
+        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        p @error
       end
-      #Finaliza pedido
-      unless @error.nil?
-        order_nos = self.complete_order(@b,customer)
-        p "Pedido completado"
-        raise if order_nos.count == 0
-        self.wordpress.update_order(order, order_nos)
-        @error = self.wordpress.error
-        @processed << order["id"] if @error.nil?
-      end
-    rescue => product
-      @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-      p @error
-    rescue
-      @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-      p @error
+      @b.close
     end
-    @b.close
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
   rescue
