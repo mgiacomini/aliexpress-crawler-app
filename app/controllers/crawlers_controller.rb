@@ -1,3 +1,5 @@
+require 'rake'
+AliexpressApp::Application.load_tasks
 class CrawlersController < ApplicationController
   before_action :set_crawler, only: [:edit, :update, :show, :destroy, :run]
   def index
@@ -32,7 +34,7 @@ class CrawlersController < ApplicationController
 
   def run
     Rake::Task['crawler:run'].invoke
-    redirect_to crawlers_path, notice: "#{orders.count} pedidos processados"
+    redirect_to crawlers_path
   end
 
   private

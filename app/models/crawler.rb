@@ -21,9 +21,9 @@ class Crawler < ActiveRecord::Base
     # orders = self.wordpress.get_orders
     # @error = self.wordpress.error
     # orders.each do |order| #Loop para todos os pedidos
+    p order['id']
     begin
       self.empty_cart @b #Esvazia Carrinho
-      p order['id']
       customer = order["shipping_address"] #Loop para todos os produtos
       order["line_items"].each do |item|
         begin
@@ -47,7 +47,7 @@ class Crawler < ActiveRecord::Base
             p 'Adicionando ao carrinho'
             self.add_to_cart @b
           end
-        rescue
+        rescue => product
           @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
           raise product
         end
@@ -56,6 +56,7 @@ class Crawler < ActiveRecord::Base
       unless @error.nil?
         order_nos = self.complete_order(@b,customer)
         p "Pedido completado"
+        raise if order_nos.count == 0
         self.wordpress.update_order(order, order_nos)
         @error = self.wordpress.error
         @processed << order["id"] if @error.nil?
@@ -72,7 +73,6 @@ class Crawler < ActiveRecord::Base
   @b.close
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
-    @b.close
   rescue
     @error = "Erro desconhecido"
     @b.close
@@ -83,11 +83,12 @@ class Crawler < ActiveRecord::Base
     p 'Efetuando login'
     @b = Watir::Browser.new :phantomjs
     @b.goto "https://login.aliexpress.com/"
+    @b.iframe(id: 'alibaba-login-box').wait_until_present
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
-    sleep 5
+    frame.button(name: 'submit-btn').wait_while_present
     #Levanta erro caso o login falhe (caso de captchas)
     # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @error = "Executado com sucesso"
@@ -128,10 +129,13 @@ class Crawler < ActiveRecord::Base
   #finaliza pedido com informações do cliente
   def complete_order browser, customer
     browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
+    browser.div(class: "bottom-info-right-wrapper").button.wait_until_present #Botão Comprar
     browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
+    browser.ul(class: "sa-address-list").wait_until_present #Botão Editar Endereço
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
     p 'Preenchendo informações'
+    browser.text_field(name: "contactPerson").wait_until_present
     browser.text_field(name: "contactPerson").set customer["first_name"]+" "+customer["last_name"]
     browser.select_list(name: "country").select 'Brazil'
     browser.text_field(name: "address").set to_english(customer["address_1"])
@@ -144,9 +148,9 @@ class Crawler < ActiveRecord::Base
     browser.text_field(name: "mobileNo").set '5511959642036'
     browser.div(class: "sa-form").links[1].click #Botão Salvar
     p 'Salvando'
-    sleep 5
+    browser.button(id:"place-order-btn").wait_until_present #Botão Finalizar pedido
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
-    sleep 5
+    browser.spans(class:"order-no").wait_until_present #Retorna os números dos pedidos
     browser.spans(class:"order-no") #Retorna os números dos pedidos
   end
 
