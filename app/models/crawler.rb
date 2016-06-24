@@ -15,10 +15,9 @@ class Crawler < ActiveRecord::Base
     @processed
   end
 
-  def run(order)
-    browser = Watir::Browser.new :phantomjs
-    @b = self.login(browser)
-    raise login if @b.nil?
+  def run(orders)
+    @b = self.login
+    raise login_error if @b.nil?
     orders.each do |order|
       begin
         self.empty_cart @b #Esvazia Carrinho
@@ -48,7 +47,8 @@ class Crawler < ActiveRecord::Base
             end
           rescue
             @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-            raise product
+            break
+            p @error
           end
         end
         #Finaliza pedido
@@ -60,37 +60,37 @@ class Crawler < ActiveRecord::Base
           @error = self.wordpress.error
           @processed << order["id"] if @error.nil?
         end
-      rescue => product
-        @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-        p @error
       rescue
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        next
         p @error
       end
     end
-    @b.close
-  rescue => login
+  @b.close
+  rescue => login_error
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
+    p "Falha no login, verifique as informações ou tente novamente mais tarde"
+    exit
   rescue
-    @b.close
     @error = "Erro desconhecido"
   end
 
   #Efetua login no site da Aliexpresss usando user e password
-  def login browser
+  def login
     p 'Efetuando login'
-    browser.goto "https://login.aliexpress.com/"
-    frame = browser.iframe(id: 'alibaba-login-box')
-    frame.text_field(name: 'loginId').set self.aliexpress.email
-    frame.text_field(name: 'password').set self.aliexpress.password
+    @b = Watir::Browser.new :phantomjs
+    user = self.aliexpress
+    @b.goto "https://login.aliexpress.com/"
+    frame = @b.iframe(id: 'alibaba-login-box')
+    frame.text_field(name: 'loginId').set user.email
+    frame.text_field(name: 'password').set user.password
     frame.button(name: 'submit-btn').click
     sleep 5
     #Levanta erro caso o login falhe (caso de captchas)
     # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @error = "Executado com sucesso"
-    browser
+    @b
   rescue
-    p "Falha no login, verifique as informações ou tente novamente mais tarde"
   end
 
   #Adiciona item ao carrinho
