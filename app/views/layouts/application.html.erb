@@ -49,10 +49,15 @@
         <div class="navbar-collapse collapse navbar-responsive-collapse">
           <ul class="nav navbar-nav">
             <li><%=link_to  "Crawler", crawlers_path%></a></li>
-            <li><%= link_to "Produtos", products_path  %></li>
             <%= drop_down "Configurações" do %>
               <%= menu_item "Wordpress", wordpresses_path %>
               <%= menu_item "Aliexpress", aliexpresses_path %>
+            <% end %>
+             <%= drop_down "Produtos" do %>
+              <%= menu_item "Todos os produtos", products_path %>
+              <%= @wordpresses.each do |wordpress| %>
+                <%= menu_item "wordpress.name", wordpress_path(wordpress) %>
+              <%= end %>
             <% end %>
           </ul>
           <ul class="nav navbar-nav navbar-right">
