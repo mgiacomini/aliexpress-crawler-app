@@ -17,8 +17,8 @@ new_crawler_path,
 <table class="table table-striped">
   <thead>
     <tr>
-      <th><%= model_class.human_attribute_name(:aliexpress_id) %></th>
       <th><%= model_class.human_attribute_name(:wordpress_id) %></th>
+      <th><%= model_class.human_attribute_name(:aliexpress_id) %></th>
       <th>Status</th>
       <th>Intinerário</th>
       <th>Ações</th>
@@ -27,8 +27,8 @@ new_crawler_path,
   <tbody>
     <% @crawlers.each do |crawler| %>
       <tr>
+        <td><%= link_to crawler.wordpress.name, crawler_path(crawler) %></td>
         <td><%= crawler.aliexpress.name %></td>
-        <td><%= crawler.wordpress.name %></td>
         <td><%=
                 case crawler.enabled
                 when true

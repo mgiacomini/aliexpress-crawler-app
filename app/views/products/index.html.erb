@@ -33,8 +33,8 @@ import_products_path, method: :post,
       <tr>
         <td><%= link_to product.wordpress_id, product_path(product) %></td>
         <td><%= product.name %></td>
-        <td><%= product.link %></td>
-        <td><%= product.aliexpress_link %></td>
+        <td><a href="<%=product.link%>"><%=product.link%></a></td>
+        <td><a href="<%=product.aliexpress_link%>"><%=product.aliexpress_link%></a></td>
         <td><%= product.option_1 %></td>
         <td><%= product.option_2 %></td>
         <td><%= product.option_3 %></td>

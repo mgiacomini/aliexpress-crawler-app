@@ -25,7 +25,7 @@ new_wordpress_path,
   <tbody>
     <% @wordpresses.each do |wordpress| %>
       <tr>
-        <td><%= wordpress.name %></td>
+        <td><%= link_to wordpress.name, wordpress_path(wordpress) %></td>
         <td><%= wordpress.url %></td>
         <td><%= wordpress.consumer_key %></td>
         <td>

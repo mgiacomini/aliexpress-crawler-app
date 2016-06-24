@@ -20,7 +20,7 @@ new_aliexpress_path,
   <tbody>
     <% @aliexpresses.each do |aliexpress| %>
       <tr>
-        <td><%= aliexpress.name %></td>
+        <td><%= link_to aliexpress.name, aliexpress_path(aliexpress) %></td>
         <td><%= aliexpress.email %></td>
         <td>
           <%= link_to 'Editar',

@@ -47,7 +47,7 @@ class Wordpress < ActiveRecord::Base
       }
     }
     #PUT para mudar a ordem para concluída
-    # @woocommerce.put("orders/#{order["id"]}", data).parsed_response
+    woocommerce.put("orders/#{order["id"]}", data).parsed_response
   rescue
     @error = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
     exit

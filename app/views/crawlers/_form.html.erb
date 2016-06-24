@@ -1,8 +1,8 @@
 <%= simple_form_for @crawler, :html => { :class => 'form-horizontal' } do |f| %>
-  <%= f.association :aliexpress %>
-  <%= error_span(@crawler[:aliexpress_id]) %>
   <%= f.association :wordpress %>
   <%= error_span(@crawler[:wordpress_id]) %>
+  <%= f.association :aliexpress %>
+  <%= error_span(@crawler[:aliexpress_id]) %>
   <%= f.input :enabled %>
   <%= error_span(@crawler[:enabled]) %>
   <%= f.collection_radio_buttons :schedule, [['ten_minutes', '10 Minutes'] ,
