@@ -16,7 +16,8 @@ class Crawler < ActiveRecord::Base
   end
 
   def run(order)
-    @b = self.login
+    browser = Watir::Browser.new :phantomjs
+    @b = self.login(browser)
     raise login if @b.nil?
     orders.each do |order|
       begin
@@ -66,20 +67,20 @@ class Crawler < ActiveRecord::Base
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         p @error
       end
-      @b.close
     end
+    @b.close
   rescue => login
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
   rescue
+    @b.close
     @error = "Erro desconhecido"
   end
 
   #Efetua login no site da Aliexpresss usando user e password
-  def login
+  def login browser
     p 'Efetuando login'
-    @b = Watir::Browser.new :phantomjs
-    @b.goto "https://login.aliexpress.com/"
-    frame = @b.iframe(id: 'alibaba-login-box')
+    browser.goto "https://login.aliexpress.com/"
+    frame = browser.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
@@ -87,7 +88,7 @@ class Crawler < ActiveRecord::Base
     #Levanta erro caso o login falhe (caso de captchas)
     # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @error = "Executado com sucesso"
-    @b
+    browser
   rescue
     p "Falha no login, verifique as informações ou tente novamente mais tarde"
   end
