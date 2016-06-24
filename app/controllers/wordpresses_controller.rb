@@ -28,7 +28,9 @@ class WordpressesController < ApplicationController
 
   def destroy
     @wordpress.destroy
-    redirect_to wordpresses_path, notice: "Wordpress configuration deleted"
+    redirect_to wordpresses_path, alert: "Configuração deletada"
+  rescue
+    redirect_to wordpresses_path, alert: "Não é possível remover, está ligado a um Crawler, primeiro delete o Crawler"
   end
 
   private

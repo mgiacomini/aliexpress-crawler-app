@@ -15,6 +15,6 @@
   <%= error_span(@product[:shipping]) %>
 
   <%= f.button :submit, :class => 'btn-primary' %>
-  <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+  <%= link_to 'Cancelar',
                 products_path, :class => 'btn btn-default' %>
 <% end %>

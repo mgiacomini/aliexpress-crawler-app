@@ -5,8 +5,14 @@
   <%= error_span(@crawler[:wordpress_id]) %>
   <%= f.input :enabled %>
   <%= error_span(@crawler[:enabled]) %>
+  <%= f.collection_radio_buttons :schedule, [['ten_minutes', '10 Minutes'] ,
+                                            ['hourly', 'Hourly'],
+                                            ['daily', 'Daily']
+                                            ], :first, :last %>
+  <br>
+  <%= error_span(@crawler[:schedule]) %>
 
   <%= f.button :submit, :class => 'btn-primary' %>
-  <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+  <%= link_to 'Cancelar',
                 crawlers_path, :class => 'btn btn-default' %>
 <% end %>

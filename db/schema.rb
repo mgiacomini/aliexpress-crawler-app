@@ -27,9 +27,10 @@ ActiveRecord::Schema.define(version: 20160623013140) do
   create_table "crawlers", force: :cascade do |t|
     t.integer  "aliexpress_id"
     t.integer  "wordpress_id"
-    t.boolean  "enabled",       default: true
-    t.datetime "created_at",                   null: false
-    t.datetime "updated_at",                   null: false
+    t.boolean  "enabled",       default: false
+    t.string   "schedule",      default: "daily"
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
   end
 
   add_index "crawlers", ["aliexpress_id"], name: "index_crawlers_on_aliexpress_id", using: :btree

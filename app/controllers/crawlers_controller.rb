@@ -1,7 +1,7 @@
 require 'rake'
 AliexpressApp::Application.load_tasks
 class CrawlersController < ApplicationController
-  before_action :set_crawler, only: [:edit, :update, :show, :destroy, :run]
+  before_action :set_crawler, only: [:edit, :update, :show, :destroy, :enabled_status]
   def index
     @crawlers = Crawler.all.order(:created_at)
   end
@@ -29,17 +29,32 @@ class CrawlersController < ApplicationController
 
   def destroy
     @crawler.destroy
-    redirect_to crawlers_path, notice: "Crawler Deleted"
+    redirect_to crawlers_path, alert: "Crawler Deleted"
   end
 
-  def run
-    # crawler = Crawler.where(enabled: true).last
-    orders = @crawler.wordpress.get_orders
-    @crawler.run(orders)
-    redirect_to crawlers_path
+  def enabled_status
+    case params[:type]
+    when 'enable'
+      enable
+    when 'disable'
+      disable
+    else
+      redirect_to :back
+    end
+    @crawler.save
   end
 
   private
+
+  def enable
+    @crawler.enabled = true
+    redirect_to :back, notice: "Você ativou o crawler de #{@crawler.aliexpress.name} para #{@crawler.wordpress.name}"
+  end
+
+  def disable
+    @crawler.enabled = false
+    redirect_to :back, notice: "Você desativou o crawler de #{@crawler.aliexpress.name} para #{@crawler.wordpress.name}"
+  end
 
   def set_crawler
     @crawler = Crawler.find(params[:id])

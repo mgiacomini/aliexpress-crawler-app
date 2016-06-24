@@ -8,6 +8,6 @@ Rails.application.routes.draw do
   resources :wordpresses
   resources :aliexpresses
   resources :crawlers do
-    member { post :run }
+    put :enabled_status, on: :member
   end
 end

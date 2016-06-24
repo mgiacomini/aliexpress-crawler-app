@@ -28,7 +28,9 @@ class AliexpressesController < ApplicationController
 
   def destroy
     @aliexpress.destroy
-    redirect_to aliexpresses_path, notice: "Aliexpress configuration deleted"
+    redirect_to aliexpresses_path, alert: "Configuração deletada"
+  rescue
+    redirect_to aliexpresses_path, alert: "Não é possível remover, está ligado a um Crawler, primeiro delete o Crawler"
   end
 
   private

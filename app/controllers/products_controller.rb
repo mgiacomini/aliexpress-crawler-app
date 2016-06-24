@@ -20,15 +20,15 @@ class ProductsController < ApplicationController
 
   def destroy
     @product.destroy
-    redirect_to products_path, notice: "Product Deleted"
+    redirect_to products_path, alert: "Produto deletado."
   end
 
   def import
     products = Wordpress.last.get_products
     Product.import(products)
-    redirect_to products_path, notice: "Products imported."
+    redirect_to products_path, notice: "Produtos importados."
   rescue
-    redirect_to products_path, notice: "Couldn't import, check configurations."
+    redirect_to products_path, alert: "Falha ao importar, checar configurações do Wordpress."
   end
 
   private

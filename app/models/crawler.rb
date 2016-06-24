@@ -57,7 +57,7 @@ class Crawler < ActiveRecord::Base
         if @error.nil?
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
-          raise if order_nos.count == 0
+          raise order_error if order_nos.count == 0
           self.wordpress.update_order(order, order_nos)
           p "Pedido #{order["id"]} processado com sucesso!"
           @error = self.wordpress.error
@@ -148,7 +148,6 @@ class Crawler < ActiveRecord::Base
     sleep 5
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     sleep 5
-    binding.pry
     browser.spans(class:"order-no") #Retorna os números dos pedidos
   end
 
