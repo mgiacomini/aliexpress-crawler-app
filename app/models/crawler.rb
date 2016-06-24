@@ -5,15 +5,6 @@ class Crawler < ActiveRecord::Base
   validates :aliexpress_id, :wordpress_id, presence: true
 
   @error = nil
-  @processed = []
-
-  def error
-    @error
-  end
-
-  def processed
-    @processed
-  end
 
   def run(orders)
     raise if orders.count == 0
