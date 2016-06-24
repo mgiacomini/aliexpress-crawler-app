@@ -137,6 +137,7 @@ class Crawler < ActiveRecord::Base
     browser.div(class: "sa-form").links[1].click #Botão Salvar
     p 'Salvando'
     sleep 5
+    binding.pry
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     sleep 5
     browser.spans(class:"order-no") #Retorna os números dos pedidos

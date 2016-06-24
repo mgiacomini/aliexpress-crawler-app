@@ -23,8 +23,10 @@ class ProductsController < ApplicationController
   end
 
   def import
-    products = Wordpress.last.get_products
-    Product.import(products)
+    Wordpress.all.each do |wordpress|
+      products = wordpress.get_products
+      Product.import(products, wordpress)
+    end
     redirect_to products_path, notice: "Produtos importados."
   rescue
     redirect_to products_path, alert: "Falha ao importar, checar configurações do Wordpress."
@@ -38,6 +40,7 @@ class ProductsController < ApplicationController
 
   def product_params
     params.require(:product).permit(:name, :link, :aliexpress_link, :option_1,
-                                    :option_2, :option_3, :shipping, :wordpress_id)
+                                    :option_2, :option_3, :shipping, :wordpress_id,
+                                    :store, :type)
   end
 end
