@@ -52,7 +52,7 @@ class CrawlersController < ApplicationController
 
   def disable
     @crawler.enabled = false
-    redirect_to :back, notice: "Você desativou o crawler de #{@crawler.aliexpress.name} para #{@crawler.wordpress.name}"
+    redirect_to :back, alert: "Você desativou o crawler de #{@crawler.aliexpress.name} para #{@crawler.wordpress.name}"
   end
 
   def set_crawler

@@ -46,6 +46,7 @@ class Crawler < ActiveRecord::Base
         end
         #Finaliza pedido
         if @error.nil?
+          binding.pry
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
           raise order_error if order_nos.count == 0
@@ -136,7 +137,6 @@ class Crawler < ActiveRecord::Base
     browser.text_field(name: "mobileNo").set '5511959642036'
     browser.div(class: "sa-form").links[1].click #Botão Salvar
     p 'Salvando'
-    sleep 5
     binding.pry
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     sleep 5
