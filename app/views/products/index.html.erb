@@ -13,6 +13,7 @@
 <%= link_to 'Importar Produtos',
 import_products_path, method: :post,
 :class => 'btn btn-primary' %>
+<%= select("product", "store", Product.all.collect(&:store)) %>
 <table class="table table-striped">
   <thead>
     <tr>
