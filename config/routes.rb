@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  get 'crawlers/index'
+  devise_for :users
 
   root 'home#index'
   resources :products, except:[:new] do

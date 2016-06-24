@@ -45,16 +45,24 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand">
+        <a class="navbar-brand" href="<%=root_path%>">Home
         <div class="navbar-collapse collapse navbar-responsive-collapse">
           <ul class="nav navbar-nav">
-            <li><%=link_to  "Home", root_path%></a></li>
             <li><%=link_to  "Crawler", crawlers_path%></a></li>
             <li><%= link_to "Produtos", products_path  %></li>
             <%= drop_down "Configurações" do %>
               <%= menu_item "Wordpress", wordpresses_path %>
               <%= menu_item "Aliexpress", aliexpresses_path %>
             <% end %>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <%= button_to 'Login', new_user_session_path,
+                class:'btn btn-default navbar-btn' unless current_user %>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><%= button_to 'Logout', destroy_user_session_path,
+                class:'btn btn-default navbar-btn',
+                :method => :delete if current_user %></li>
           </ul>
         </div>
       </div>

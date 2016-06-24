@@ -1,10 +1,9 @@
-AliexpressApp::Application.load_tasks
 class CrawlersController < ApplicationController
   before_action :set_crawler, only: [:edit, :update, :show, :destroy, :enabled_status]
   def index
     @crawlers = Crawler.all.order(:created_at)
   end
-  
+
   def new
     @crawler = Crawler.new
   end
