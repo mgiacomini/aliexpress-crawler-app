@@ -20,7 +20,7 @@ class Crawler < ActiveRecord::Base
     raise login_error if @b.nil?
     orders.each do |order|
       @error = nil
-      p @error
+      p "Error: #{@error}"
       begin
         self.empty_cart @b #Esvazia Carrinho
         p order['id']
@@ -148,6 +148,7 @@ class Crawler < ActiveRecord::Base
     sleep 5
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     sleep 5
+    binding.pry
     browser.spans(class:"order-no") #Retorna os números dos pedidos
   end
 
