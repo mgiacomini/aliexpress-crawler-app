@@ -74,7 +74,6 @@ class Crawler < ActiveRecord::Base
   rescue => login_error
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
     p "Falha no login, verifique as informações ou tente novamente mais tarde"
-    exit
   rescue
     @error = "Erro desconhecido"
   end

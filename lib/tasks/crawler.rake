@@ -1,5 +1,5 @@
 namespace :crawler do
-  @crawler = Crawler.where(enabled: true).last
+  @crawler = ""
   desc "Runs Crawler.rb"
   task run: :environment do
     crawler = Crawler.where(enabled: true).last
