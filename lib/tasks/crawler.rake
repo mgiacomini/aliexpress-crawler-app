@@ -5,6 +5,7 @@ namespace :crawler do
     # orders = @crawler.wordpress.get_orders
     orders = @crawler.wordpress.get_orders
     @crawler.run [orders[3]]
+    
   end
 
   desc "Runs every 10 minutes"
