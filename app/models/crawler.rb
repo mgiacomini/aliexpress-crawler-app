@@ -88,10 +88,10 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
     frame.button(name: 'submit-btn').click
-    frame.button(name: 'submit-btn').wait_while_present
     #Levanta erro caso o login falhe (caso de captchas)
     # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
     @error = "Executado com sucesso"
+    @b.div(class:"user-account-info").wait_until_present
     @b
   rescue
     p "Falha no login, verifique as informações ou tente novamente mais tarde"
