@@ -18,6 +18,7 @@ import_all_products_path, method: :post,
     <tr>
       <th>ID Wordpress</th>
       <th>Nome</th>
+      <th>Tipo</th>
       <th>Link</th>
       <th>Link Aliexpress</th>
       <th>Opção 1</th>
@@ -29,22 +30,23 @@ import_all_products_path, method: :post,
     </tr>
   </thead>
   <tbody>
-    <% @products.each do |product| %>
+    <% @products.each do |product_type| %>
       <tr>
-        <td><%= link_to product.wordpress_id, product_path(product) %></td>
-        <td><%= product.name %></td>
-        <td><a href="<%=product.link%>"><%=product.link%></a></td>
-        <td><a href="<%=product.aliexpress_link%>"><%=product.aliexpress_link%></a></td>
-        <td><%= product.option_1 %></td>
-        <td><%= product.option_2 %></td>
-        <td><%= product.option_3 %></td>
-        <td><%= product.shipping %></td>
-        <td><%= product.updated_at.strftime('%a, %d %b %Y %H:%M:%S') %></td>
+        <td><%= link_to product_type.product.wordpress_id, product_path(product_type.product) %></td>
+        <td><%= product_type.product.name %></td>
+        <td><%= product_type.name %></td>
+        <td><a href="<%=product_type.product.link%>"><%=product_type.product.link%></a></td>
+        <td><a href="<%=product_type.aliexpress_link%>"><%=product_type.aliexpress_link%></a></td>
+        <td><%= product_type.product.option_1 %></td>
+        <td><%= product_type.product.option_2 %></td>
+        <td><%= product_type.product.option_3 %></td>
+        <td><%= product_type.product.shipping %></td>
+        <td><%= product_type.product.updated_at.strftime('%a, %d %b %Y %H:%M:%S') %></td>
         <td>
           <%= link_to 'Editar',
-                      edit_product_path(product), :class => 'btn btn-default btn-xs' %>
+                      edit_product_path(product_type.product), :class => 'btn btn-default btn-xs' %>
           <%= link_to 'Deletar',
-                      product_path(product),
+                      product_path(product_type.product),
                       :method => :delete,
                       :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Tem certeza?')) },
                       :class => 'btn btn-xs btn-danger' %>

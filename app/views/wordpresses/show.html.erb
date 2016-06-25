@@ -35,6 +35,7 @@
     <tr>
       <th>ID Wordpress</th>
       <th>Nome</th>
+      <th>Tipo</th>
       <th>Link</th>
       <th>Link Aliexpress</th>
       <th>Opção 1</th>
@@ -50,6 +51,7 @@
       <tr>
         <td><%= link_to product.wordpress_id, product_path(product) %></td>
         <td><%= product.name %></td>
+        <td><%= product.type %></td>
         <td><a href="<%=product.link%>"><%=product.link%></a></td>
         <td><a href="<%=product.aliexpress_link%>"><%=product.aliexpress_link%></a></td>
         <td><%= product.option_1 %></td>

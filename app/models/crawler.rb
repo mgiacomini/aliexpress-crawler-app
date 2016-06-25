@@ -137,11 +137,11 @@ class Crawler < ActiveRecord::Base
     browser.div(class: "sa-form").links[1].click #Botão Salvar
     p 'Salvando'
     sleep 2
-    'Selecionando Pagamento'
+    p 'Selecionando Pagamento'
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
-    'Finalizando Pedido'
+    p 'Finalizando Pedido'
     sleep 5
     browser.spans(class:"order-no") #Retorna os números dos pedidos
   end

@@ -1,0 +1,16 @@
+<%= simple_form_for @product_type, :html => { :class => 'form-horizontal' } do |f| %>
+  <%= f.input :aliexpress_link %>
+  <%= error_span(@product_type[:aliexpress_link]) %>
+  <%= f.input :product_id %>
+  <%= error_span(@product_type[:option_1]) %>
+  <%= f.input :option_2 %>
+  <%= error_span(@product_type[:option_2]) %>
+  <%= f.input :option_3 %>
+  <%= error_span(@product_type[:option_3]) %>
+  <%= f.input :shipping %>
+  <%= error_span(@product_type[:shipping]) %>
+
+  <%= f.button :submit, :class => 'btn-primary' %>
+  <%= link_to 'Cancelar',
+                product_types_path, :class => 'btn btn-default' %>
+<% end %>
