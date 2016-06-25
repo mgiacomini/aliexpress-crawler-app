@@ -4,8 +4,8 @@ namespace :crawler do
     # crawler = Crawler.where(enabled: true).last
     # orders = @crawler.wordpress.get_orders
     orders = @crawler.wordpress.get_orders
-    @crawler.run [orders[3]]
-    
+    @crawler.run [orders[1]]
+
   end
 
   desc "Runs every 10 minutes"
