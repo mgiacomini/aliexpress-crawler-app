@@ -1,5 +1,5 @@
 class WordpressesController < ApplicationController
-  before_action :set_wordpress, only: [:edit, :update, :show, :destroy]
+  before_action :set_wordpress, only: [:edit, :update, :show, :destroy, :import_products]
   def new
     @wordpress = Wordpress.new
   end
@@ -19,7 +19,7 @@ class WordpressesController < ApplicationController
   end
 
   def show
-    @products = Product.where(store: @wordpress.name)
+    @products = Product.where(store: @wordpress.name).order(:name)
     respond_with @wordpress
   end
 
@@ -33,6 +33,15 @@ class WordpressesController < ApplicationController
   rescue
     redirect_to wordpresses_path, alert: "Não é possível remover, está ligado a um Crawler, primeiro delete o Crawler"
   end
+
+  def import_products
+    @products = @wordpress.get_products
+    Product.import(@products, @wordpress)
+    redirect_to wordpress_path(@wordpress), notice: "Produtos importados."
+  rescue
+    redirect_to wordpress_path(@wordpress), alert: "Falha ao importar, checar configurações do Wordpress."
+  end
+
 
   private
 

@@ -22,10 +22,10 @@ class ProductsController < ApplicationController
     redirect_to products_path, alert: "Produto deletado."
   end
 
-  def import
+  def import_all
     Wordpress.all.each do |wordpress|
-      products = wordpress.get_products
-      Product.import(products, wordpress)
+      @products = wordpress.get_products
+      Product.import(@products, wordpress)
     end
     redirect_to products_path, notice: "Produtos importados."
   rescue

@@ -3,9 +3,11 @@ Rails.application.routes.draw do
 
   root 'home#index'
   resources :products, except:[:new] do
-    collection { post :import }
+    collection { post :import_all }
   end
-  resources :wordpresses
+  resources :wordpresses do
+    post :import_products, on: :member
+  end
   resources :aliexpresses
   resources :crawlers do
     put :enabled_status, on: :member
