@@ -53,11 +53,11 @@
               <%= menu_item "Wordpress", wordpresses_path %>
               <%= menu_item "Aliexpress", aliexpresses_path %>
             <% end %>
-             <%= drop_down "Produtos" do %>
+            <%= drop_down "Produtos" do %>
               <%= menu_item "Todos os produtos", products_path %>
-              <%= @wordpresses.each do |wordpress| %>
-                <%= menu_item "wordpress.name", wordpress_path(wordpress) %>
-              <%= end %>
+              <% Wordpress.all.each do |wordpress| %>
+                <%= menu_item wordpress.name, wordpress_path(wordpress) %>
+              <% end %>
             <% end %>
           </ul>
           <ul class="nav navbar-nav navbar-right">

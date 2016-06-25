@@ -21,3 +21,47 @@
               :method => 'delete',
               :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
               :class => 'btn btn-danger' %>
+<h1>Produtos</h1>
+<%= link_to 'Importar Produtos',
+import_products_path, method: :post,
+:class => 'btn btn-primary' %>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID Wordpress</th>
+      <th>Nome</th>
+      <th>Link</th>
+      <th>Link Aliexpress</th>
+      <th>Opção 1</th>
+      <th>Opção 2</th>
+      <th>Opção 3</th>
+      <th>Frete</th>
+      <th>Atualizado em</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @products.each do |product| %>
+      <tr>
+        <td><%= link_to product.wordpress_id, product_path(product) %></td>
+        <td><%= product.name %></td>
+        <td><a href="<%=product.link%>"><%=product.link%></a></td>
+        <td><a href="<%=product.aliexpress_link%>"><%=product.aliexpress_link%></a></td>
+        <td><%= product.option_1 %></td>
+        <td><%= product.option_2 %></td>
+        <td><%= product.option_3 %></td>
+        <td><%= product.shipping %></td>
+        <td><%= product.updated_at.strftime('%a, %d %b %Y %H:%M:%S') %></td>
+        <td>
+          <%= link_to 'Editar',
+                      edit_product_path(product), :class => 'btn btn-default btn-xs' %>
+          <%= link_to 'Deletar',
+                      product_path(product),
+                      :method => :delete,
+                      :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
+                      :class => 'btn btn-xs btn-danger' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

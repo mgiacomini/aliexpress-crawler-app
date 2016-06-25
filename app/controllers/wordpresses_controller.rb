@@ -19,6 +19,7 @@ class WordpressesController < ApplicationController
   end
 
   def show
+    @products = Product.where(store: @wordpress.name)
     respond_with @wordpress
   end
 
