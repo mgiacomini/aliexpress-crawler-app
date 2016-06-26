@@ -13,6 +13,6 @@
   <%= error_span(@crawler[:schedule]) %>
 
   <%= f.button :submit, :class => 'btn-primary' %>
-  <%= link_to 'Cancelar',
+  <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
                 crawlers_path, :class => 'btn btn-default' %>
 <% end %>

@@ -48,9 +48,9 @@
         <a class="navbar-brand" href="<%=root_path%>">Home
         <div class="navbar-collapse collapse navbar-responsive-collapse">
           <ul class="nav navbar-nav">
-            <li><%=link_to  "Crawler", crawlers_path%></a></li>
+            <li><%=link_to "Crawler", crawlers_path%></a></li>
             <%= drop_down "Produtos" do %>
-              <%= menu_item "Todos os produtos", products_path %>
+              <%= menu_item "Todos os produtos", product_types_path %>
               <% Wordpress.all.each do |wordpress| %>
                 <%= menu_item wordpress.name, wordpress_path(wordpress) %>
               <% end %>

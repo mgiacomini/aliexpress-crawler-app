@@ -1,0 +1,38 @@
+pt-BR:
+  simple_form:
+    "yes": 'Sim'
+    "no": 'Não'
+    required:
+      text: 'obrigatório'
+      mark: '*'
+    error_notification:
+      default_message: "Alguns erros foram encontrados, por favor verifique:"
+    placeholders:
+      wordpress:
+        name: 'Nome do site'
+        url: 'http://exemple.com'
+        consumer_key: 'ck_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        consumer_secret: 'cs_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+      product_type:
+        aliexpress_link: 'http://pt.aliexpress.com/item/'
+        option_1: 'Opção numérica da esquerda para a direita'
+        option_2: 'Opção numérica da esquerda para a direita'
+        option_3: 'Opção numérica da esquerda para a direita'
+        shipping: 'Opção numérica de cima para baixo'
+      aliexpress:
+        name: 'Nome do usuário'
+        email: 'user@email.com'
+        password: '*********'
+  helpers:
+    submit:
+      aliexpress:
+        create: "Criar %{model}"
+        update: "Salvar mudanças"
+      wordpress:
+        create: "Criar %{model}"
+        update: "Salvar mudanças"
+      crawler:
+        create: "Criar %{model}"
+        update: "Salvar mudanças"
+      product_type:
+        update: "Salvar mudanças"

@@ -1,7 +1,10 @@
 class ProductTypesController < ApplicationController
   before_action :set_product_type, only: [:edit, :update, :show, :destroy]
   def index
-    @productTypes = ProductType.all
+    @product_types = ProductType.all.joins(:product)
+                                .merge(Product.order(:name))
+                                .order(:name)
+  end
 
   def edit
     respond_with @product_type
@@ -9,7 +12,7 @@ class ProductTypesController < ApplicationController
 
   def update
     @product_type.update(product_type_params)
-    respond_with @product_type
+    redirect_to product_types_path
   end
 
   def show
@@ -18,7 +21,7 @@ class ProductTypesController < ApplicationController
 
   def destroy
     @product_type.destroy
-    redirect_to product_types_path, alert: "Tipo de produto deletado."
+    redirect_to product_types_path, alert: "Produto deletado."
   end
 
   def import_all

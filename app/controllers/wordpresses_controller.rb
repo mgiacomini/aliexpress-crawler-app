@@ -19,7 +19,11 @@ class WordpressesController < ApplicationController
   end
 
   def show
-    @products = Product.where(store: @wordpress.name).order(:name)
+    @product = Product.where(store: @wordpress.name)
+    @product_types = ProductType.where(product: @product)
+                                .joins(:product)
+                                .merge(Product.order(:name))
+                                .order(:name)
     respond_with @wordpress
   end
 

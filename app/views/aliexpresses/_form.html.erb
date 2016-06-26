@@ -1,9 +1,9 @@
 <%= simple_form_for @aliexpress, :html => { :class => 'form-horizontal' } do |f| %>
-  <%= f.input :name, placeholder: 'Nome do Usuário' %>
+  <%= f.input :name %>
   <%= error_span(@aliexpress[:name]) %>
-  <%= f.input :email, placeholder: 'user@email.com' %>
+  <%= f.input :email %>
   <%= error_span(@aliexpress[:email]) %>
-  <%= f.input :password, placeholder: 'password' %>
+  <%= f.input :password %>
   <%= error_span(@aliexpress[:password]) %>
 
   <%= f.button :submit, :class => 'btn-primary' %>

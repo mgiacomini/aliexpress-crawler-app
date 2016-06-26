@@ -10,11 +10,11 @@
   <dd><%= @aliexpress.password %></dd>
 </dl>
 
-<%= link_to 'Voltar',
+<%= link_to t('.back', :default => t("helpers.links.back")),
               aliexpresses_path, :class => 'btn btn-default'  %>
-<%= link_to 'Editar',
+<%= link_to t('.edit', :default => t("helpers.links.edit")),
               edit_aliexpress_path(@aliexpress), :class => 'btn btn-default' %>
-<%= link_to 'Deletar',
+<%= link_to t('.destroy', :default => t("helpers.links.destroy")),
               aliexpress_path(@aliexpress),
               :method => 'delete',
               :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Tem certeza?')) },

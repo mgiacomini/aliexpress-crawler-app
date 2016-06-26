@@ -2,9 +2,10 @@ Rails.application.routes.draw do
   devise_for :users
 
   root 'home#index'
-  resources :products, except:[:new] do
+  resources :products do
     collection { post :import_all }
   end
+  resources :product_types
   resources :wordpresses do
     post :import_products, on: :member
   end

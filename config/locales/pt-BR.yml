@@ -141,6 +141,26 @@ pt-BR:
 
   # ActiveRecord
   activerecord:
+    attributes:
+      aliexpress:
+        name: 'Nome'
+        password: 'Senha'
+      crawler:
+        enabled: 'Habilitado'
+        schedule: 'Intinerário'
+      product_type:
+        name: 'Nome'
+        type: 'Tipo'
+        aliexpress_link: 'Link Aliexpress'
+        option_1: 'Opção 1'
+        option_2: 'Opção 2'
+        option_3: 'Opção 3'
+        shipping: 'Frete'
+        updated_at: 'Atualizado em'
+      wordpress:
+        name: 'Nome'
+        consumer_key: 'Consumer key'
+        consumer_secret: 'Consumer secret'
     errors:
       template:
         header:

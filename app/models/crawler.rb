@@ -19,10 +19,15 @@ class Crawler < ActiveRecord::Base
         order["line_items"].each do |item|
           begin
             quantity = item["quantity"]
-            product = Product.find_by_wordpress_id(item["product_id"])
+            product = Product.find_by_name(item["name"])
+            if (meta = item["meta"]).empty?
+              product_type = ProductType.find_by_product_id(product.id)
+            else
+              product_type = ProductType.find_by(product: product, name: meta[0]['value'])
+            end
             p "Procurando #{product['name']}"
-            @b.goto product.aliexpress_link #Abre link do produto
-            raise if product.aliexpress_link.nil?
+            @b.goto product_type.aliexpress_link #Abre link do produto
+            raise if product_type.aliexpress_link.nil?
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
               @error =  'Erro de estoque, produto não disponível!'
@@ -32,7 +37,7 @@ class Crawler < ActiveRecord::Base
               p "Adicionando #{quantity} ao carrinho"
               self.add_quantity @b, quantity
               p 'Selecionando opções'
-              user_options = [product.option_1,product.option_3,product.option_3]
+              user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
               self.set_options @b, user_options
               # self.set_shipping @b, user_options
               p 'Adicionando ao carrinho'
@@ -99,7 +104,6 @@ class Crawler < ActiveRecord::Base
     (quantity -1).times do
       browser.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").click
     end
-    sleep 10
   end
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
@@ -113,7 +117,6 @@ class Crawler < ActiveRecord::Base
         option.as[selected].click
       end
       count +=1
-      sleep 10
     end
   end
 
@@ -124,7 +127,7 @@ class Crawler < ActiveRecord::Base
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
     p 'Preenchendo informações'
-    browser.text_field(name: "contactPerson").set customer["first_name"]+" "+customer["last_name"]
+    browser.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
     browser.select_list(name: "country").select 'Brazil'
     browser.text_field(name: "address").set to_english(customer["address_1"])
     browser.text_field(name: "address2").set to_english(customer["address_2"])
@@ -138,6 +141,7 @@ class Crawler < ActiveRecord::Base
     p 'Salvando'
     sleep 2
     p 'Selecionando Pagamento'
+    binding.pry
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido

@@ -11,7 +11,7 @@
     <p><strong>ten_minutes:</strong> de 10 em 10 minutos, sempre no minuto 8</p>
   </h4>
 </div>
-<%= link_to 'Novo',
+<%= link_to t('.new', :default => t("helpers.links.new")),
 new_crawler_path,
 :class => 'btn btn-primary' %>
 <table class="table table-striped">
@@ -19,9 +19,9 @@ new_crawler_path,
     <tr>
       <th><%= model_class.human_attribute_name(:wordpress_id) %></th>
       <th><%= model_class.human_attribute_name(:aliexpress_id) %></th>
-      <th>Status</th>
-      <th>Intinerário</th>
-      <th>Ações</th>
+      <th><%= model_class.human_attribute_name(:status) %></th>
+      <th><%= model_class.human_attribute_name(:schedule) %></th>
+      <th><%=t '.actions', :default => t("helpers.actions") %></th>
     </tr>
   </thead>
   <tbody>
@@ -39,9 +39,9 @@ new_crawler_path,
             %></td>
         <td><%= crawler.schedule %></td>
         <td>
-          <%= link_to 'Editar',
+          <%= link_to t('.edit', :default => t("helpers.links.edit")),
                       edit_crawler_path(crawler), :class => 'btn btn-default btn-xs' %>
-          <%= link_to 'Deletar',
+          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
                       crawler_path(crawler),
                       :method => :delete,
                       :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Tem certeza?')) },
