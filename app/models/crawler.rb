@@ -156,6 +156,7 @@ class Crawler < ActiveRecord::Base
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
     captcha = browser.div(class: "captcha-box")
+    binding.pry
     @log.add_message("Encontrei captcha ao finalizar o pedido!") if captcha.present?
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     p 'Finalizando Pedido'
