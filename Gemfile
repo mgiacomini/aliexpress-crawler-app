@@ -16,6 +16,7 @@ gem 'coffee-rails', '~> 4.1.0'
 gem 'uglifier', '>= 1.3.0'
 gem 'twitter-bootstrap-rails', '3.2.0'
 gem 'rails_12factor'
+gem 'mechanize'
 
 group :development, :test do
   gem 'byebug'
