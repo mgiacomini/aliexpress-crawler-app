@@ -2,8 +2,7 @@ namespace :crawler do
   desc "Runs Crawler.rb"
   task run: :environment do
     orders = @crawler.wordpress.get_orders
-    binding.pry
-    @crawler.run orders.first(3)
+    @crawler.run orders.first(5)
   end
 
   desc "Runs every 10 minutes"
