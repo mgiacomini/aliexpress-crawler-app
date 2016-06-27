@@ -161,6 +161,9 @@ pt-BR:
         name: 'Nome'
         consumer_key: 'Consumer key'
         consumer_secret: 'Consumer secret'
+      crawler_log:
+        summary: 'Resumo'
+        created_at: 'Executado em'
     errors:
       template:
         header:

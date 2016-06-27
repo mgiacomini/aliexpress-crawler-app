@@ -3,6 +3,7 @@ class Crawler < ActiveRecord::Base
   belongs_to :aliexpress
   belongs_to :wordpress
   validates :aliexpress_id, :wordpress_id, presence: true
+  has_many :crawler_logs
 
   @error = nil
 

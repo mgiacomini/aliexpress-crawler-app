@@ -1,11 +1,9 @@
 <%- model_class = Crawler -%>
 <div class="page-header">
-  <h1><%=t '.title', :default => model_class.model_name.human.titleize %></h1>
+  <h1><%= @crawler.wordpress.name %></h1>
 </div>
 
 <dl class="dl-horizontal">
-  <dt><strong><%= model_class.human_attribute_name(:wordpress) %>:</strong></dt>
-  <dd><%= @crawler.wordpress.name %></dd>
   <dt><strong><%= model_class.human_attribute_name(:aliexpress) %>:</strong></dt>
   <dd><%= @crawler.aliexpress.name %></dd>
   <dt><strong><%= model_class.human_attribute_name(:enabled) %>:</strong></dt>
@@ -29,3 +27,35 @@
               :method => 'delete',
               :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Tem certeza?')) },
               :class => 'btn btn-danger' %>
+
+
+<%- model_class = CrawlerLog -%>
+<div class="page-header">
+  <h1><%=t '.title', :default => 'Logs' %></h1>
+</div>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th><%= model_class.human_attribute_name(:crawler) %></th>
+      <th><%= model_class.human_attribute_name(:summary) %></th>
+      <th><%= model_class.human_attribute_name(:created_at) %></th>
+      <th><%=t '.actions', :default => t("helpers.actions") %></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @crawler.crawler_logs.each do |crawler_log| %>
+      <tr>
+        <td><%= @crawler.wordpress.name %></td>
+        <td><%= "Processados: #{crawler_log.order_count} Sucessos: #{crawler_log.processed}"%></td>
+        <td><%=l crawler_log.created_at %></td>
+        <td>
+          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
+                      crawler_log_path(crawler_log),
+                      :method => :delete,
+                      :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
+                      :class => 'btn btn-xs btn-danger' %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

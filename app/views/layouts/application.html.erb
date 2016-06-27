@@ -49,6 +49,7 @@
         <div class="navbar-collapse collapse navbar-responsive-collapse">
           <ul class="nav navbar-nav">
             <li><%=link_to "Crawler", crawlers_path%></a></li>
+            <li><%=link_to "Logs", crawler_logs_path%></a></li>
             <%= drop_down "Produtos" do %>
               <%= menu_item "Todos os produtos", product_types_path %>
               <% Wordpress.all.each do |wordpress| %>

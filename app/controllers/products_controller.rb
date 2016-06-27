@@ -1,5 +1,6 @@
 class ProductsController < ApplicationController
   def import_all
+    raise if Wordpress.all.empty?
     Wordpress.all.each do |wordpress|
       @products = wordpress.get_products
       Product.import(@products, wordpress)

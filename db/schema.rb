@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160626011804) do
+ActiveRecord::Schema.define(version: 20160627025217) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -23,6 +23,17 @@ ActiveRecord::Schema.define(version: 20160626011804) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  create_table "crawler_logs", force: :cascade do |t|
+    t.integer  "crawler_id"
+    t.string   "message",      default: ""
+    t.integer  "processed",    default: 0
+    t.integer  "orders_count", default: 0
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+  end
+
+  add_index "crawler_logs", ["crawler_id"], name: "index_crawler_logs_on_crawler_id", using: :btree
 
   create_table "crawlers", force: :cascade do |t|
     t.integer  "aliexpress_id"
@@ -54,8 +65,9 @@ ActiveRecord::Schema.define(version: 20160626011804) do
     t.string   "name"
     t.string   "link"
     t.integer  "wordpress_id"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.string   "aliexpress_link"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
     t.string   "store"
   end
 
@@ -86,6 +98,7 @@ ActiveRecord::Schema.define(version: 20160626011804) do
     t.datetime "updated_at",      null: false
   end
 
+  add_foreign_key "crawler_logs", "crawlers"
   add_foreign_key "crawlers", "aliexpresses"
   add_foreign_key "crawlers", "wordpresses"
   add_foreign_key "product_types", "products"

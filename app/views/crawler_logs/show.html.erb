@@ -1,0 +1,20 @@
+<%- model_class = CrawlerLog -%>
+<div class="page-header">
+  <h1><%=t '.title', :default => model_class.model_name.human.titleize %></h1>
+</div>
+
+<dl class="dl-horizontal">
+  <dt><strong><%= model_class.human_attribute_name(:crawler) %>:</strong></dt>
+  <dd><%= link_to @crawler_log.crawler.wordpress.name, crawler_path(@crawler_log.crawler) %></dd>
+  <% @crawler_log.get_message.each do |message| %>
+    <dd><%= message %></dd>
+  <% end %>
+</dl>
+
+<%= link_to t('.back', :default => t("helpers.links.back")),
+              crawler_logs_path, :class => 'btn btn-default'  %>
+<%= link_to t('.destroy', :default => t("helpers.links.destroy")),
+              crawler_log_path(@crawler_log),
+              :method => 'delete',
+              :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
+              :class => 'btn btn-danger' %>
