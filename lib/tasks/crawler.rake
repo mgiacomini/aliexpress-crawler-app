@@ -1,10 +1,9 @@
 namespace :crawler do
   desc "Runs Crawler.rb"
   task run: :environment do
-    # crawler = Crawler.where(enabled: true).last
     # orders = @crawler.wordpress.get_orders
     orders = @crawler.wordpress.get_orders
-    @crawler.run [orders[4]]
+    @crawler.run [orders[3]]
 
   end
 

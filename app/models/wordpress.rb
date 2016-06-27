@@ -61,6 +61,7 @@ class Wordpress < ActiveRecord::Base
     all_orders["orders"]
   rescue
     @error =  "Erro ao importar pedidos do Wordpress, favor verificar configurações."
+    p @error
     exit
   end
 end
