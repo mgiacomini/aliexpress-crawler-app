@@ -58,7 +58,6 @@ class Crawler < ActiveRecord::Base
         end
         #Finaliza pedido
         if @error.nil?
-          binding.pry
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
           raise order_error if order_nos.count == 0
@@ -141,6 +140,7 @@ class Crawler < ActiveRecord::Base
     browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
     sleep 5
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
+    sleep 5
     #Preenche campos de endereço
     @log.add_message('Adicionando informações do cliente')
     p 'Adicionando informações do cliente'
@@ -161,10 +161,9 @@ class Crawler < ActiveRecord::Base
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
     captcha = browser.div(class: "captcha-box")
-    binding.pry
     @error = '"Encontrei captcha ao finalizar o pedido!"'
     @log.add_message(@error) if captcha.present?
-    p "Encontrei captcha ao finalizar o pedido!"
+    p @error
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     p 'Finalizando Pedido'
     sleep 5
