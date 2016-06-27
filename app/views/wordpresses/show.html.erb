@@ -1,10 +1,6 @@
 <%- model_class = Wordpress -%>
 <div class="page-header">
   <h1><%= @wordpress.name %></h1>
-  <h4>
-    <p>Instruções:</p>
-    <p>Para importar somente os produtos da loja acima, utilizar o botão 'Importar Produtos' para preencher a lista</p>
-  </h4>
 </div>
 
 <dl class="dl-horizontal">
@@ -26,6 +22,10 @@
               :default => 'Are you sure?')) },
               :class => 'btn btn-danger' %>
 <h1><%=t 'helpers.titles.product' %></h1>
+<h4>
+  <p>Instruções:</p>
+  <p>Para importar somente os produtos da loja acima, utilizar o botão 'Importar Produtos' para preencher a lista</p>
+</h4>
 <%= link_to t('.import_products', :default => t("helpers.links.import_products")),
               import_products_wordpress_path(@wordpress),
               method: :post,
