@@ -58,6 +58,7 @@ class Crawler < ActiveRecord::Base
         end
         #Finaliza pedido
         if @error.nil?
+          binding.pry
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
           raise order_error if order_nos.count == 0
