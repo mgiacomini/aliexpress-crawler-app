@@ -164,6 +164,7 @@ pt-BR:
       crawler_log:
         summary: 'Resumo'
         created_at: 'Executado em'
+        history: 'Histórico'
     errors:
       template:
         header:

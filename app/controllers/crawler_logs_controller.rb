@@ -10,12 +10,12 @@ class CrawlerLogsController < ApplicationController
 
   def destroy
     @crawler_log.destroy
-    redirect_to crawler_loges_path, alert: "Log deletado"
+    redirect_to crawler_logs_path, alert: "Log deletado"
   end
 
   private
 
   def set_crawler_log
-    @crawler_log = Crawler_log.find(params[:id])
+    @crawler_log = CrawlerLog.find(params[:id])
   end
 end

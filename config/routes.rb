@@ -13,5 +13,5 @@ Rails.application.routes.draw do
   resources :crawlers do
     put :enabled_status, on: :member
   end
-  resources :crawler_logs, only: [:show, :index]
+  resources :crawler_logs, only: [:show, :index, :destroy]
 end

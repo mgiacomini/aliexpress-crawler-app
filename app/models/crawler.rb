@@ -4,10 +4,12 @@ class Crawler < ActiveRecord::Base
   belongs_to :wordpress
   validates :aliexpress_id, :wordpress_id, presence: true
   has_many :crawler_logs
-
+  @log = nil
   @error = nil
 
   def run(orders)
+    @log = CrawlerLog.create!(crawler: self)
+    @log.update(orders_count: orders.count)
     raise if orders.count == 0
     @b = self.login
     raise login_error if @b.nil?
@@ -15,7 +17,9 @@ class Crawler < ActiveRecord::Base
       @error = nil
       begin
         self.empty_cart @b #Esvazia Carrinho
-        p "Processando pedido ##{order['id']}"
+        @log.add_message("-------------------")
+        @log.add_message("Processando pedido ##{order['id']}")
+        p @log.message
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
           begin
@@ -26,12 +30,13 @@ class Crawler < ActiveRecord::Base
             else
               product_type = ProductType.find_by(product: product, name: meta[0]['value'])
             end
-            p "Procurando #{product['name']}"
             @b.goto product_type.aliexpress_link #Abre link do produto
             raise if product_type.aliexpress_link.nil?
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
-              @error =  'Erro de estoque, produto não disponível!'
+              @error =  "Erro de estoque, produto #{product['name']} não disponível!"
+              @log.add_message(@error)
+              p @log
               break
             else
               #Ações dos produtos
@@ -46,7 +51,8 @@ class Crawler < ActiveRecord::Base
             end
           rescue
             @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-            p @error
+            @log.add_message(@error)
+            p @log
             break
           end
         end
@@ -57,29 +63,36 @@ class Crawler < ActiveRecord::Base
           raise order_error if order_nos.count == 0
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
-          p "Pedido #{order["id"]} processado com sucesso!"
+          @log.add_message(@error)
+          p @log
+          @log.add_processed("Pedido #{order["id"]} processado com sucesso!")
+          p @log
         else
           raise order_error
         end
       rescue => order_error
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        p @error
+        @log.add_message(@error)
+        p @log
         next
       end
     end
   @b.close
-  rescue => login_error
-    @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
-    p @error
   rescue
     @error = "Não há pedidos a serem executados"
-    p @error
+    @log.add_message(@error)
+    p @log
+  rescue => login_error
+    @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
+    @log.add_message(@error)
+    p @log
   end
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
-    p 'Efetuando login'
-    @b = Watir::Browser.new :phantomjs
+    @log.add_message("Efetuando login com #{self.aliexpress.email}")
+    p @log
+    @b = Watir::Browser.new :firefox
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
@@ -87,9 +100,6 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'password').set user.password
     frame.button(name: 'submit-btn').click
     sleep 5
-    #Levanta erro caso o login falhe (caso de captchas)
-    # raise unless @b.span(class: "account-name").present? || @b.div(id: "account-name").present?
-    @error = "Executado com sucesso"
     @b
   rescue
   end
@@ -127,7 +137,8 @@ class Crawler < ActiveRecord::Base
     browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
-    p 'Preenchendo informações'
+    @log.add_message('Adicionando informações do cliente')
+    p @log
     browser.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
     browser.select_list(name: "country").select 'Brazil'
     browser.text_field(name: "address").set to_english(customer["address_1"])
@@ -144,6 +155,8 @@ class Crawler < ActiveRecord::Base
     p 'Selecionando Pagamento'
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
+    captcha = browser.div(class: "captcha-box")
+    @log.add_message("Encontrei captcha ao finalizar o pedido!") if captcha.preset?
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     p 'Finalizando Pedido'
     sleep 5
@@ -200,6 +213,8 @@ class Crawler < ActiveRecord::Base
     sleep 5
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
+    @log.add_message(@error)
+    p @log
     # exit
   end
 end

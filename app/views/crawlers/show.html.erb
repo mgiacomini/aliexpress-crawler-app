@@ -45,8 +45,8 @@
   <tbody>
     <% @crawler.crawler_logs.each do |crawler_log| %>
       <tr>
-        <td><%= @crawler.wordpress.name %></td>
-        <td><%= "Processados: #{crawler_log.order_count} Sucessos: #{crawler_log.processed}"%></td>
+        <td><%= link_to @crawler.wordpress.name, crawler_log_path(crawler_log) %></td>
+        <td><%= "Processados: #{crawler_log.orders_count} Sucessos: #{crawler_log.processed}"%></td>
         <td><%=l crawler_log.created_at %></td>
         <td>
           <%= link_to t('.destroy', :default => t("helpers.links.destroy")),

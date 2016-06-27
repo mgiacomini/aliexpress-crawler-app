@@ -17,6 +17,7 @@ pt-BR:
       new: "Novo"
       edit: "Editar"
       import_products: "Importar Produtos"
+      show: "Ver Mais"
     titles:
       product: "Produtos"
       edit: "Editar %{model}"

@@ -3,15 +3,12 @@ class CrawlerLog < ActiveRecord::Base
 
   def add_processed(message)
     self.add_message(message)
-    self.processed+=1
+    self.update(processed: self.processed+=1)
   end
 
   def add_message(message)
-    if self.message.nil?
-      self.update(message: "#{message}|")
-    else
-      self.message.concat("#{message}|")
-    end
+    self.message.concat("#{message}|")
+    self.save!
   end
 
   def get_message
