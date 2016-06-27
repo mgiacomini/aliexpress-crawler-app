@@ -3,7 +3,7 @@ namespace :crawler do
   task run: :environment do
     # orders = @crawler.wordpress.get_orders
     orders = @crawler.wordpress.get_orders
-    @crawler.run [orders[3]]
+    @crawler.run orders
 
   end
 
