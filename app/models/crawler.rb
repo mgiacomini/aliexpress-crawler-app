@@ -19,7 +19,7 @@ class Crawler < ActiveRecord::Base
         self.empty_cart @b #Esvazia Carrinho
         @log.add_message("-------------------")
         @log.add_message("Processando pedido ##{order['id']}")
-        p @log.message
+        p "Processando pedido ##{order['id']}"
         customer = order["shipping_address"] #Loop para todos os produtos
         order["line_items"].each do |item|
           begin
@@ -36,7 +36,7 @@ class Crawler < ActiveRecord::Base
             if quantity > stock #Verifica estoque
               @error =  "Erro de estoque, produto #{product['name']} não disponível!"
               @log.add_message(@error)
-              p @log
+              p @error
               break
             else
               #Ações dos produtos
@@ -52,7 +52,7 @@ class Crawler < ActiveRecord::Base
           rescue
             @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
             @log.add_message(@error)
-            p @log
+            p @error
             break
           end
         end
@@ -65,16 +65,16 @@ class Crawler < ActiveRecord::Base
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
-          p @log
+          p @error
           @log.add_processed("Pedido #{order["id"]} processado com sucesso!")
-          p @log
+          p "Pedido #{order["id"]} processado com sucesso!"
         else
           raise order_error
         end
       rescue => order_error
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(@error)
-        p @log
+        p @error
         next
       end
     end
@@ -82,17 +82,17 @@ class Crawler < ActiveRecord::Base
   rescue
     @error = "Não há pedidos a serem executados"
     @log.add_message(@error)
-    p @log
+    p @error
   rescue => login_error
     @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
     @log.add_message(@error)
-    p @log
+    p @error
   end
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
-    p @log
+    p "Efetuando login com #{self.aliexpress.email}"
     @b = Watir::Browser.new :phantomjs
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
@@ -136,10 +136,11 @@ class Crawler < ActiveRecord::Base
   def complete_order browser, customer
     browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
+    sleep 2
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
     @log.add_message('Adicionando informações do cliente')
-    p @log
+    p 'Adicionando informações do cliente'
     browser.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
     browser.select_list(name: "country").select 'Brazil'
     browser.text_field(name: "address").set to_english(customer["address_1"])
@@ -159,6 +160,7 @@ class Crawler < ActiveRecord::Base
     captcha = browser.div(class: "captcha-box")
     binding.pry
     @log.add_message("Encontrei captcha ao finalizar o pedido!") if captcha.present?
+    p "Encontrei captcha ao finalizar o pedido!"
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     p 'Finalizando Pedido'
     sleep 5
@@ -216,7 +218,7 @@ class Crawler < ActiveRecord::Base
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
     @log.add_message(@error)
-    p @log
+    p @error
     # exit
   end
 end
