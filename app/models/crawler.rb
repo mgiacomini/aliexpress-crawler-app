@@ -62,6 +62,7 @@ class Crawler < ActiveRecord::Base
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
           raise order_error if order_nos.count == 0
+          raise captcha unless @error.nil?
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
@@ -76,6 +77,8 @@ class Crawler < ActiveRecord::Base
         @log.add_message(@error)
         p @error
         next
+      rescue => captcha
+        break
       end
     end
   @b.close
@@ -136,7 +139,7 @@ class Crawler < ActiveRecord::Base
   def complete_order browser, customer
     browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
-    sleep 2
+    sleep 5
     browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
     #Preenche campos de endereço
     @log.add_message('Adicionando informações do cliente')
@@ -153,13 +156,14 @@ class Crawler < ActiveRecord::Base
     browser.text_field(name: "mobileNo").set '5511959642036'
     browser.div(class: "sa-form").links[1].click #Botão Salvar
     p 'Salvando'
-    sleep 2
+    sleep 5
     p 'Selecionando Pagamento'
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
     captcha = browser.div(class: "captcha-box")
     binding.pry
-    @log.add_message("Encontrei captcha ao finalizar o pedido!") if captcha.present?
+    @error = '"Encontrei captcha ao finalizar o pedido!"'
+    @log.add_message(@error) if captcha.present?
     p "Encontrei captcha ao finalizar o pedido!"
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
     p 'Finalizando Pedido'
