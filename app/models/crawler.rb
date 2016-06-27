@@ -141,7 +141,6 @@ class Crawler < ActiveRecord::Base
     p 'Salvando'
     sleep 2
     p 'Selecionando Pagamento'
-    binding.pry
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
     browser.button(id:"place-order-btn").click #Botão Finalizar pedido
