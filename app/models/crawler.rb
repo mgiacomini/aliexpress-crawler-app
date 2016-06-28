@@ -10,9 +10,9 @@ class Crawler < ActiveRecord::Base
   def run(orders)
     @log = CrawlerLog.create!(crawler: self)
     @log.update(orders_count: orders.count)
-    raise if orders.count == 0
+    raise "Não há pedidos a serem executados" if orders.count == 0
     @b = self.login
-    raise login_error if @b.nil?
+    raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" if @b.nil?
     orders.each do |order|
       @error = nil
       begin
@@ -34,7 +34,7 @@ class Crawler < ActiveRecord::Base
             raise if product_type.aliexpress_link.nil?
             stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
-              @error =  "Erro de estoque, produto #{product['name']} não disponível!"
+              @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
               @log.add_message(@error)
               p @error
               break
@@ -50,7 +50,7 @@ class Crawler < ActiveRecord::Base
               self.add_to_cart @b
             end
           rescue
-            @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+            @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
             @log.add_message(@error)
             p @error
             break
@@ -60,8 +60,8 @@ class Crawler < ActiveRecord::Base
         if @error.nil?
           order_nos = self.complete_order(@b,customer)
           p "Pedido completado"
-          raise captcha unless @error.nil?
-          raise order_error if order_nos.count == 0
+          break unless @error.nil?
+          raise if order_nos.count == 0
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
@@ -69,24 +69,22 @@ class Crawler < ActiveRecord::Base
           @log.add_processed("Pedido #{order["id"]} processado com sucesso!")
           p "Pedido #{order["id"]} processado com sucesso!"
         else
-          raise order_error
+          raise
         end
-      rescue => order_error
+      rescue
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(@error)
         p @error
         next
-      rescue => captcha
-        break
       end
     end
   @b.close
   rescue
-    @error = "Não há pedidos a serem executados"
+    @error = "Erro desconhecido, procurar administrador."
     @log.add_message(@error)
     p @error
-  rescue => login_error
-    @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
+  rescue => e
+    @error = e.message
     @log.add_message(@error)
     p @error
   end
