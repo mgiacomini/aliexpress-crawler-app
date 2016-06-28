@@ -161,7 +161,7 @@ class Crawler < ActiveRecord::Base
     payment = browser.div(class: "other-payment-item")
     payment.radio.set if payment.present?
     captcha = browser.div(class: "captcha-box")
-    if captcha.present
+    if captcha.present?
       @error = 'Encontrei captcha ao finalizar o pedido!'
       @log.add_message(@error)
       p @error
