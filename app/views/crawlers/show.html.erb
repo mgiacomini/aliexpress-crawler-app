@@ -42,6 +42,7 @@
     <tr>
       <th><%= model_class.human_attribute_name(:summary) %></th>
       <th><%= model_class.human_attribute_name(:created_at) %></th>
+      <th><%= model_class.human_attribute_name(:updated_at) %></th>
       <th><%=t '.actions', :default => t("helpers.actions") %></th>
     </tr>
   </thead>
@@ -50,6 +51,7 @@
       <tr>
         <td><%= "Processados: #{crawler_log.orders_count} Sucessos: #{crawler_log.processed}"%></td>
         <td><%=l crawler_log.created_at %></td>
+        <td><%=l crawler_log.updated_at %></td>
         <td>
           <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
                       crawler_log_path(crawler_log),

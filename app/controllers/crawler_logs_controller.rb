@@ -1,7 +1,7 @@
 class CrawlerLogsController < ApplicationController
   before_action :set_crawler_log, only: [:show, :destroy]
   def index
-    @crawler_logs = CrawlerLog.all.order(:created_at)
+    @crawler_logs = CrawlerLog.all
   end
 
   def show
