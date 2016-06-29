@@ -97,7 +97,7 @@ class Crawler < ActiveRecord::Base
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
     p "Efetuando login com #{self.aliexpress.email}"
-    @b = Watir::Browser.new :phantomjs
+    @b = Watir::Browser.new :chrome
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
@@ -213,7 +213,7 @@ class Crawler < ActiveRecord::Base
     if empty.present?
       empty.when_present.click
       @b.div(class: "ui-window-btn").when_present.click
-      @b.div(class: "ui-window-btn").wait_while_present
+      sleep 2
     end
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
