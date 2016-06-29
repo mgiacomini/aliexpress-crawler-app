@@ -146,12 +146,13 @@ class Crawler < ActiveRecord::Base
     @log.add_message('Adicionando informações do cliente')
     @b.text_field(name: "_fmh.m._0.c").when_present.set to_english(customer["first_name"]+" "+customer["last_name"])
     @b.divs(class: "panel-select")[0].click
+    sleep 5
     @b.li(text: "Brazil").when_present.click
     @b.text_field(name: "_fmh.m._0.a").set to_english(customer["address_1"])
     @b.text_field(name: "_fmh.m._0.ad").set to_english(customer["address_2"])
     @b.divs(class: "panel-select")[2].click
     arr = self.state.assoc(customer["state"])
-    sleep 2
+    sleep 5
     @b.li(text: arr[1]).when_present.click
     @b.text_field(name: "_fmh.m._0.ci").set to_english(customer["city"])
     @b.text_field(name: "_fmh.m._0.z").set customer["postcode"]
