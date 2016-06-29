@@ -32,7 +32,7 @@ class Crawler < ActiveRecord::Base
             else
               product_type = ProductType.find_by(product: product, name: meta[0]['value'])
             end
-            raise if product_type.aliexpress_link.nil?
+            raise item["name"] if product_type.aliexpress_link.nil?
             @b.goto product_type.aliexpress_link #Abre link do produto
             stock = @b.dl(id: "j-product-quantity-info").when_present.text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
@@ -52,13 +52,14 @@ class Crawler < ActiveRecord::Base
               self.add_to_cart
             end
           end
-        rescue
-          @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
+        rescue => product
+          @error = "Erro no produto #{product}, verificar se o link da aliexpress está correto, este pedido será pulado."
           @log.add_message(@error)
           p @error
         end
         #Finaliza pedido
         if @error.nil?
+          binding.pry
           order_nos = self.complete_order(customer)
           p "Pedido completado"
           p order_nos.text
@@ -142,6 +143,7 @@ class Crawler < ActiveRecord::Base
     @b.a(id: "manageAddressHref").when_present.click
     #Preenche campos de endereço
     @log.add_message('Adicionando informações do cliente')
+    binding.pry
     @b.text_field(name: "_fmh.m._0.c").when_present.set to_english(customer["first_name"]+" "+customer["last_name"])
     @b.divs(class: "panel-select")[0].click
     sleep 5
