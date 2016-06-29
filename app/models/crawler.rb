@@ -35,6 +35,7 @@ class Crawler < ActiveRecord::Base
             raise if product_type.mobile_link.nil?
             p product_type.mobile_link
             @b.goto product_type.mobile_link #Abre link do produto
+            binding.pry
             @b.section(class: "ms-detail-sku").click
             sleep 2
             stock = @b.section(class: "ms-quantity").text.split[1].to_i
