@@ -7,215 +7,226 @@ class Crawler < ActiveRecord::Base
   @log = nil
   @error = nil
 
-  def run(orders)
-    # @log = CrawlerLog.create!(crawler: self)
-    # @log.update(orders_count: orders.count)
-    # raise if orders.count == 0
-    @b = self.login
-    raise login_error if @b.nil?
-    orders.each do |order|
+  # def run(orders)
+  def run
+    order = self.wordpress.woocommerce.get("orders/88752").parsed_response
+    order = order['order']
+    @log = CrawlerLog.create!(crawler: self)
+    @log.update(orders_count: orders.count)
+    # raise "Não há pedidos a serem executados" if orders.count == 0
+    raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" if self.login
+    # orders.each do |order|
       @error = nil
       begin
         self.empty_cart @b #Esvazia Carrinho
-  #       @log.add_message("-------------------")
-  #       @log.add_message("Processando pedido ##{order['id']}")
-  #       p @log.message
-  #       customer = order["shipping_address"] #Loop para todos os produtos
-  #       order["line_items"].each do |item|
-  #         begin
-  #           quantity = item["quantity"]
-  #           product = Product.find_by_name(item["name"])
-  #           if (meta = item["meta"]).empty?
-  #             product_type = ProductType.find_by_product_id(product.id)
-  #           else
-  #             product_type = ProductType.find_by(product: product, name: meta[0]['value'])
-  #           end
-  #           @b.goto product_type.aliexpress_link #Abre link do produto
-  #           raise if product_type.aliexpress_link.nil?
-  #           stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
-  #           if quantity > stock #Verifica estoque
-  #             @error =  "Erro de estoque, produto #{product['name']} não disponível!"
-  #             @log.add_message(@error)
-  #             p @log
-  #             break
-  #           else
-  #             #Ações dos produtos
-  #             p "Adicionando #{quantity} ao carrinho"
-  #             self.add_quantity @b, quantity
-  #             p 'Selecionando opções'
-  #             user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-  #             self.set_options @b, user_options
-  #             # self.set_shipping @b, user_options
-  #             p 'Adicionando ao carrinho'
-  #             self.add_to_cart @b
-  #           end
-  #         rescue
-  #           @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
-  #           @log.add_message(@error)
-  #           p @log
-  #           break
-  #         end
-  #       end
-  #       #Finaliza pedido
-  #       if @error.nil?
-  #         order_nos = self.complete_order(@b,customer)
-  #         p "Pedido completado"
-  #         raise order_error if order_nos.count == 0
-  #         self.wordpress.update_order(order, order_nos)
-  #         @error = self.wordpress.error
-  #         @log.add_message(@error)
-  #         p @log
-  #         @log.add_processed("Pedido #{order["id"]} processado com sucesso!")
-  #         p @log
-  #       else
-  #         raise order_error
-  #       end
-  #
-      rescue => order_error
+        @log.add_message("-------------------")
+        @log.add_message("Processando pedido ##{order['id']}")
+        p "Processando pedido ##{order['id']}"
+        customer = order["shipping_address"] #Loop para todos os produtos
+        order["line_items"].each do |item|
+          begin
+            quantity = item["quantity"]
+            product = Product.find_by_name(item["name"])
+            if (meta = item["meta"]).empty?
+              product_type = ProductType.find_by_product_id(product.id)
+            else
+              product_type = ProductType.find_by(product: product, name: meta[0]['value'])
+            end
+            raise if product_type.mobile_link.nil?
+            @b.goto product_type.mobile_link #Abre link do produto
+            @b.section(class: "ms-detail-sku").when_present.click
+            stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
+            if quantity > stock #Verifica estoque
+              @error =  "Erro de estoque, produto #{product['name']} não disponível!"
+              @log.add_message(@error)
+              p @error
+              break
+            else
+              #Ações dos produtos
+              p "Adicionando #{quantity} ao carrinho"
+              self.add_quantity quantity
+              p 'Selecionando opções'
+              user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+              self.set_options user_options
+              # self.set_shipping  user_options
+              p 'Adicionando ao carrinho'
+              self.add_to_cart
+            end
+          rescue
+            @error = "Erro no produto #{item["name"]}, verificar link do produto na aliexpress, este pedido será pulado."
+            @log.add_message(@error)
+            p @error
+            break
+          end
+        end
+        #Finaliza pedido
+        if @error.nil?
+          order_nos = self.complete_order(customer)
+          p "Pedido completado"
+          raise if order_nos.count == 0
+          p order_nos
+          binding.pry
+          self.wordpress.update_order(order, order_nos)
+          @error = self.wordpress.error
+          @log.add_message(@error)
+          p @error
+          @log.add_processed("Pedido #{order["id"]} processado com sucesso!")
+          p "Pedido #{order["id"]} processado com sucesso!"
+        else
+          raise
+        end
+      rescue
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(@error)
-        p @log
-        next
+        p @error
+        # next
       end
-    end
+    # end
   @b.close
   rescue
-    @error = "Não há pedidos a serem executados"
+    @error = "Erro desconhecido, procurar administrador."
     @log.add_message(@error)
-    p @log
-  rescue => login_error
-    @error = "Falha no login, verifique as informações ou tente novamente mais tarde"
+    p @error
+  rescue => e
+    @error = e.message
     @log.add_message(@error)
-    p @log
+    p @error
   end
+
 
   #Efetua login no site da Aliexpresss usando user e password
-  def login
-    # @log.add_message("Efetuando login com #{self.aliexpress.email}")
-    # p @log
-    @b = Watir::Browser.new :firefox
+  def login?
+    @log.add_message("Efetuando login com #{self.aliexpress.email}")
+    @b = Watir::Browser.new :chrome
     user = self.aliexpress
     @b.goto "https://m.aliexpress.com/"
+    @b.div(class: "drawer").when_present.click
+    @b.div(class: "drawer-unlogin").a.when_present.click
     frame = @b.iframe(id: 'alibaba-login-box')
-    frame.text_field(name: 'loginId').set user.email
-    frame.text_field(name: 'password').set user.password
+    frame.text_field(name: 'loginId').when_present.set user.email
+    frame.text_field(name: 'password').when_present.set user.password
     frame.button(name: 'submit-btn').click
-    sleep 5
-    @b
+    frame.wait_while_present
+    true
   rescue
+    false
   end
 
-  # #Adiciona item ao carrinho
-  # def add_to_cart browser
-  #   browser.link(id: "j-add-cart-btn").click
-  #   sleep 10
-  # end
-  #
-  # #Adiciona quantidade certa do item
-  # def add_quantity browser, quantity
-  #   (quantity -1).times do
-  #     browser.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").click
-  #   end
-  # end
-  #
+  #Adiciona item ao carrinho
+  def add_to_cart
+    sleep 2
+    if @b.a(class: "back").present?
+      @b.a(class: "back").click
+      @b.button.when_present.click
+    else
+      @b.buttons[2].click
+    end
+    sleep 2
+  end
+
+  #Adiciona quantidade certa do item
+  def add_quantity quantity
+    (quantity -1).times do
+      @b.a(class:"ms-plus").when_present.click
+    end
+  end
+
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
-  def set_options browser, user_option
+  def set_options user_option
     count = 0
-    browser.div(class:"sku-body").ul.lis.each do |option|
+    @b.divs(class: "ms-sku-props").each do |option|
       selected = user_option[count]
       if selected.nil?
-        option.a.click
+        option.img.click
       else
-        option.as[selected].click
+        option.imgs[selected-1].click
       end
       count +=1
     end
   end
-  #
-  # #finaliza pedido com informações do cliente
-  # def complete_order browser, customer
-  #   browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
-  #   browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
-  #   browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
-  #   #Preenche campos de endereço
-  #   @log.add_message('Adicionando informações do cliente')
-  #   p @log
-  #   browser.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
-  #   browser.select_list(name: "country").select 'Brazil'
-  #   browser.text_field(name: "address").set to_english(customer["address_1"])
-  #   browser.text_field(name: "address2").set to_english(customer["address_2"])
-  #   browser.text_field(name: "city").set to_english(customer["city"])
-  #   arr = self.state.assoc(customer["state"])
-  #   browser.div(class: "sa-province-group").select_list.select arr[1]
-  #   browser.checkbox.clear
-  #   browser.text_field(name: "zip").set customer["postcode"]
-  #   browser.text_field(name: "mobileNo").set '5511959642036'
-  #   browser.div(class: "sa-form").links[1].click #Botão Salvar
-  #   p 'Salvando'
-  #   sleep 2
-  #   p 'Selecionando Pagamento'
-  #   payment = browser.div(class: "other-payment-item")
-  #   payment.radio.set if payment.present?
-  #   captcha = browser.div(class: "captcha-box")
+
+  #finaliza pedido com informações do cliente
+  def complete_order customer
+    @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
+    @b.div(class: "buyall").when_present.click
+    @b.a(id: "change-address").when_present.click
+    @b.a(id: "manageAddressHref").when_present.click
+    #Preenche campos de endereço
+    @log.add_message('Adicionando informações do cliente')
+    @b.text_field(name: "_fmh.m._0.c").when_present.set to_english(customer["first_name"]+" "+customer["last_name"])
+    @b.divs(class: "panel-select")[0].click
+    @b.li(text: "Brazil").when_present.click
+    @b.text_field(name: "_fmh.m._0.a").set to_english(customer["address_1"])
+    @b.text_field(name: "_fmh.m._0.ad").set to_english(customer["address_2"])
+    @b.divs(class: "panel-select")[2].click
+    arr = self.state.assoc(customer["state"])
+    sleep 2
+    @b.li(text: arr[1]).when_present.click
+    @b.text_field(name: "_fmh.m._0.ci").set to_english(customer["city"])
+    @b.text_field(name: "_fmh.m._0.z").set customer["postcode"]
+    @b.text_field(name: "_fmh.m._0.m").set '11959642036'
+    @b.button.click
+    p 'Salvando'
+  #   captcha = @b.div(class: "captcha-box")
   #   @log.add_message("Encontrei captcha ao finalizar o pedido!") if captcha.present?
-  #   browser.button(id:"place-order-btn").click #Botão Finalizar pedido
-  #   p 'Finalizando Pedido'
-  #   sleep 5
-  #   browser.spans(class:"order-no") #Retorna os números dos pedidos
-  # end
-  #
-  # #Tabela de conversão de Estados
-  # def state
-  #   [
-  #     ["AC","Acre"],
-  #     ["AL","Alagoas"],
-  #     ["AP","Amapa"],
-  #     ["AM","Amazonas"],
-  #     ["BA","Bahia"],
-  #     ["CE","Ceara"],
-  #     ["DF","Distrito Federal"],
-  #     ["ES","Espirito Santo"],
-  #     ["GO","Goias"],
-  #     ["MA","Maranhao"],
-  #     ["MT","Mato Grosso"],
-  #     ["MS","Mato Grosso do Sul"],
-  #     ["MG","Minas Gerais"],
-  #     ["PA","Para"],
-  #     ["PB","Paraiba"],
-  #     ["PR","Parana"],
-  #     ["PE","Pernambuco"],
-  #     ["PI","Piaui"],
-  #     ["RJ","Rio de Janeiro"],
-  #     ["RN","Rio Grande do Norte"],
-  #     ["RS","Rio Grande do Sul"],
-  #     ["RO","Rondonia"],
-  #     ["RR","Roraima"],
-  #     ["SC","Santa Catarina"],
-  #     ["SP","Sao Paulo"],
-  #     ["SE","Sergipe"],
-  #     ["TO","Tocantins"],
-  #   ]
-  # end
-  #
-  # #Retira acentos e caracteres especiais
-  # def to_english string
-  #   string.tr("ÀÁÂÃÄÅàáâãäåĀāĂăĄąÇçĆćĈĉĊċČčÐðĎďĐđÈÉÊËèéêëĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħÌÍÎÏìíîïĨĩĪīĬĭĮįİıĴĵĶķĸĹĺĻļĽľĿŀŁłÑñŃńŅņŇňŉŊŋÒÓÔÕÖØòóôõöøŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšſŢţŤťŦŧÙÚÛÜùúûüŨũŪūŬŭŮůŰűŲųŴŵÝýÿŶŷŸŹźŻżŽž", "AAAAAAaaaaaaAaAaAaCcCcCcCcCcDdDdDdEEEEeeeeEeEeEeEeEeGgGgGgGgHhHhIIIIiiiiIiIiIiIiIiJjKkkLlLlLlLlLlNnNnNnNnnNnOOOOOOooooooOoOoOoRrRrRrSsSsSsSssTtTtTtUUUUuuuuUuUuUuUuUuUuWwYyyYyYZzZzZz")
-  #         .tr("^A-Za-z0-9 ", '')
-  # end
-  #
+    @b.button(id: "create-order").when_present.click #Botão Finalizar pedido
+    p 'Finalizando Pedido'
+    @b.div(class:"desc_txt").wait_until_present
+    @b.divs(class:"desc_txt")
+  end
+
+  #Tabela de conversão de Estados
+  def state
+    [
+      ["AC","Acre"],
+      ["AL","Alagoas"],
+      ["AP","Amapa"],
+      ["AM","Amazonas"],
+      ["BA","Bahia"],
+      ["CE","Ceara"],
+      ["DF","Distrito Federal"],
+      ["ES","Espirito Santo"],
+      ["GO","Goias"],
+      ["MA","Maranhao"],
+      ["MT","Mato Grosso"],
+      ["MS","Mato Grosso do Sul"],
+      ["MG","Minas Gerais"],
+      ["PA","Para"],
+      ["PB","Paraiba"],
+      ["PR","Parana"],
+      ["PE","Pernambuco"],
+      ["PI","Piaui"],
+      ["RJ","Rio de Janeiro"],
+      ["RN","Rio Grande do Norte"],
+      ["RS","Rio Grande do Sul"],
+      ["RO","Rondonia"],
+      ["RR","Roraima"],
+      ["SC","Santa Catarina"],
+      ["SP","Sao Paulo"],
+      ["SE","Sergipe"],
+      ["TO","Tocantins"],
+    ]
+  end
+
+  #Retira acentos e caracteres especiais
+  def to_english string
+    string.tr("ÀÁÂÃÄÅàáâãäåĀāĂăĄąÇçĆćĈĉĊċČčÐðĎďĐđÈÉÊËèéêëĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħÌÍÎÏìíîïĨĩĪīĬĭĮįİıĴĵĶķĸĹĺĻļĽľĿŀŁłÑñŃńŅņŇňŉŊŋÒÓÔÕÖØòóôõöøŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšſŢţŤťŦŧÙÚÛÜùúûüŨũŪūŬŭŮůŰűŲųŴŵÝýÿŶŷŸŹźŻżŽž", "AAAAAAaaaaaaAaAaAaCcCcCcCcCcDdDdDdEEEEeeeeEeEeEeEeEeGgGgGgGgHhHhIIIIiiiiIiIiIiIiIiJjKkkLlLlLlLlLlNnNnNnNnnNnOOOOOOooooooOoOoOoRrRrRrSsSsSsSssTtTtTtUUUUuuuuUuUuUuUuUuUuWwYyyYyYZzZzZz")
+          .tr("^A-Za-z0-9 ", '')
+  end
+
   #Esvazia carrinho
-  def empty_cart browser
+  def empty_cart
     p 'Esvaziando carrinho'
-    browser.goto 'https://m.aliexpress.com/shopcart/detail.htm'
-    empty = browser.link(class: "remove-all-product")
-    empty.click if empty.present?
-    ok = browser.div(class: "ui-window-btn").input
-    ok.click if ok.present?
-    sleep 5
+    @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
+    if @b.li(id: "shopcart-").present?
+      @b.lis(id: "shopcart-").each do |item|
+        item.i(class: "ic-delete-md").when_present.click
+        @b.div(class: "ok").when_present.click
+      end
+    end
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
     @log.add_message(@error)
-    p @log
-    # exit
+    exit
   end
 end
