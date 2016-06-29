@@ -106,9 +106,9 @@ class Crawler < ActiveRecord::Base
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').when_present.set user.email
     frame.text_field(name: 'password').when_present.set user.password
-    binding.pry
     frame.button(name: 'submit-btn').click
-    frame.wait_while_present
+    # frame.wait_while_present
+    sleep 2
     true
   rescue
     false
