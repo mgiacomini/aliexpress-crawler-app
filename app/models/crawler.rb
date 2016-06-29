@@ -206,19 +206,19 @@ class Crawler < ActiveRecord::Base
   end
 
   #Esvazia carrinho
-  def empty_cart
+  def empty_cart browser
     p 'Esvaziando carrinho'
-    @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
-    if @b.li(id: "shopcart-").present?
-      @b.lis(id: "shopcart-").each do |item|
-        item.i(class: "ic-delete-md").when_present.click
-        @b.div(class: "ok").when_present.click
-      end
+    browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
+    empty = browser.link(class: "remove-all-product")
+    if empty.present?
+      empty.when_present.click
+      browser.div(class: "ui-window-btn").when_present.click
+      browser.div(class: "ui-window-btn").wait_while_present
     end
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
     @log.add_message(@error)
     p @error
-    # exit
+    exit
   end
 end
