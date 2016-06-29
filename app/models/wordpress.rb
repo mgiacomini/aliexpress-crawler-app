@@ -36,7 +36,7 @@ class Wordpress < ActiveRecord::Base
     end
     data = {
       order_note: {
-        note: string.strip
+        note: order_nos
       }
     }
     #POST em order notes

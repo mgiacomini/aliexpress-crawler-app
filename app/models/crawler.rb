@@ -65,8 +65,8 @@ class Crawler < ActiveRecord::Base
         if @error.nil?
           order_nos = self.complete_order(customer)
           p "Pedido completado"
-          raise if order_nos.count == 0
           p order_nos
+          raise if order_nos.nil?
           break unless @error.nil?
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
