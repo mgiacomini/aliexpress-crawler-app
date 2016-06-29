@@ -29,14 +29,9 @@ class Wordpress < ActiveRecord::Base
 
   def update_order order, order_nos
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
-    string = ""
-    order_nos.each do |order_no|
-      #Concatena os numeros de pedidos em uma mesma mensagem
-      string.concat "#{order_no.text} "
-    end
     data = {
       order_note: {
-        note: order_nos
+        note: order_nos.text
       }
     }
     #POST em order notes
@@ -50,7 +45,6 @@ class Wordpress < ActiveRecord::Base
     woocommerce.put("orders/#{order["id"]}", data).parsed_response
   rescue
     @error = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
-    exit
   end
 
   def get_orders
@@ -61,7 +55,5 @@ class Wordpress < ActiveRecord::Base
     all_orders["orders"]
   rescue
     @error =  "Erro ao importar pedidos do Wordpress, favor verificar configurações."
-    p @error
-    exit
   end
 end

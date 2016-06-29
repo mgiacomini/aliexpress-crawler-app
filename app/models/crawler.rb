@@ -32,12 +32,9 @@ class Crawler < ActiveRecord::Base
             else
               product_type = ProductType.find_by(product: product, name: meta[0]['value'])
             end
-            raise if product_type.mobile_link.nil?
-            p product_type.mobile_link
-            @b.goto product_type.mobile_link #Abre link do produto
-            @b.section(class: "ms-detail-sku").when_present.click
-            stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
-            p stock
+            raise if product_type.aliexpress_link.nil?
+            @b.goto product_type.aliexpress_link #Abre link do produto
+            stock = @b.dl(id: "j-product-quantity-info").when_present.text.split[2].gsub("(","").to_i
             if quantity > stock #Verifica estoque
               @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
               @log.add_message(@error)
@@ -50,7 +47,7 @@ class Crawler < ActiveRecord::Base
               p 'Selecionando opções'
               user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
               self.set_options user_options
-              # self.set_shipping  user_options
+              # self.set_shipping @b, user_options
               p 'Adicionando ao carrinho'
               self.add_to_cart
             end
@@ -65,9 +62,8 @@ class Crawler < ActiveRecord::Base
         if @error.nil?
           order_nos = self.complete_order(customer)
           p "Pedido completado"
-          p order_nos
-          raise if order_nos.nil?
-          break unless @error.nil?
+          p order_nos.text
+          raise if order_nos.nil? || !@erros.nil?
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
@@ -112,38 +108,28 @@ class Crawler < ActiveRecord::Base
   rescue
     false
   end
-
   #Adiciona item ao carrinho
   def add_to_cart
-    if @b.a(class: "back").present?
-      @b.a(class: "back").click
-      @b.button.when_present.click
-    else
-      @b.buttons[2].click
-    end
-    sleep 2
+    @b.link(id: "j-add-cart-btn").click
+    sleep 5
   end
 
   #Adiciona quantidade certa do item
   def add_quantity quantity
     (quantity -1).times do
-      @b.a(class:"ms-plus").when_present.click
+      @b.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").when_present.click
     end
   end
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
-  def set_options user_options
+  def set_options user_option
     count = 0
-    @b.divs(class: "ms-sku-props").each do |option|
-      selected = user_options[count]
-      if option.img.present? && selected.nil?
-        option.img.click
-      elsif option.img.present?
-        option.imgs[selected-1].click
-      elsif selected.nil?
-        option.span.click
+    @b.div(id: "j-product-info-sku").dls.each do |option|
+      selected = user_option[count]
+      if selected.nil?
+        option.a.when_present.click
       else
-        option.spans[selected-1].click
+        option.as[selected].when_present.click
       end
       count +=1
     end
