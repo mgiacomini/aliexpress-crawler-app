@@ -50,6 +50,7 @@ class Crawler < ActiveRecord::Base
               # self.set_shipping @b, user_options
               p 'Adicionando ao carrinho'
               self.add_to_cart
+              binding.pry
             end
           rescue
             @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
@@ -129,7 +130,7 @@ class Crawler < ActiveRecord::Base
       if selected.nil?
         option.a.when_present.click
       else
-        option.as[selected].when_present.click
+        option.as[selected-1].when_present.click
       end
       count +=1
     end
