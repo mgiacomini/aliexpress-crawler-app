@@ -35,10 +35,8 @@ class Crawler < ActiveRecord::Base
             raise if product_type.mobile_link.nil?
             p product_type.mobile_link
             @b.goto product_type.mobile_link #Abre link do produto
-            binding.pry
-            @b.section(class: "ms-detail-sku").click
-            sleep 2
-            stock = @b.section(class: "ms-quantity").text.split[1].to_i
+            @b.section(class: "ms-detail-sku").when_present.click
+            stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
             p stock
             if quantity > stock #Verifica estoque
               @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
@@ -101,18 +99,15 @@ class Crawler < ActiveRecord::Base
   #Efetua login no site da Aliexpresss usando user e password
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
-    @b = Watir::Browser.new :phantomjs
     p "Efetuando login com #{self.aliexpress.email}"
+    @b = Watir::Browser.new :phantomjs
     user = self.aliexpress
-    @b.goto "https://m.aliexpress.com/"
-    @b.div(class: "drawer").when_present.click
-    @b.div(class: "drawer-unlogin").a.when_present.click
+    @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
-    frame.text_field(name: 'loginId').when_present.set user.email
-    frame.text_field(name: 'password').when_present.set user.password
+    frame.text_field(name: 'loginId').set user.email
+    frame.text_field(name: 'password').set user.password
     frame.button(name: 'submit-btn').click
-    # frame.wait_while_present
-    sleep 2
+    frame.wait_while_present
     true
   rescue
     false
@@ -120,7 +115,6 @@ class Crawler < ActiveRecord::Base
 
   #Adiciona item ao carrinho
   def add_to_cart
-    sleep 2
     if @b.a(class: "back").present?
       @b.a(class: "back").click
       @b.button.when_present.click
@@ -182,7 +176,7 @@ class Crawler < ActiveRecord::Base
     @b.button(id: "create-order").when_present.click #Botão Finalizar pedido
     p 'Finalizando Pedido'
     @b.div(class:"desc_txt").wait_until_present
-    @b.divs(class:"desc_txt")
+    @b.div(class:"desc_txt")
   end
 
   #Tabela de conversão de Estados
