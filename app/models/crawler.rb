@@ -50,7 +50,6 @@ class Crawler < ActiveRecord::Base
               # self.set_shipping @b, user_options
               p 'Adicionando ao carrinho'
               self.add_to_cart
-              binding.pry
             end
           rescue
             @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
@@ -212,8 +211,8 @@ class Crawler < ActiveRecord::Base
     @b.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     empty = @b.link(class: "remove-all-product")
     if empty.present?
-      empty.when_present.click
-      @b.div(class: "ui-window-btn").when_present.click
+      empty.click
+      @b.div(class: "ui-window-btn").button.when_present.click
       sleep 2
     end
   rescue
