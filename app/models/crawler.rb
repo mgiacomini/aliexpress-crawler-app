@@ -23,8 +23,8 @@ class Crawler < ActiveRecord::Base
         @log.add_message("Processando pedido ##{order['id']}")
         p "Processando pedido ##{order['id']}"
         customer = order["shipping_address"] #Loop para todos os produtos
-        order["line_items"].each do |item|
-          begin
+        begin
+          order["line_items"].each do |item|
             quantity = item["quantity"]
             product = Product.find_by_name(item["name"])
             if (meta = item["meta"]).empty?
@@ -51,12 +51,11 @@ class Crawler < ActiveRecord::Base
               p 'Adicionando ao carrinho'
               self.add_to_cart
             end
-          rescue
-            @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
-            @log.add_message(@error)
-            p @error
-            break
           end
+        rescue
+          @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
+          @log.add_message(@error)
+          p @error
         end
         #Finaliza pedido
         if @error.nil?
