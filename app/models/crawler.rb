@@ -36,7 +36,8 @@ class Crawler < ActiveRecord::Base
             p product_type.mobile_link
             @b.goto product_type.mobile_link #Abre link do produto
             @b.section(class: "ms-detail-sku").click
-            stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
+            sleep 2
+            stock = @b.section(class: "ms-quantity").text.split[1].to_i
             p stock
             if quantity > stock #Verifica estoque
               @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
