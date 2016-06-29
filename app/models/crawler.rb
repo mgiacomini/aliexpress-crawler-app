@@ -33,6 +33,7 @@ class Crawler < ActiveRecord::Base
               product_type = ProductType.find_by(product: product, name: meta[0]['value'])
             end
             raise if product_type.mobile_link.nil?
+            p product_type.mobile_link
             @b.goto product_type.mobile_link #Abre link do produto
             @b.section(class: "ms-detail-sku").when_present.click
             stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
@@ -107,8 +108,8 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'loginId').when_present.set user.email
     frame.text_field(name: 'password').when_present.set user.password
     frame.button(name: 'submit-btn').click
-    # frame.wait_while_present
-    sleep 2
+    frame.wait_while_present
+    # sleep 2
     true
   rescue
     false
