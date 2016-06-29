@@ -20,40 +20,42 @@ class Crawler < ActiveRecord::Base
         @log.add_message("Processando pedido ##{order['id']}")
         p "Processando pedido ##{order['id']}"
         customer = order["shipping_address"] #Loop para todos os produtos
-        begin
           order["line_items"].each do |item|
-            quantity = item["quantity"]
-            product = Product.find_by_name(item["name"])
-            if (meta = item["meta"]).empty?
-              product_type = ProductType.find_by_product_id(product.id)
-            else
-              product_type = ProductType.find_by(product: product, name: meta[0]['value'])
-            end
-            raise item["name"] if product_type.aliexpress_link.nil?
-            @b.goto product_type.aliexpress_link #Abre link do produto
-            stock = @b.dl(id: "j-product-quantity-info").when_present.text.split[2].gsub("(","").to_i
-            if quantity > stock #Verifica estoque
-              @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+            begin
+              quantity = item["quantity"]
+              product = Product.find_by_name(item["name"])
+              if (meta = item["meta"]).empty?
+                product_type = ProductType.find_by_product_id(product.id)
+              else
+                product_type = ProductType.find_by(product: product, name: meta[0]['value'])
+              end
+              raise if product_type.aliexpress_link.nil?
+              @b.goto product_type.aliexpress_link #Abre link do produto
+              stock = @b.dl(id: "j-product-quantity-info").when_present.text.split[2].gsub("(","").to_i
+              if quantity > stock #Verifica estoque
+                @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+                @log.add_message(@error)
+                p @error
+                break
+              else
+                #Ações dos produtos
+                p "Adicionando #{quantity} ao carrinho"
+                self.add_quantity quantity
+                p 'Selecionando opções'
+                user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+                self.set_options user_options
+                # self.set_shipping @b, user_options
+                p 'Adicionando ao carrinho'
+                self.add_to_cart
+                binding.pry
+              end
+            rescue
+              @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
               p @error
               break
-            else
-              #Ações dos produtos
-              p "Adicionando #{quantity} ao carrinho"
-              self.add_quantity quantity
-              p 'Selecionando opções'
-              user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-              self.set_options user_options
-              # self.set_shipping @b, user_options
-              p 'Adicionando ao carrinho'
-              self.add_to_cart
             end
           end
-        rescue => product
-          @error = "Erro no produto #{product}, verificar se o link da aliexpress está correto, este pedido será pulado."
-          @log.add_message(@error)
-          p @error
-        end
         #Finaliza pedido
         if @error.nil?
           order_nos = self.complete_order(customer)
