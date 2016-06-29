@@ -8,9 +8,6 @@ class Crawler < ActiveRecord::Base
   # @error = nil
 
   def run(orders)
-  # def run
-    # order = self.wordpress.woocommerce.get("orders/88752").parsed_response
-    # order = order['order']
     @log = CrawlerLog.create!(crawler: self)
     @log.update(orders_count: orders.count)
     raise "Não há pedidos a serem executados" if orders.count == 0
@@ -59,11 +56,10 @@ class Crawler < ActiveRecord::Base
         end
         #Finaliza pedido
         if @error.nil?
-          binding.pry
           order_nos = self.complete_order(customer)
           p "Pedido completado"
           p order_nos.text
-          raise if order_nos.nil? || !@erros.nil?
+          raise if order_nos.nil? || !@erros.nil? || order["line_items"] != order_nos.split.count
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
@@ -110,8 +106,8 @@ class Crawler < ActiveRecord::Base
   end
   #Adiciona item ao carrinho
   def add_to_cart
-    @b.link(id: "j-add-cart-btn").click
-    sleep 5
+    @b.link(id: "j-add-cart-btn").when_present.click
+    sleep 10
   end
 
   #Adiciona quantidade certa do item
@@ -143,20 +139,19 @@ class Crawler < ActiveRecord::Base
     @b.a(id: "manageAddressHref").when_present.click
     #Preenche campos de endereço
     @log.add_message('Adicionando informações do cliente')
-    binding.pry
     @b.text_field(name: "_fmh.m._0.c").when_present.set to_english(customer["first_name"]+" "+customer["last_name"])
-    @b.divs(class: "panel-select")[0].click
+    @b.divs(class: "panel-select")[0].when_present.click
     sleep 5
     @b.li(text: "Brazil").when_present.click
-    @b.text_field(name: "_fmh.m._0.a").set to_english(customer["address_1"])
-    @b.text_field(name: "_fmh.m._0.ad").set to_english(customer["address_2"])
-    @b.divs(class: "panel-select")[2].click
+    @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"])
+    @b.text_field(name: "_fmh.m._0.ad").when_present.set to_english(customer["address_2"])
+    @b.divs(class: "panel-select")[2].when_present.click
     arr = self.state.assoc(customer["state"])
     sleep 5
     @b.li(text: arr[1]).when_present.click
-    @b.text_field(name: "_fmh.m._0.ci").set to_english(customer["city"])
-    @b.text_field(name: "_fmh.m._0.z").set customer["postcode"]
-    @b.text_field(name: "_fmh.m._0.m").set '11959642036'
+    @b.text_field(name: "_fmh.m._0.ci").when_present.set to_english(customer["city"])
+    @b.text_field(name: "_fmh.m._0.z").when_present.set customer["postcode"]
+    @b.text_field(name: "_fmh.m._0.m").when_present.set '11959642036'
     @b.button.click
     p 'Salvando'
   #   captcha = @b.div(class: "captcha-box")
