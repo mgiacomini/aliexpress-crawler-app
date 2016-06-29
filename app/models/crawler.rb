@@ -77,12 +77,12 @@ class Crawler < ActiveRecord::Base
       end
     end
   @b.close
-  rescue
-    @error = "Erro desconhecido, procurar administrador."
-    @log.add_message(@error)
-    p @error
   rescue => e
     @error = e.message
+    @log.add_message(@error)
+    p @error
+  rescue
+    @error = "Erro desconhecido, procurar administrador."
     @log.add_message(@error)
     p @error
   end
