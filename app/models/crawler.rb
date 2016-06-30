@@ -60,7 +60,7 @@ class Crawler < ActiveRecord::Base
           order_nos = self.complete_order(customer)
           p "Pedido completado"
           p order_nos.text
-          raise if order_nos.nil? || !@erros.nil? || order["line_items"].count != order_nos.text.split.count
+          raise if order_nos.nil? || !@erros.nil? || order["line_items"].count != order_nos.text.split(',').count
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
