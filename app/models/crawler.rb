@@ -47,7 +47,6 @@ class Crawler < ActiveRecord::Base
                 # self.set_shipping @b, user_options
                 p 'Adicionando ao carrinho'
                 self.add_to_cart
-                binding.pry
               end
             rescue
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
@@ -61,7 +60,7 @@ class Crawler < ActiveRecord::Base
           order_nos = self.complete_order(customer)
           p "Pedido completado"
           p order_nos.text
-          raise if order_nos.nil? || !@erros.nil? || order["line_items"] != order_nos.split.count
+          raise if order_nos.nil? || !@erros.nil? || order["line_items"].count != order_nos.text.split.count
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
@@ -109,7 +108,8 @@ class Crawler < ActiveRecord::Base
   #Adiciona item ao carrinho
   def add_to_cart
     @b.link(id: "j-add-cart-btn").when_present.click
-    sleep 10
+    sleep 5
+    binding.pry
   end
 
   #Adiciona quantidade certa do item
@@ -120,17 +120,18 @@ class Crawler < ActiveRecord::Base
   end
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
-  def set_options user_option
+  def set_options user_options
     count = 0
     @b.div(id: "j-product-info-sku").dls.each do |option|
-      selected = user_option[count]
+      selected = user_options[count]
       if selected.nil?
         option.a.when_present.click
       else
-        option.as[selected-1].when_present.click
+        option.as[selected-1].click
       end
       count +=1
     end
+    sleep 2
   end
 
   #finaliza pedido com informações do cliente
@@ -160,7 +161,7 @@ class Crawler < ActiveRecord::Base
   #   @log.add_message("Encontrei captcha ao finalizar o pedido!") if captcha.present?
     @b.button(id: "create-order").when_present.click #Botão Finalizar pedido
     p 'Finalizando Pedido'
-    @b.div(class:"desc_txt").wait_until_present
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @b.div(class:"desc_txt").wait_until_present
     @b.div(class:"desc_txt")
   end
 
