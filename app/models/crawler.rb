@@ -52,6 +52,9 @@ class Crawler < ActiveRecord::Base
           end
         #Finaliza pedido
         if @error.nil?
+          @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
+          @b.uls(class: "product").wait_until_present
+          raise "Erro com itens do carrinho, cancelando pedido" if @b.uls(class: "product").count != order["line_items"].count
           order_nos = self.complete_order(customer)
           raise if !@error.nil?
           @log.add_message("Pedido completado na Aliexpress")
@@ -127,7 +130,6 @@ class Crawler < ActiveRecord::Base
 
   #finaliza pedido com informações do cliente
   def complete_order customer
-    @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
     @b.div(class: "buyall").when_present.click
     @b.a(id: "change-address").when_present.click
     @b.a(id: "manageAddressHref").when_present.click
