@@ -53,7 +53,6 @@ class Crawler < ActiveRecord::Base
         #Finaliza pedido
         if @error.nil?
           @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
-          @b.uls(class: "product").wait_until_present
           raise "Erro com itens do carrinho, cancelando pedido" if @b.uls(class: "product").count != order["line_items"].count
           order_nos = self.complete_order(customer)
           raise if !@error.nil?
