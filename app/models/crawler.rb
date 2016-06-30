@@ -109,7 +109,6 @@ class Crawler < ActiveRecord::Base
   def add_to_cart
     @b.link(id: "j-add-cart-btn").when_present.click
     sleep 5
-    binding.pry
   end
 
   #Adiciona quantidade certa do item
