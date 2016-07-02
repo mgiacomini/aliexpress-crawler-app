@@ -54,11 +54,11 @@ class Crawler < ActiveRecord::Base
         #Finaliza pedido
         if @error.nil?
           @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
-          raise "Erro com itens do carrinho, cancelando pedido" if @b.lis(id: "shopcart-").count != order["line_items"].count
+          raise "Erro com itens do carrinho, cancelando pedido" if @b.uls(class: "product").count != order["line_items"].count
           order_nos = self.complete_order(customer)
           raise if !@error.nil?
           @log.add_message("Pedido completado na Aliexpress")
-          raise "Erro com itens do pedido, desconsiderar da aliexpress: #{order_nos.text}" if order_nos.nil? || order["line_items"].count != order_nos.text.split(',').count
+          raise "Erro com numero do pedido vazio" if order_nos.nil?
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
