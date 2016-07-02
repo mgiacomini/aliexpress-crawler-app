@@ -89,6 +89,7 @@ class Crawler < ActiveRecord::Base
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
     @b = Watir::Browser.new :phantomjs
+    @b.window.maximize
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
