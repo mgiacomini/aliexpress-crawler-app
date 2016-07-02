@@ -29,7 +29,7 @@ class Crawler < ActiveRecord::Base
               end
               raise if product_type.aliexpress_link.nil?
               @b.goto product_type.aliexpress_link #Abre link do produto
-              stock = @b.dl(id: "j-product-quantity-info").when_present.text.split[2].gsub("(","").to_i
+              stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
               if quantity > stock #Verifica estoque
                 @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
                 @log.add_message(@error)
