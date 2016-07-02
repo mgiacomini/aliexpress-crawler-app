@@ -4,170 +4,159 @@ class Crawler < ActiveRecord::Base
   belongs_to :wordpress
   validates :aliexpress_id, :wordpress_id, presence: true
   has_many :crawler_logs
-  @log = nil
-  @error = nil
 
   def run(orders)
     @log = CrawlerLog.create!(crawler: self)
     @log.update(orders_count: orders.count)
     raise "Não há pedidos a serem executados" if orders.count == 0
-    @b = self.login
-    raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" if @b.nil?
+    raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
     orders.each do |order|
       @error = nil
       begin
-        self.empty_cart @b #Esvazia Carrinho
+        self.empty_cart #Esvazia Carrinho
         @log.add_message("-------------------")
         @log.add_message("Processando pedido ##{order['id']}")
-        p "Processando pedido ##{order['id']}"
         customer = order["shipping_address"] #Loop para todos os produtos
-        order["line_items"].each do |item|
-          begin
-            quantity = item["quantity"]
-            product = Product.find_by_name(item["name"])
-            if (meta = item["meta"]).empty?
-              product_type = ProductType.find_by_product_id(product.id)
-            else
-              product_type = ProductType.find_by(product: product, name: meta[0]['value'])
-            end
-            @b.goto product_type.aliexpress_link #Abre link do produto
-            raise if product_type.aliexpress_link.nil?
-            stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
-            if quantity > stock #Verifica estoque
-              @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
-              @log.add_message(@error)
-              p @error
-              break
-            else
-              #Ações dos produtos
-              p "Adicionando #{quantity} ao carrinho"
-              self.add_quantity @b, quantity
+          order["line_items"].each do |item|
+            begin
+              quantity = item["quantity"]
+              product = Product.find_by_name(item["name"])
+              if (meta = item["meta"]).empty?
+                product_type = ProductType.find_by(product: product)
+              else
+                product_type = ProductType.find_by(product: product, name: meta[0]['value'])
+              end
+              # binding.pry
+              raise if product_type.aliexpress_link.nil?
+              @b.goto product_type.aliexpress_link #Abre link do produto
               p 'Selecionando opções'
               user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-              self.set_options @b, user_options
-              # self.set_shipping @b, user_options
-              p 'Adicionando ao carrinho'
-              self.add_to_cart @b
+              self.set_options user_options
+              stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
+              if quantity > stock #Verifica estoque
+                @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+                @log.add_message(@error)
+                break
+              else
+                #Ações dos produtos
+                p "Adicionando #{quantity} ao carrinho"
+                self.add_quantity quantity
+                # self.set_shipping @b, user_options
+                p 'Adicionando ao carrinho'
+                self.add_to_cart
+              end
+              rescue
+              @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
+              @log.add_message(@error)
+              break
             end
-          rescue
-            @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
-            @log.add_message(@error)
-            p @error
-            break
           end
-        end
         #Finaliza pedido
         if @error.nil?
-          order_nos = self.complete_order(@b,customer)
-          p "Pedido completado"
-          break unless @error.nil?
-          raise if order_nos.count == 0
+          @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
+          raise "Erro com itens do carrinho, cancelando pedido" if @b.uls(class: "product").count != order["line_items"].count
+          order_nos = self.complete_order(customer)
+          raise if !@error.nil?
+          @log.add_message("Pedido completado na Aliexpress")
+          raise "Erro com itens do pedido, desconsiderar da aliexpress: #{order_nos.text}" if order_nos.nil? || order["line_items"].count != order_nos.text.split(',').count
           self.wordpress.update_order(order, order_nos)
           @error = self.wordpress.error
           @log.add_message(@error)
-          p @error
-          @log.add_processed("Pedido #{order["id"]} processado com sucesso!")
-          p "Pedido #{order["id"]} processado com sucesso!"
+          @log.add_processed("Pedido #{order["id"]} processado com sucesso! Links aliexpress: #{order_nos.text}")
         else
           raise
         end
+      rescue => e
+        @error = e.message
+        @log.add_message(@error)
       rescue
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(@error)
-        p @error
         next
       end
     end
   @b.close
-  rescue
-    @error = "Erro desconhecido, procurar administrador."
-    @log.add_message(@error)
-    p @error
   rescue => e
     @error = e.message
     @log.add_message(@error)
-    p @error
+  rescue
+    @error = "Erro desconhecido, procurar administrador."
+    @log.add_message(@error)
   end
+
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
-    p "Efetuando login com #{self.aliexpress.email}"
     @b = Watir::Browser.new :phantomjs
+    @b.window.maximize
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set user.email
     frame.text_field(name: 'password').set user.password
     frame.button(name: 'submit-btn').click
-    sleep 5
-    @b
+    frame.wait_while_present
+    true
   rescue
+    false
   end
-
   #Adiciona item ao carrinho
-  def add_to_cart browser
-    browser.link(id: "j-add-cart-btn").click
-    sleep 10
+  def add_to_cart
+    sleep 2
+    @b.link(id: "j-add-cart-btn").when_present.click
+    sleep 2
+    p "Adicionado OK" if @b.div(class: "ui-add-shopcart-dialog").present?
   end
 
   #Adiciona quantidade certa do item
-  def add_quantity browser, quantity
+  def add_quantity quantity
     (quantity -1).times do
-      browser.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").click
+      @b.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").when_present.click
     end
   end
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
-  def set_options browser, user_option
+  def set_options user_options
     count = 0
-    browser.div(id: "j-product-info-sku").dls.each do |option|
-      selected = user_option[count]
+    @b.div(id: "j-product-info-sku").dls.each do |option|
+      selected = user_options[count]
       if selected.nil?
-        option.a.click
+        option.a.when_present.click
       else
-        option.as[selected].click
+        option.as[selected-1].click
       end
       count +=1
     end
+    sleep 2
   end
 
   #finaliza pedido com informações do cliente
-  def complete_order browser, customer
-    browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
-    browser.div(class: "bottom-info-right-wrapper").button.click #Botão Comprar
-    sleep 10
-    browser.ul(class: "sa-address-list").a.click #Botão Editar Endereço
-    sleep 10
+  def complete_order customer
+    @b.div(class: "buyall").when_present.click
+    @b.a(id: "change-address").when_present.click
+    @b.a(id: "manageAddressHref").when_present.click
     #Preenche campos de endereço
     @log.add_message('Adicionando informações do cliente')
-    p 'Adicionando informações do cliente'
-    browser.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
-    browser.select_list(name: "country").select 'Brazil'
-    browser.text_field(name: "address").set to_english(customer["address_1"])
-    browser.text_field(name: "address2").set to_english(customer["address_2"])
-    browser.text_field(name: "city").set to_english(customer["city"])
+    @b.text_field(name: "_fmh.m._0.c").when_present.set to_english(customer["first_name"]+" "+customer["last_name"])
+    @b.divs(class: "panel-select")[0].when_present.click
+    sleep 2
+    @b.li(text: "Brazil").when_present.click
+    @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"])
+    @b.text_field(name: "_fmh.m._0.ad").when_present.set to_english(customer["address_2"])
+    @b.divs(class: "panel-select")[2].when_present.click
     arr = self.state.assoc(customer["state"])
-    browser.div(class: "sa-province-group").select_list.select arr[1]
-    browser.checkbox.clear
-    browser.text_field(name: "zip").set customer["postcode"]
-    browser.text_field(name: "mobileNo").set '5511959642036'
-    browser.div(class: "sa-form").links[1].click #Botão Salvar
+    sleep 2
+    @b.li(text: arr[1]).when_present.click
+    @b.text_field(name: "_fmh.m._0.ci").when_present.set to_english(customer["city"])
+    @b.text_field(name: "_fmh.m._0.z").when_present.set customer["postcode"]
+    @b.text_field(name: "_fmh.m._0.m").when_present.set '11959642036'
+    @b.button.click
     p 'Salvando'
-    sleep 10
-    p 'Selecionando Pagamento'
-    payment = browser.div(class: "other-payment-item")
-    payment.radio.set if payment.present?
-    captcha = browser.div(class: "captcha-box")
-    if captcha.present?
-      @error = 'Encontrei captcha ao finalizar o pedido!'
-      @log.add_message(@error)
-      p @error
-    end
-    browser.button(id:"place-order-btn").click #Botão Finalizar pedido
+    @b.button(id: "create-order").when_present.click #Botão Finalizar pedido
     p 'Finalizando Pedido'
-    sleep 10
-    browser.spans(class:"order-no") #Retorna os números dos pedidos
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @b.div(class:"desc_txt").wait_until_present
+    @b.div(class:"desc_txt")
   end
 
   #Tabela de conversão de Estados
@@ -210,18 +199,18 @@ class Crawler < ActiveRecord::Base
   end
 
   #Esvazia carrinho
-  def empty_cart browser
+  def empty_cart
     p 'Esvaziando carrinho'
-    browser.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
-    empty = browser.link(class: "remove-all-product")
-    empty.click if empty.present?
-    ok = browser.div(class: "ui-window-btn").input
-    ok.click if ok.present?
-    sleep 5
+    @b.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
+    empty = @b.link(class: "remove-all-product")
+    if empty.present?
+      empty.click
+      @b.div(class: "ui-window-btn").button.when_present.click
+      empty.wait_while_present
+    end
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
     @log.add_message(@error)
-    p @error
-    # exit
+    exit
   end
 end

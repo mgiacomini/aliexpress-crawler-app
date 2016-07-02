@@ -29,6 +29,9 @@ class Crawler < ActiveRecord::Base
               # binding.pry
               raise if product_type.aliexpress_link.nil?
               @b.goto product_type.aliexpress_link #Abre link do produto
+              p 'Selecionando opções'
+              user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+              self.set_options user_options
               stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
               if quantity > stock #Verifica estoque
                 @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
@@ -38,9 +41,6 @@ class Crawler < ActiveRecord::Base
                 #Ações dos produtos
                 p "Adicionando #{quantity} ao carrinho"
                 self.add_quantity quantity
-                p 'Selecionando opções'
-                user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-                self.set_options user_options
                 # self.set_shipping @b, user_options
                 p 'Adicionando ao carrinho'
                 self.add_to_cart
@@ -54,7 +54,7 @@ class Crawler < ActiveRecord::Base
         #Finaliza pedido
         if @error.nil?
           @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
-          raise "Erro com itens do carrinho, cancelando pedido" if @b.uls(class: "product").count != order["line_items"].count
+          raise "Erro com itens do carrinho, cancelando pedido" if @b.lis(id: "shopcart-").count != order["line_items"].count
           order_nos = self.complete_order(customer)
           raise if !@error.nil?
           @log.add_message("Pedido completado na Aliexpress")
@@ -103,8 +103,10 @@ class Crawler < ActiveRecord::Base
   end
   #Adiciona item ao carrinho
   def add_to_cart
+    sleep 2
     @b.link(id: "j-add-cart-btn").when_present.click
-    p "adicionado ao carrinho" if @b.div(class: "ui-add-shopcart-dialog").present?
+    sleep 2
+    p "Adicionado OK" if @b.div(class: "ui-add-shopcart-dialog").present?
   end
 
   #Adiciona quantidade certa do item
