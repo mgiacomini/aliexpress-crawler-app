@@ -6,7 +6,7 @@ gem 'jquery-rails'
 gem 'turbolinks'
 gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0', group: :doc
-gem 'woocommerce_api', '1.2.0'
+gem 'woocommerce_api', '~> 1.2.1'
 gem 'watir-webdriver', '0.9.1'
 gem 'pry'
 gem 'simple_form', '3.2.1'

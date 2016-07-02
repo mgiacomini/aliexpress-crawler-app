@@ -11,19 +11,31 @@ class Wordpress < ActiveRecord::Base
   end
 
   def woocommerce
-    woocommerce = WooCommerce::API.new(
+    # if self.consumer_key.size == 43 #Pega versão nova do woocommerce (2.6 ou mais)
+    #   woocommerce = WooCommerce::API.new(
+    #   self.url, #Url do site
+    #   self.consumer_key, #Consumer Key
+    #   self.consumer_secret, #Consumer Secret
+    #     {
+    #       version: "wc/v1"
+    #     }
+    #   )
+    # else
+      woocommerce = WooCommerce::API.new(
       self.url, #Url do site
       self.consumer_key, #Consumer Key
       self.consumer_secret, #Consumer Secret
-      {
-        version: "v2" #Versão da API
-      }
-    )
+        {
+          version: "v2" #Versão da API
+        }
+      )
+    # end
     woocommerce
   end
 
   def get_products
-    products = woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,attributes").parsed_response
+    binding.pry
+    products = self.woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,attributes").parsed_response
     products['products']
   end
 
