@@ -23,6 +23,7 @@ class CrawlersController < ApplicationController
   end
 
   def show
+    @crawler_logs = @crawler.crawler_logs.order(created_at: :desc)
     respond_with @crawler
   end
 

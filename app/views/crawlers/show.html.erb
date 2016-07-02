@@ -47,7 +47,7 @@
     </tr>
   </thead>
   <tbody>
-    <% @crawler.crawler_logs.each do |crawler_log| %>
+    <% @crawler_logs.each do |crawler_log| %>
       <tr>
         <td><%= "Processados: #{crawler_log.orders_count} Sucessos: #{crawler_log.processed}"%></td>
         <td><%=l crawler_log.created_at %></td>
