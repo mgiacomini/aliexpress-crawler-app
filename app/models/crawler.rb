@@ -19,7 +19,7 @@ class Crawler < ActiveRecord::Base
         customer = order["shipping_address"] #Loop para todos os produtos
           order["line_items"].each do |item|
             begin
-              binding.pry
+              # binding.pry
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
               if (meta = item["meta"]).empty?
