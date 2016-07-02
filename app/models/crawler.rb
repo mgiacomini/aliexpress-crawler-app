@@ -103,7 +103,7 @@ class Crawler < ActiveRecord::Base
   #Adiciona item ao carrinho
   def add_to_cart
     @b.link(id: "j-add-cart-btn").when_present.click
-    @b.div(class: "ui-add-shopcart-dialog").wait_until_present
+    p "adicionado ao carrinho" if @b.div(class: "ui-add-shopcart-dialog").present?
   end
 
   #Adiciona quantidade certa do item
