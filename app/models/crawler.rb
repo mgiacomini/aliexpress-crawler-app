@@ -19,7 +19,6 @@ class Crawler < ActiveRecord::Base
         customer = order["shipping_address"] #Loop para todos os produtos
           order["line_items"].each do |item|
             begin
-              # binding.pry
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
               if (meta = item["meta"]).empty?
@@ -27,6 +26,7 @@ class Crawler < ActiveRecord::Base
               else
                 product_type = ProductType.find_by(product: product, name: meta[0]['value'])
               end
+              binding.pry
               raise if product_type.aliexpress_link.nil?
               @b.goto product_type.aliexpress_link #Abre link do produto
               stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
