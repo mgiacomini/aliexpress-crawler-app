@@ -26,7 +26,7 @@ class Crawler < ActiveRecord::Base
               else
                 product_type = ProductType.find_by(product: product, name: meta[0]['value'])
               end
-              binding.pry
+              # binding.pry
               raise if product_type.aliexpress_link.nil?
               @b.goto product_type.aliexpress_link #Abre link do produto
               stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
