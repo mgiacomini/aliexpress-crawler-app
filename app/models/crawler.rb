@@ -96,7 +96,7 @@ class Crawler < ActiveRecord::Base
     frame.text_field(name: 'loginId').set user.email
     frame.text_field(name: 'password').set user.password
     frame.button(name: 'submit-btn').click
-    frame.wait_while_presents
+    frame.wait_while_present
     true
   rescue
     false
@@ -213,7 +213,7 @@ class Crawler < ActiveRecord::Base
       empty.wait_while_present
     end
   rescue
-    @error = "Falha ao esvaziar carrinho, verificar conexão.ss"
+    @error = "Falha ao esvaziar carrinho, verificar conexão."
     @log.add_message(@error)
   end
 end
