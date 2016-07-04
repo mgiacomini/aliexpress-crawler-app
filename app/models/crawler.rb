@@ -109,7 +109,8 @@ class Crawler < ActiveRecord::Base
     if @b.div(class: "ui-add-shopcart-dialog").present?
       p "Adicionado OK"
     else
-      binding.pry
+      @error = "Falha ao adicionar ao carrinho: #{@b.url}"
+      @log.add_message(@error)
     end
   end
 
