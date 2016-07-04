@@ -66,21 +66,21 @@ class Crawler < ActiveRecord::Base
         else
           raise
         end
-      rescue => e
-        @error = e.message
-        @log.add_message(@error)
       rescue
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(@error)
         next
+      rescue => e
+        @error = e.message
+        @log.add_message(@error)
       end
     end
   @b.close
-  rescue => e
-    @error = e.message
-    @log.add_message(@error)
   rescue
     @error = "Erro desconhecido, procurar administrador."
+    @log.add_message(@error)
+  rescue => e
+    @error = e.message
     @log.add_message(@error)
   end
 
@@ -106,7 +106,11 @@ class Crawler < ActiveRecord::Base
     sleep 2
     @b.link(id: "j-add-cart-btn").when_present.click
     sleep 2
-    p "Adicionado OK" if @b.div(class: "ui-add-shopcart-dialog").present?
+    if @b.div(class: "ui-add-shopcart-dialog").present?
+      p "Adicionado OK"
+    else
+      binding.pry
+    end
   end
 
   #Adiciona quantidade certa do item
@@ -211,6 +215,5 @@ class Crawler < ActiveRecord::Base
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão. Abortando para evitar falhas"
     @log.add_message(@error)
-    exit
   end
 end
