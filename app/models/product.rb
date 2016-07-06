@@ -14,9 +14,27 @@ class Product < ActiveRecord::Base
         product_type = ProductType.find_by(product: product, name: 'Único') || ProductType.new
         product_type.update(product: product, name: 'Único')
       else
-        product_types[0]['options'].each do |name|
-          product_type = ProductType.find_by(product: product, name: name) || ProductType.new
-          product_type.update(product: product, name: name)
+        count = product_types.count
+        product_types[0]['options'].each do |option_1|
+          if count == 1
+            name = option_1
+            product_type = ProductType.find_by(product: product, name: name ) || ProductType.new
+            product_type.update(product: product, name: name)
+          else
+            product_types[1]['options'].each do |option_2|
+              if count == 2
+                name = "#{option_1} #{option_2}"
+                product_type = ProductType.find_by(product: product, name: name ) || ProductType.new
+                product_type.update(product: product, name: name)
+              else
+                product_types[2]['options'].each do |option_3|
+                  name = "#{option_1} #{option_2} #{option_3}"
+                  product_type = ProductType.find_by(product: product, name: name ) || ProductType.new
+                  product_type.update(product: product, name: name)
+                end
+              end
+            end
+          end
         end
       end
     end

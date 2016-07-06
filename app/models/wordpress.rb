@@ -34,7 +34,6 @@ class Wordpress < ActiveRecord::Base
   end
 
   def get_products
-    binding.pry
     products = self.woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,attributes").parsed_response
     products['products']
   end
