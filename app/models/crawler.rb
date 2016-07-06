@@ -24,7 +24,11 @@ class Crawler < ActiveRecord::Base
               if (meta = item["meta"]).empty?
                 product_type = ProductType.find_by(product: product)
               else
-                product_type = ProductType.find_by(product: product, name: meta[0]['value'])
+                name = ""
+                item["meta"].each do |option|
+                  name.concat("#{option['value']} ")
+                end
+                product_type = ProductType.find_by(product: product, name: name.strip)
               end
               # binding.pry
               raise if product_type.aliexpress_link.nil?
