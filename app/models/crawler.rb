@@ -5,12 +5,14 @@ class Crawler < ActiveRecord::Base
   validates :aliexpress_id, :wordpress_id, presence: true
   has_many :crawler_logs
 
-  def run(orders)
+  # def run(orders)
+  def run
+    order = self.wordpress.woocommerce.get("orders/93696")['order']
     @log = CrawlerLog.create!(crawler: self)
-    @log.update(orders_count: orders.count)
-    raise "Não há pedidos a serem executados" if orders.count == 0
+    # @log.update(orders_count: orders.count)
+    # raise "Não há pedidos a serem executados" if orders.count == 0
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
-    orders.each do |order|
+    # orders.each do |order|
       @error = nil
       begin
         self.empty_cart #Esvazia Carrinho
@@ -32,22 +34,42 @@ class Crawler < ActiveRecord::Base
               end
               # binding.pry
               raise if product_type.aliexpress_link.nil?
-              @b.goto product_type.aliexpress_link #Abre link do produto
-              p 'Selecionando opções'
-              user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-              self.set_options user_options
-              stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
-              if quantity > stock #Verifica estoque
-                @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
-                @log.add_message(@error)
-                break
+              if product_type.type == "mobile"
+                @b.goto product_type.mobile_link
+                p 'Selecionando opções'
+                user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+                self.set_options_mobile user_options
+                # stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
+                if quantity > stock #Verifica estoque
+                  @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+                  @log.add_message(@error)
+                  break
+                else
+                  #Ações dos produtos
+                  p "Adicionando #{quantity} ao carrinho"
+                  self.add_quantity_mobile quantity
+                  # self.set_shipping @b, user_options
+                  p 'Adicionando ao carrinho'
+                  self.add_to_cart_mobile
+                end
               else
-                #Ações dos produtos
-                p "Adicionando #{quantity} ao carrinho"
-                self.add_quantity quantity
-                # self.set_shipping @b, user_options
-                p 'Adicionando ao carrinho'
-                self.add_to_cart
+                @b.goto product_type.aliexpress_link #Abre link do produto
+                p 'Selecionando opções'
+                user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+                self.set_options user_options
+                stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
+                if quantity > stock #Verifica estoque
+                  @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+                  @log.add_message(@error)
+                  break
+                else
+                  #Ações dos produtos
+                  p "Adicionando #{quantity} ao carrinho"
+                  self.add_quantity quantity
+                  # self.set_shipping @b, user_options
+                  p 'Adicionando ao carrinho'
+                  self.add_to_cart
+                end
               end
             rescue
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
@@ -70,15 +92,15 @@ class Crawler < ActiveRecord::Base
         else
           raise
         end
-      rescue
-        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        @log.add_message(@error)
-        next
-      rescue => e
-        @error = e.message
-        @log.add_message(@error)
+      # rescue
+      #   @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+      #   @log.add_message(@error)
+      #   # next
+      # rescue => e
+      #   @error = e.message
+      #   @log.add_message(@error)
       end
-    end
+    # end
   @b.close
   rescue
     @error = "Erro desconhecido, procurar administrador."
@@ -92,7 +114,7 @@ class Crawler < ActiveRecord::Base
   #Efetua login no site da Aliexpresss usando user e password
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
-    @b = Watir::Browser.new :phantomjs
+    @b = Watir::Browser.new :firefox
     @b.window.maximize
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
@@ -127,6 +149,40 @@ class Crawler < ActiveRecord::Base
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
   def set_options user_options
+    count = 0
+    @b.div(id: "j-product-info-sku").dls.each do |option|
+      selected = user_options[count]
+      if selected.nil?
+        option.a.when_present.click
+      else
+        option.as[selected-1].click
+      end
+      count +=1
+    end
+    sleep 2
+  end
+
+  def add_to_cart_mobile
+    sleep 2
+    @b.link(id: "j-add-cart-btn").when_present.click
+    sleep 2
+    if @b.div(class: "ui-add-shopcart-dialog").present?
+      p "Adicionado OK"
+    else
+      @error = "Falha ao adicionar ao carrinho: #{@b.url}"
+      @log.add_message(@error)
+    end
+  end
+
+  #Adiciona quantidade certa do item
+  def add_quantity_mobile quantity
+    (quantity -1).times do
+      @b.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").when_present.click
+    end
+  end
+
+  #Selecionar opções do produto na Aliexpress usando array de opções da planilha
+  def set_options_mobile user_options
     count = 0
     @b.div(id: "j-product-info-sku").dls.each do |option|
       selected = user_options[count]
@@ -220,5 +276,6 @@ class Crawler < ActiveRecord::Base
   rescue
     @error = "Falha ao esvaziar carrinho, verificar conexão."
     @log.add_message(@error)
+    exit
   end
 end
