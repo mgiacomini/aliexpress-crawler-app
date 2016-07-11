@@ -33,27 +33,28 @@ class Crawler < ActiveRecord::Base
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
               raise if product_type.aliexpress_link.nil?
-              if product_type.type == "mobile"
-                @b.goto product_type.mobile_link
-                user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-                @b.section(class: "ms-detail-sku").when_present.click
-                p 'Selecionando opções'
-                self.set_options_mobile user_options
-                stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
-                if quantity > stock #Verifica estoque
-                  @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
-                  @log.add_message(@error)
-                  break
-                else
-                  #Ações dos produtos
-                  p "Adicionando #{quantity} ao carrinho"
-                  self.add_quantity_mobile quantity
-                  # self.set_shipping @b, user_options
-                  p 'Adicionando ao carrinho'
-                  self.add_to_cart_mobile
-                end
-              else
-                @b.goto product_type.aliexpress_link #Abre link do produto
+              # if product_type.type == "mobile"
+              #   @b.goto product_type.mobile_link
+              #   user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+              #   @b.section(class: "ms-detail-sku").when_present.click
+              #   p 'Selecionando opções'
+              #   self.set_options_mobile user_options
+              #   stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
+              #   if quantity > stock #Verifica estoque
+              #     @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+              #     @log.add_message(@error)
+              #     break
+              #   else
+              #     #Ações dos produtos
+              #     p "Adicionando #{quantity} ao carrinho"
+              #     self.add_quantity_mobile quantity
+              #     # self.set_shipping @b, user_options
+              #     p 'Adicionando ao carrinho'
+              #     self.add_to_cart_mobile
+              #   end
+              # else
+                @b.goto product_type.parsed_link #Abre link do produto
+                # @b.goto product_type.aliexpress_link #Abre link do produto
                 p 'Selecionando opções'
                 user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
                 self.set_options user_options
@@ -70,7 +71,7 @@ class Crawler < ActiveRecord::Base
                   p 'Adicionando ao carrinho'
                   self.add_to_cart
                 end
-              end
+              # end
             rescue
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
