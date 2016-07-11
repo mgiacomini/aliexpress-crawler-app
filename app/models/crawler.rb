@@ -5,14 +5,14 @@ class Crawler < ActiveRecord::Base
   validates :aliexpress_id, :wordpress_id, presence: true
   has_many :crawler_logs
 
-  # def run(orders)
-  def run
-    order = self.wordpress.woocommerce.get("orders/93696")['order']
+  def run(orders)
+  # def run
+    # order = self.wordpress.woocommerce.get("orders/93696")['order']
     @log = CrawlerLog.create!(crawler: self)
-    # @log.update(orders_count: orders.count)
-    # raise "Não há pedidos a serem executados" if orders.count == 0
+    @log.update(orders_count: orders.count)
+    raise "Não há pedidos a serem executados" if orders.count == 0
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
-    # orders.each do |order|
+    orders.each do |order|
       @error = nil
       begin
         self.empty_cart #Esvazia Carrinho
@@ -32,14 +32,14 @@ class Crawler < ActiveRecord::Base
                 end
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
-              # binding.pry
               raise if product_type.aliexpress_link.nil?
               if product_type.type == "mobile"
                 @b.goto product_type.mobile_link
-                p 'Selecionando opções'
                 user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+                @b.section(class: "ms-detail-sku").when_present.click
+                p 'Selecionando opções'
                 self.set_options_mobile user_options
-                # stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
+                stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
                 if quantity > stock #Verifica estoque
                   @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
                   @log.add_message(@error)
@@ -92,15 +92,15 @@ class Crawler < ActiveRecord::Base
         else
           raise
         end
-      # rescue
-      #   @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-      #   @log.add_message(@error)
-      #   # next
-      # rescue => e
-      #   @error = e.message
-      #   @log.add_message(@error)
+      rescue
+        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        @log.add_message(@error)
+        # next
+      rescue => e
+        @error = e.message
+        @log.add_message(@error)
       end
-    # end
+    end
   @b.close
   rescue
     @error = "Erro desconhecido, procurar administrador."
@@ -114,7 +114,7 @@ class Crawler < ActiveRecord::Base
   #Efetua login no site da Aliexpresss usando user e password
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
-    @b = Watir::Browser.new :firefox
+    @b = Watir::Browser.new :phantomjs
     @b.window.maximize
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
@@ -149,52 +149,52 @@ class Crawler < ActiveRecord::Base
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
   def set_options user_options
-    count = 0
-    @b.div(id: "j-product-info-sku").dls.each do |option|
-      selected = user_options[count]
+    @b.div(id: "j-product-info-sku").dls.each_with_index do |option, index|
+      selected = user_options[index]
       if selected.nil?
         option.a.when_present.click
       else
-        option.as[selected-1].click
+        option.as[selected-1].when_present.click
       end
-      count +=1
     end
     sleep 2
   end
 
   def add_to_cart_mobile
-    sleep 2
-    @b.link(id: "j-add-cart-btn").when_present.click
-    sleep 2
-    if @b.div(class: "ui-add-shopcart-dialog").present?
-      p "Adicionado OK"
+    if @b.a(class: "back").present?
+      @b.a(class: "back").click
+      @b.button.when_present.click
     else
-      @error = "Falha ao adicionar ao carrinho: #{@b.url}"
-      @log.add_message(@error)
+      @b.buttons[2].click
     end
+    sleep 2
   end
 
   #Adiciona quantidade certa do item
   def add_quantity_mobile quantity
     (quantity -1).times do
-      @b.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").when_present.click
+      @b.a(class:"ms-plus").when_present.click
     end
   end
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
   def set_options_mobile user_options
-    count = 0
-    @b.div(id: "j-product-info-sku").dls.each do |option|
-      selected = user_options[count]
-      if selected.nil?
-        option.a.when_present.click
+    sleep 2
+    @b.divs(class: "ms-sku-props").each_with_index do |option, index|
+      selected = user_options[index]
+      if option.img.present? && selected.nil?
+        option.img.when_present.click
+      elsif option.img.present?
+        option.imgs[selected-1].when_present.click
+      elsif selected.nil?
+        option.span.when_present.click
       else
-        option.as[selected-1].click
+        option.spans[selected-1].when_present.click
       end
-      count +=1
     end
     sleep 2
   end
+
 
   #finaliza pedido com informações do cliente
   def complete_order customer
@@ -207,7 +207,7 @@ class Crawler < ActiveRecord::Base
     @b.divs(class: "panel-select")[0].when_present.click
     sleep 2
     @b.li(text: "Brazil").when_present.click
-    @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"])
+    @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"]+" "+customer['number'])
     @b.text_field(name: "_fmh.m._0.ad").when_present.set to_english(customer["address_2"])
     @b.divs(class: "panel-select")[2].when_present.click
     arr = self.state.assoc(customer["state"])

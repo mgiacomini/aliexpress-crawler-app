@@ -7,7 +7,7 @@ class ProductType < ActiveRecord::Base
     "https://m.aliexpress.com/item/#{link}"
   end
 
-  def self.type
+  def type
     link = self.aliexpress_link.gsub("?","/").split("/")
     link = link.select{|s| s.include?(".html")}.first
     if link.include?("_")
