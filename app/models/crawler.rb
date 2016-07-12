@@ -116,6 +116,7 @@ class Crawler < ActiveRecord::Base
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
     @b = Watir::Browser.new :phantomjs
+    Watir.default_timeout = 300
     @b.window.maximize
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
