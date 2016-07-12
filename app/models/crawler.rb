@@ -33,45 +33,23 @@ class Crawler < ActiveRecord::Base
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
               raise if product_type.aliexpress_link.nil?
-              # if product_type.type == "mobile"
-              #   @b.goto product_type.mobile_link
-              #   user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-              #   @b.section(class: "ms-detail-sku").when_present.click
-              #   p 'Selecionando opções'
-              #   self.set_options_mobile user_options
-              #   stock = @b.section(class: "ms-quantity").when_present.text.split[1].to_i
-              #   if quantity > stock #Verifica estoque
-              #     @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
-              #     @log.add_message(@error)
-              #     break
-              #   else
-              #     #Ações dos produtos
-              #     p "Adicionando #{quantity} ao carrinho"
-              #     self.add_quantity_mobile quantity
-              #     # self.set_shipping @b, user_options
-              #     p 'Adicionando ao carrinho'
-              #     self.add_to_cart_mobile
-              #   end
-              # else
-                @b.goto product_type.parsed_link #Abre link do produto
-                # @b.goto product_type.aliexpress_link #Abre link do produto
-                p 'Selecionando opções'
-                user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
-                self.set_options user_options
-                stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
-                if quantity > stock #Verifica estoque
-                  @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
-                  @log.add_message(@error)
-                  break
-                else
-                  #Ações dos produtos
-                  p "Adicionando #{quantity} ao carrinho"
-                  self.add_quantity quantity
-                  # self.set_shipping @b, user_options
-                  p 'Adicionando ao carrinho'
-                  self.add_to_cart
-                end
-              # end
+              @b.goto product_type.parsed_link #Abre link do produto
+              p 'Selecionando opções'
+              user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+              self.set_options user_options
+              stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
+              if quantity > stock #Verifica estoque
+                @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+                @log.add_message(@error)
+                break
+              else
+                #Ações dos produtos
+                p "Adicionando #{quantity} ao carrinho"
+                self.add_quantity quantity
+                # self.set_shipping @b, user_options
+                p 'Adicionando ao carrinho'
+                self.add_to_cart
+              end
             rescue
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
@@ -96,7 +74,7 @@ class Crawler < ActiveRecord::Base
       rescue
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(@error)
-        # next
+        next
       rescue => e
         @error = e.message
         @log.add_message(@error)
@@ -116,7 +94,7 @@ class Crawler < ActiveRecord::Base
   def login
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
     @b = Watir::Browser.new :phantomjs
-    Watir.default_timeout = 300
+    Watir.default_timeout = 90
     @b.window.maximize
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
@@ -131,9 +109,9 @@ class Crawler < ActiveRecord::Base
   end
   #Adiciona item ao carrinho
   def add_to_cart
-    sleep 2
+    sleep 5
     @b.link(id: "j-add-cart-btn").when_present.click
-    sleep 2
+    sleep 5
     if @b.div(class: "ui-add-shopcart-dialog").present?
       p "Adicionado OK"
     else
@@ -159,7 +137,7 @@ class Crawler < ActiveRecord::Base
         option.as[selected-1].when_present.click
       end
     end
-    sleep 2
+    sleep 5
   end
 
   def add_to_cart_mobile
@@ -169,7 +147,7 @@ class Crawler < ActiveRecord::Base
     else
       @b.buttons[2].click
     end
-    sleep 2
+    sleep 5
   end
 
   #Adiciona quantidade certa do item
@@ -181,7 +159,7 @@ class Crawler < ActiveRecord::Base
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
   def set_options_mobile user_options
-    sleep 2
+    sleep 5
     @b.divs(class: "ms-sku-props").each_with_index do |option, index|
       selected = user_options[index]
       if option.img.present? && selected.nil?
@@ -194,7 +172,7 @@ class Crawler < ActiveRecord::Base
         option.spans[selected-1].when_present.click
       end
     end
-    sleep 2
+    sleep 5
   end
 
 
@@ -207,13 +185,13 @@ class Crawler < ActiveRecord::Base
     @log.add_message('Adicionando informações do cliente')
     @b.text_field(name: "_fmh.m._0.c").when_present.set to_english(customer["first_name"]+" "+customer["last_name"])
     @b.divs(class: "panel-select")[0].when_present.click
-    sleep 2
+    sleep 5
     @b.li(text: "Brazil").when_present.click
     @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"]+" "+customer['number'])
     @b.text_field(name: "_fmh.m._0.ad").when_present.set to_english(customer["address_2"])
     @b.divs(class: "panel-select")[2].when_present.click
     arr = self.state.assoc(customer["state"])
-    sleep 2
+    sleep 5
     @b.li(text: arr[1]).when_present.click
     @b.text_field(name: "_fmh.m._0.ci").when_present.set to_english(customer["city"])
     @b.text_field(name: "_fmh.m._0.z").when_present.set customer["postcode"]
