@@ -1,7 +1,8 @@
 class ProductTypesController < ApplicationController
   before_action :set_product_type, only: [:edit, :update, :show, :destroy]
   def index
-    @product_types = ProductType.all.joins(:product)
+    @product_types = ProductType.paginate(:page => params[:page])
+                                .joins(:product)
                                 .merge(Product.order(:name))
                                 .order(:name)
   end

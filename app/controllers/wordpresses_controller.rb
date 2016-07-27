@@ -21,6 +21,7 @@ class WordpressesController < ApplicationController
   def show
     @product = Product.where(store: @wordpress.name)
     @product_types = ProductType.where(product: @product)
+                                .paginate(:page => params[:page])
                                 .joins(:product)
                                 .merge(Product.order(:name))
                                 .order(:name)

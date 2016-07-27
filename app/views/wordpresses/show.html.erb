@@ -31,6 +31,7 @@
               method: :post,
               :class => 'btn btn-primary' %>
 <div class="table-responsive">
+  <%= will_paginate @product_types %>
   <table class="table table-condensed">
     <thead>
       <tr>
@@ -72,4 +73,5 @@
       <% end %>
     </tbody>
   </table>
+  <%= will_paginate @product_types %>
 </div>

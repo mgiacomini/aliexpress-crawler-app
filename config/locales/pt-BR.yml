@@ -141,6 +141,8 @@ pt-BR:
 
   # ActiveRecord
   activerecord:
+    models:
+      product_type: 'Produto'
     attributes:
       aliexpress:
         name: 'Nome'
@@ -194,3 +196,8 @@ pt-BR:
         odd: "deve ser ímpar"
         even: "deve ser par"
         record_invalid: "A validação falhou: %{errors}"
+        en:
+  will_paginate:
+    previous_label: "&#8592; Anterior"
+    next_label: "Próximo &#8594;"
+    page_gap: "&hellip;"

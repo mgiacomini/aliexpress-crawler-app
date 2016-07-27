@@ -1,6 +1,6 @@
 <%- model_class = ProductType -%>
 <div class="page-header">
-  <h1><%=t '.title', :default => model_class.model_name.human.titleize %></h1>
+  <h1><%=t '.title', :default => model_class.model_name.human.titleize.pluralize %></h1>
   <h4>
     <p>Instruções:</p>
     <p>Após configurar o Wordpress, utilizar o botão 'Importar Produtos' para preencher a lista</p>
@@ -14,6 +14,7 @@
 import_all_products_path, method: :post,
 :class => 'btn btn-primary' %>
 <div class="table-responsive">
+  <%= will_paginate @product_types %>
   <table class="table table-condensed">
     <thead>
       <tr>
@@ -56,4 +57,5 @@ import_all_products_path, method: :post,
       <% end %>
     </tbody>
   </table>
+  <%= will_paginate @product_types %>
 </div>
