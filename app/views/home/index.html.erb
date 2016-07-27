@@ -1,9 +1,10 @@
 <h1>Utilização do sitema</h1>
 <h4><br><p>1 - Preencher na aba Configurações com informações da
-          <%= link_to 'Aliexpress', aliexpresses_path %> e
-          <%= link_to 'Wordpress', wordpresses_path %></p>
-  <br><p>2- Na aba <%= link_to 'Produtos', product_types_path %>,
+          <%= link_to Aliexpress.model_name, aliexpresses_path %> e
+          <%= link_to Wordpress.model_name, wordpresses_path %></p>
+  <br><p>2- Na aba <%= link_to Product.model_name.human.titleize.pluralize, product_types_path %>,
           importar os pedidos do Wordpress e preencher o link Aliexpress</p>
-  <br><p>3 - Criar um <%= link_to 'Crawler', crawlers_path %>, escolher suas configurações e ativá-lo</p>
+  <br><p>3 - Criar um <%= link_to Crawler.model_name, crawlers_path %>, escolher suas configurações e ativá-lo</p>
+  <br><p>4- Acompanhar os resultados após a execução em <%= link_to CrawlerLog.model_name.human.titleize.pluralize, crawler_logs_path %></p>
   <br><p> Mais instruções ao abrir as abas</p>
 </h4>

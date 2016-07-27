@@ -143,6 +143,8 @@ pt-BR:
   activerecord:
     models:
       product_type: 'Produto'
+      product: 'Produto'
+      crawler_log: 'Log'
     attributes:
       aliexpress:
         name: 'Nome'
@@ -197,7 +199,13 @@ pt-BR:
         even: "deve ser par"
         record_invalid: "A validação falhou: %{errors}"
         en:
+  #Paginação
   will_paginate:
     previous_label: "&#8592; Anterior"
     next_label: "Próximo &#8594;"
     page_gap: "&hellip;"
+  #Views
+  all_products: 'Todos os Produtos'
+  settings: 'Configurações'
+  login: 'Login'
+  logout: 'Logout'

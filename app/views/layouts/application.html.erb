@@ -48,25 +48,25 @@
         <a class="navbar-brand" href="<%=root_path%>">Home
         <div class="navbar-collapse collapse navbar-responsive-collapse">
           <ul class="nav navbar-nav">
-            <li><%=link_to "Crawler", crawlers_path%></a></li>
-            <li><%=link_to "Logs", crawler_logs_path%></a></li>
-            <%= drop_down "Produtos" do %>
-              <%= menu_item "Todos os produtos", product_types_path %>
+            <li><%=link_to Crawler.model_name.human.titleize, crawlers_path%></a></li>
+            <li><%=link_to CrawlerLog.model_name.human.titleize.pluralize, crawler_logs_path%></a></li>
+            <%= drop_down Product.model_name.human.titleize.pluralize do %>
+              <%= menu_item t('all_products'), product_types_path %>
               <% Wordpress.all.each do |wordpress| %>
                 <%= menu_item wordpress.name, wordpress_path(wordpress) %>
               <% end %>
             <% end %>
-            <%= drop_down "Configurações" do %>
-              <%= menu_item "Wordpress", wordpresses_path %>
-              <%= menu_item "Aliexpress", aliexpresses_path %>
+            <%= drop_down t('settings') do %>
+              <%= menu_item Wordpress.model_name.human.titleize, wordpresses_path %>
+              <%= menu_item Aliexpress.model_name.human.titleize, aliexpresses_path %>
             <% end %>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <%= button_to 'Login', new_user_session_path,
+            <%= button_to t('login'), new_user_session_path,
                 class:'btn btn-default navbar-btn' unless current_user %>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-            <li><%= button_to 'Logout', destroy_user_session_path,
+            <li><%= button_to t('logout'), destroy_user_session_path,
                 class:'btn btn-default navbar-btn',
                 :method => :delete if current_user %></li>
           </ul>
