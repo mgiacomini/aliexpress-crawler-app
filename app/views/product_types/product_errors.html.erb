@@ -42,14 +42,14 @@
           <td><%=l product_type.updated_at %></td>
           <td>
             <%= link_to t('.edit', :default => t("helpers.links.edit")),
-                        edit_product_type_path(product_type), :class => 'btn btn-default btn-xs' %>
+                        edit_product_type_path(product_type), :class => 'btn btn-success btn-xs' %>
             <%= link_to t('.clear_errors'),
                         clear_errors_product_type_path(product_type), :class => 'btn btn-default btn-xs' %>
             <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
                         product_type_path(product_type),
                         :method => :delete,
                         :data => { :confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?')) },
-                        :class => 'btn btn-xs btn-success' %>
+                        :class => 'btn btn-xs btn-danger' %>
           </td>
         </tr>
       <% end %>
