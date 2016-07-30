@@ -3,16 +3,12 @@
   <h1><%=t '.title', :default => model_class.model_name.human.titleize.pluralize %></h1>
   <h4>
     <p>Instruções:</p>
-    <p>Após configurar o Wordpress, utilizar o botão 'Importar Produtos' para preencher a lista</p>
-    <p>Após isso, preencher o link da aliexpress clicando em 'Editar'</p>
+    <p> </p>
     <p>
       <strong>Atenção:</strong> para as opções e frete, usar apenas números, por exemplo, a primeira opção (da esquerda para  a direita, equivale ao número 1)
     </p>
   </h4>
 </div>
-<%= link_to t('.import_products', :default => t("helpers.links.import_products")),
-import_all_products_path, method: :post,
-:class => 'btn btn-primary' %>
 <div class="table-responsive">
   <%= will_paginate @product_types %>
   <table class="table table-condensed">
