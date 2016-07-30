@@ -1,5 +1,5 @@
 class ProductTypesController < ApplicationController
-  before_action :set_product_type, only: [:edit, :update, :show, :destroy]
+  before_action :set_product_type, only: [:edit, :update, :show, :destroy, :clear_errors]
   def index
     @product_types = ProductType.paginate(:page => params[:page])
                                 .joins(:product)
@@ -44,7 +44,9 @@ class ProductTypesController < ApplicationController
   end
 
   def clear_errors
-    ProductType.clear_errors(@product_type)
+    @product_type.product_errors = 0
+    @product_type.save
+    redirect_to :back, notice: "Você limpou os erros do produto #{@product_type.product.name}"
   end
 
   private
@@ -55,6 +57,6 @@ class ProductTypesController < ApplicationController
 
   def product_type_params
     params.require(:product_type).permit(:name, :aliexpress_link, :option_1,
-                                    :option_2, :option_3, :shipping)
+                                         :option_2, :option_3, :shipping)
   end
 end

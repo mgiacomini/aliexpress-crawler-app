@@ -18,8 +18,4 @@ class ProductType < ActiveRecord::Base
   def add_error
     self.update(product_errors: self.product_errors+=1)
   end
-
-  def self.clear_errors product_type
-    product_type.update(product_errors: 0)
-  end
 end

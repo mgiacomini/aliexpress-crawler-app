@@ -7,7 +7,7 @@ Rails.application.routes.draw do
   end
   resources :product_types do
     collection { get :product_errors}
-    post :clear_errors, on: :member
+    put :clear_errors, on: :member
   end
   resources :wordpresses do
     post :import_products, on: :member

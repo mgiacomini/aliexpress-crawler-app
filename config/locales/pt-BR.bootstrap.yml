@@ -18,6 +18,7 @@ pt-BR:
       edit: "Editar"
       import_products: "Importar Produtos"
       show: "Ver Mais"
+      clear_errors: 'OK'
     titles:
       product: "Produtos"
       edit: "Editar %{model}"

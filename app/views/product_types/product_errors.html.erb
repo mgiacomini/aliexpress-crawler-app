@@ -43,7 +43,7 @@
           <td>
             <%= link_to t('.edit', :default => t("helpers.links.edit")),
                         edit_product_type_path(product_type), :class => 'btn btn-default btn-xs' %>
-            <%= link_to t('.clear_errors'),
+            <%= link_to t('.clear_errors', :default => t("helpers.links.clear_errors")),
                         clear_errors_product_type_path(product_type), :class => 'btn btn-success btn-xs' %>
             <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
                         product_type_path(product_type),
