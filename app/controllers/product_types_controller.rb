@@ -36,7 +36,7 @@ class ProductTypesController < ApplicationController
   end
 
   def product_errors
-    @product_types = ProductType.where("errors > 0")
+    @product_types = ProductType.where("product_errors > 0")
                                 .paginate(:page => params[:page])
                                 .joins(:product)
                                 .merge(Product.order(:name))
