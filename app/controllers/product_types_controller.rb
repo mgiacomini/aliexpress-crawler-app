@@ -40,7 +40,7 @@ class ProductTypesController < ApplicationController
                                 .paginate(:page => params[:page])
                                 .joins(:product)
                                 .merge(Product.order(:name))
-                                .order(errors: :desc)
+                                .order(product_errors: :desc)
   end
 
   def clear_errors
