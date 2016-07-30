@@ -44,7 +44,7 @@ class ProductTypesController < ApplicationController
   end
 
   def clear_errors
-    @product_type.clear_errors
+    ProductType.clear_errors(@product_type)
   end
 
   private
