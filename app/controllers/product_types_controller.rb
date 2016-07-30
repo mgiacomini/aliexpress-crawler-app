@@ -35,6 +35,18 @@ class ProductTypesController < ApplicationController
     redirect_to product_types_path, alert: "Falha ao importar, checar configurações do Wordpress."
   end
 
+  def product_errors
+    @product_types = ProductType.where("errors > 0")
+                                .paginate(:page => params[:page])
+                                .joins(:product)
+                                .merge(Product.order(:name))
+                                .order(errors: :desc)
+  end
+
+  def clear_errors
+    @product_type.clear_errors
+  end
+
   private
 
   def set_product_type

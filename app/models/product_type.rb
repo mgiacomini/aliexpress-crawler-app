@@ -14,4 +14,12 @@ class ProductType < ActiveRecord::Base
     item = link.select{|s| s.include?("-")}.first
     "http://pt.aliexpress.com/item/#{item}/#{id}"
   end
+
+  def add_error
+    self.update(errors: self.errors+=1)
+  end
+
+  def clear_errors
+    self.update(errors: 0)
+  end
 end

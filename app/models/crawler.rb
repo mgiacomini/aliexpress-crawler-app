@@ -49,10 +49,12 @@ class Crawler < ActiveRecord::Base
                 # self.set_shipping @b, user_options
                 p 'Adicionando ao carrinho'
                 self.add_to_cart
+                product_type.clear_errors
               end
             rescue
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
+              product_type.add_error
               break
             end
           end

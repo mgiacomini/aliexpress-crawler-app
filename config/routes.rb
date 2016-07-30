@@ -5,7 +5,10 @@ Rails.application.routes.draw do
   resources :products do
     collection { post :import_all }
   end
-  resources :product_types
+  resources :product_types do
+    collection { get :product_errors}
+    post :clear_errors, on: :member
+  end
   resources :wordpresses do
     post :import_products, on: :member
   end
