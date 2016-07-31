@@ -6,6 +6,7 @@ class Crawler < ActiveRecord::Base
   has_many :crawler_logs
 
   def run(orders)
+    tries ||= 3
   # def run
     # order = self.wordpress.woocommerce.get("orders/93696")['order']
     @log = CrawlerLog.create!(crawler: self)
@@ -51,9 +52,10 @@ class Crawler < ActiveRecord::Base
                 self.add_to_cart
                 product_type.update(product_errors: 0)
               end
-            rescue
+            rescue => e
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
+              p e.message
               product_type.add_error
               break
             end
@@ -73,27 +75,26 @@ class Crawler < ActiveRecord::Base
         else
           raise
         end
-      rescue
-        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        @log.add_message(@error)
-        next
       rescue => e
-        @error = e.message
+        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        p e.message
         @log.add_message(@error)
       end
     end
   @b.close
-  rescue
-    @error = "Erro desconhecido, procurar administrador."
-    @log.add_message(@error)
+  rescue TimeoutError => e
+    @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
+    retry unless (tries -= 1).zero?
   rescue => e
-    @error = e.message
+    @error = "Erro desconhecido, procurar administrador."
+    p e.message
     @log.add_message(@error)
   end
 
 
   #Efetua login no site da Aliexpresss usando user e password
   def login
+    tries ||= 3
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
     @b = Watir::Browser.new :phantomjs
     Watir.default_timeout = 90
@@ -106,9 +107,14 @@ class Crawler < ActiveRecord::Base
     frame.button(name: 'submit-btn').click
     frame.wait_while_present
     true
-  rescue
+  rescue TimeoutError => e
+    @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
+    retry unless (tries -= 1).zero?
+  rescue => e
+    p e.message
     false
   end
+
   #Adiciona item ao carrinho
   def add_to_cart
     sleep 5
@@ -247,6 +253,7 @@ class Crawler < ActiveRecord::Base
 
   #Esvazia carrinho
   def empty_cart
+    tries ||= 3
     p 'Esvaziando carrinho'
     @b.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     empty = @b.link(class: "remove-all-product")
@@ -255,8 +262,12 @@ class Crawler < ActiveRecord::Base
       @b.div(class: "ui-window-btn").button.when_present.click
       empty.wait_while_present
     end
-  rescue
+  rescue TimeoutError => e
+    @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
+    retry unless (tries -= 1).zero?
+  rescue => e
     @error = "Falha ao esvaziar carrinho, verificar conexão."
+    p e.message
     @log.add_message(@error)
     exit
   end
