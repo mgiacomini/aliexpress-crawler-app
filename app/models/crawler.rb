@@ -35,7 +35,7 @@ class Crawler < ActiveRecord::Base
               raise if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
               p 'Selecionando opções'
-              user_options = [product_type.option_1,product_type.option_3,product_type.option_3]
+              user_options = [product_type.option_1,product_type.option_2 ,product_type.option_3]
               self.set_options user_options
               stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
               if quantity > stock #Verifica estoque
@@ -49,7 +49,7 @@ class Crawler < ActiveRecord::Base
                 # self.set_shipping @b, user_options
                 p 'Adicionando ao carrinho'
                 self.add_to_cart
-                product_type.clear_errors
+                product_type.update(product_errors: 0)
               end
             rescue
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
