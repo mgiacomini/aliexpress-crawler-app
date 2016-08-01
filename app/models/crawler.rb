@@ -55,7 +55,7 @@ class Crawler < ActiveRecord::Base
             rescue => e
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
-              p e.message
+              @log.add_message(e.message)
               product_type.add_error
               break
             end
@@ -77,7 +77,7 @@ class Crawler < ActiveRecord::Base
         end
       rescue => e
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        p e.message
+        @log.add_message(e.message)
         @log.add_message(@error)
       end
     end
@@ -87,7 +87,7 @@ class Crawler < ActiveRecord::Base
     retry unless (tries -= 1).zero?
   rescue => e
     @error = "Erro desconhecido, procurar administrador."
-    p e.message
+    @log.add_message(e.message)
     @log.add_message(@error)
   end
 
@@ -111,7 +111,7 @@ class Crawler < ActiveRecord::Base
     @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
     retry unless (tries -= 1).zero?
   rescue => e
-    p e.message
+    @log.add_message(e.message)
     false
   end
 
@@ -267,7 +267,7 @@ class Crawler < ActiveRecord::Base
     retry unless (tries -= 1).zero?
   rescue => e
     @error = "Falha ao esvaziar carrinho, verificar conexão."
-    p e.message
+    @log.add_message(e.message)
     @log.add_message(@error)
     exit
   end
