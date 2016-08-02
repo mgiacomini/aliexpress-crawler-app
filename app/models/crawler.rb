@@ -48,7 +48,6 @@ class Crawler < ActiveRecord::Base
                 p "Adicionando #{quantity} ao carrinho"
                 self.add_quantity quantity
                 # self.set_shipping @b, user_options
-                p 'Adicionando ao carrinho'
                 self.add_to_cart
                 product_type.update(product_errors: 0)
               end
