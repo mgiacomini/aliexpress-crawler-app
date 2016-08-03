@@ -196,7 +196,7 @@ class Crawler < ActiveRecord::Base
     sleep 5
     @b.li(text: "Brazil").when_present.click
     if customer['number'].nil?
-      @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"]
+      @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"])
     else
       @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"]+" "+customer['number'])
     end
