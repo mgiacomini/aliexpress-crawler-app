@@ -8,7 +8,7 @@ gem 'turbolinks'
 gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'woocommerce_api', '~> 1.2.1'
-gem 'watir-webdriver', '0.9.1'
+gem 'watir-webdriver'
 gem 'pry'
 gem 'simple_form', '3.2.1'
 gem 'devise', '3.5.6'

@@ -33,7 +33,10 @@ class Crawler < ActiveRecord::Base
                 end
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
-              raise "link aliexpress não cadastrado" if product_type.aliexpress_link.nil?
+              if product_type.aliexpress_link.nil?
+                raise "link aliexpress não cadastrado"
+                break
+              end
               @b.goto product_type.parsed_link #Abre link do produto
               p 'Selecionando opções'
               user_options = [product_type.option_1,product_type.option_2 ,product_type.option_3]
@@ -136,7 +139,6 @@ class Crawler < ActiveRecord::Base
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
   def set_options user_options
-    sleep 5
     @b.div(id: "j-product-info-sku").dls.each_with_index do |option, index|
       selected = user_options[index]
       if selected.nil?
