@@ -48,13 +48,14 @@ class Crawler < ActiveRecord::Base
                 p "Adicionando #{quantity} ao carrinho"
                 self.add_quantity quantity
                 # self.set_shipping @b, user_options
+                p 'Adicionando ao carrinho'
                 self.add_to_cart
                 product_type.update(product_errors: 0)
               end
             rescue => e
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
-              @log.add_message(e.message)
+              p e.message
               product_type.add_error
               break
             end
@@ -76,7 +77,7 @@ class Crawler < ActiveRecord::Base
         end
       rescue => e
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        @log.add_message(e.message)
+        p e.message
         @log.add_message(@error)
       end
     end
@@ -86,7 +87,7 @@ class Crawler < ActiveRecord::Base
     retry unless (tries -= 1).zero?
   rescue => e
     @error = "Erro desconhecido, procurar administrador."
-    @log.add_message(e.message)
+    p e.message
     @log.add_message(@error)
   end
 
@@ -106,11 +107,10 @@ class Crawler < ActiveRecord::Base
     frame.button(name: 'submit-btn').click
     frame.wait_while_present
     true
-  rescue TimeoutError => e
-    @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
-    retry unless (tries -= 1).zero?
   rescue => e
     @log.add_message(e.message)
+    @log.add_message("Erro de login, Tentando mais #{tries} vezes")
+    retry unless (tries -= 1).zero?
     false
   end
 
@@ -136,6 +136,7 @@ class Crawler < ActiveRecord::Base
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
   def set_options user_options
+    sleep 5
     @b.div(id: "j-product-info-sku").dls.each_with_index do |option, index|
       selected = user_options[index]
       if selected.nil?
@@ -185,6 +186,7 @@ class Crawler < ActiveRecord::Base
 
   #finaliza pedido com informações do cliente
   def complete_order customer
+    binding.pry
     @b.div(class: "buyall").when_present.click
     @b.a(id: "change-address").when_present.click
     @b.a(id: "manageAddressHref").when_present.click
@@ -252,7 +254,6 @@ class Crawler < ActiveRecord::Base
 
   #Esvazia carrinho
   def empty_cart
-    tries ||= 3
     p 'Esvaziando carrinho'
     @b.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     empty = @b.link(class: "remove-all-product")
@@ -261,12 +262,9 @@ class Crawler < ActiveRecord::Base
       @b.div(class: "ui-window-btn").button.when_present.click
       empty.wait_while_present
     end
-  rescue TimeoutError => e
-    @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
-    retry unless (tries -= 1).zero?
   rescue => e
     @error = "Falha ao esvaziar carrinho, verificar conexão."
-    @log.add_message(e.message)
+    p
     @log.add_message(@error)
     exit
   end
