@@ -17,6 +17,7 @@ gem 'coffee-rails', '~> 4.1.0'
 gem 'uglifier', '>= 1.3.0'
 gem 'twitter-bootstrap-rails', '3.2.0'
 gem 'will_paginate', '~> 3.0.5'
+gem 'rack', '1.6.4'
 
 group :development, :test do
   gem 'byebug'
