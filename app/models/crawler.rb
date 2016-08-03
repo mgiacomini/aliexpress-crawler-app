@@ -33,7 +33,7 @@ class Crawler < ActiveRecord::Base
                 end
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
-              raise if product_type.aliexpress_link.nil?
+              raise "link aliexpress não cadastrado" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
               p 'Selecionando opções'
               user_options = [product_type.option_1,product_type.option_2 ,product_type.option_3]
@@ -186,7 +186,6 @@ class Crawler < ActiveRecord::Base
 
   #finaliza pedido com informações do cliente
   def complete_order customer
-    binding.pry
     @b.div(class: "buyall").when_present.click
     @b.a(id: "change-address").when_present.click
     @b.a(id: "manageAddressHref").when_present.click
@@ -196,7 +195,11 @@ class Crawler < ActiveRecord::Base
     @b.divs(class: "panel-select")[0].when_present.click
     sleep 5
     @b.li(text: "Brazil").when_present.click
-    @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"]+" "+customer['number'])
+    if customer['number'].nil?
+      @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"]
+    else
+      @b.text_field(name: "_fmh.m._0.a").when_present.set to_english(customer["address_1"]+" "+customer['number'])
+    end
     @b.text_field(name: "_fmh.m._0.ad").when_present.set to_english(customer["address_2"])
     @b.divs(class: "panel-select")[2].when_present.click
     arr = self.state.assoc(customer["state"])
