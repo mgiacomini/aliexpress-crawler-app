@@ -13,7 +13,7 @@ class Crawler < ActiveRecord::Base
     @log.update(orders_count: orders.count)
     raise "Não há pedidos a serem executados" if orders.count == 0
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
-    orders.each do |order|
+    orders.reverse_each do |order|
       @error = nil
       begin
         self.empty_cart #Esvazia Carrinho
@@ -209,7 +209,7 @@ class Crawler < ActiveRecord::Base
     @b.li(text: arr[1]).when_present.click
     @b.text_field(name: "_fmh.m._0.ci").when_present.set to_english(customer["city"])
     @b.text_field(name: "_fmh.m._0.z").when_present.set customer["postcode"]
-    @b.text_field(name: "_fmh.m._0.m").when_present.set '11959642036'
+    @b.text_field(name: "_fmh.m._0.m").when_present.set '11941873849'
     @b.button.click
     p 'Salvando'
     @b.button(id: "create-order").when_present.click #Botão Finalizar pedido
