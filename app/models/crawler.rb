@@ -190,6 +190,7 @@ class Crawler < ActiveRecord::Base
   def complete_order customer
     @b.div(class: "buyall").when_present.click
     @b.a(id: "change-address").when_present.click
+    sleep 2
     @b.a(id: "manageAddressHref").click if @b.a(id: "manageAddressHref").present?
     #Preenche campos de endereço
     @log.add_message('Adicionando informações do cliente')
