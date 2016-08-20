@@ -9,5 +9,4 @@ class ProductsController < ApplicationController
   rescue
     redirect_to product_types_path, alert: "Falha ao importar, checar configurações do Wordpress."
   end
-  
 end
