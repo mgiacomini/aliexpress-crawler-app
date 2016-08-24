@@ -1,5 +1,4 @@
 source 'https://rubygems.org'
-ruby '2.2.4'
 gem 'rails', '4.2.6'
 gem 'pg', '~> 0.15'
 gem 'unicorn', '~> 5.1'
