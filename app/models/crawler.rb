@@ -41,20 +41,19 @@ class Crawler < ActiveRecord::Base
               p 'Selecionando opções'
               user_options = [product_type.option_1,product_type.option_2 ,product_type.option_3]
               self.set_options user_options
-              stock = @b.dl(id: "j-product-quantity-info").text.split[2].gsub("(","").to_i
-              if quantity > stock #Verifica estoque
-                @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
-                @log.add_message(@error)
-                break
-              else
                 #Ações dos produtos
                 p "Adicionando #{quantity} ao carrinho"
                 self.add_quantity quantity
-                # self.set_shipping @b, user_options
+                if @b.text_field(name: 'quantity').value.to_i != quantity #Verifica quantidade
+                  @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
+                  @log.add_message(@error)
+                  break
+                end
+                binding.pry
+                self.set_shipping product_type.shipping unless product_type.shipping.nil?
                 p 'Adicionando ao carrinho'
                 self.add_to_cart
                 product_type.update(product_errors: 0)
-              end
             rescue => e
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
@@ -135,6 +134,15 @@ class Crawler < ActiveRecord::Base
     (quantity -1).times do
       @b.dl(id: "j-product-quantity-info").i(class: "p-quantity-increase").when_present.click
     end
+  end
+
+  #Seleciona o frete
+  def set_shipping shipping
+    @b.a(class: "shipping-link").when_present.click
+    sleep 2
+    @b.tds(class: "col-cam")[shipping].when_present.click
+    @b.button(value: "OK").click
+    sleep 5
   end
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
