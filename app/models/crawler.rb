@@ -49,7 +49,6 @@ class Crawler < ActiveRecord::Base
                   @log.add_message(@error)
                   break
                 end
-                binding.pry
                 self.set_shipping product_type.shipping unless product_type.shipping.nil?
                 p 'Adicionando ao carrinho'
                 self.add_to_cart
