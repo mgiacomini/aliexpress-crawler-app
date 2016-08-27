@@ -138,7 +138,7 @@ class Crawler < ActiveRecord::Base
   #Seleciona o frete
   def set_shipping shipping
     @b.a(class: "shipping-link").when_present.click
-    sleep 2
+    sleep 5
     @b.tds(class: "col-cam")[shipping].when_present.click
     @b.button(value: "OK").click
     sleep 5
