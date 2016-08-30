@@ -16,15 +16,18 @@ class Crawler < ActiveRecord::Base
     orders.reverse_each do |order|
       @error = nil
       begin
-        self.empty_cart #Esvazia Carrinho
         @log.add_message("-------------------")
         @log.add_message("Processando pedido ##{order['id']}")
+        self.empty_cart #Esvazia Carrinho
         customer = order["shipping_address"] #Loop para todos os produtos
           order["line_items"].each do |item|
             begin
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
-              raise "Produto não encontrado, necessário importar do wordpress" if product.nil?
+              if product.nil?
+                raise "Produto não encontrado, necessário importar do wordpress"
+                break
+              end
               if (meta = item["meta"]).empty?
                 product_type = ProductType.find_by(product: product)
               else
