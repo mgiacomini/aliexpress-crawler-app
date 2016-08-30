@@ -24,6 +24,7 @@ class Crawler < ActiveRecord::Base
             begin
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
+              raise "Produto não encontrado, necessário importar do wordpress" if product.nil?
               if (meta = item["meta"]).empty?
                 product_type = ProductType.find_by(product: product)
               else
@@ -34,7 +35,7 @@ class Crawler < ActiveRecord::Base
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
               if product_type.aliexpress_link.nil?
-                raise "link aliexpress não cadastrado"
+                raise "Link aliexpress não cadastrado para esse produto"
                 break
               end
               @b.goto product_type.parsed_link #Abre link do produto
@@ -54,9 +55,9 @@ class Crawler < ActiveRecord::Base
                 self.add_to_cart
                 product_type.update(product_errors: 0)
             rescue => e
+              @log.add_message(e.message)
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
-              p e.message
               product_type.add_error
               break
             end
@@ -267,6 +268,7 @@ class Crawler < ActiveRecord::Base
 
   #Esvazia carrinho
   def empty_cart
+    tries ||= 3
     p 'Esvaziando carrinho'
     @b.goto 'http://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     empty = @b.link(class: "remove-all-product")
@@ -276,9 +278,9 @@ class Crawler < ActiveRecord::Base
       empty.wait_while_present
     end
   rescue => e
-    @error = "Falha ao esvaziar carrinho, verificar conexão."
-    p
-    @log.add_message(@error)
+    @log.add_message(e.message)
+    @log.add_message("Falha ao esvaziar carrinho, verificar conexão, tentando mais 3 vezes")
+    retry unless (tries -= 1).zero?
     exit
   end
 end
