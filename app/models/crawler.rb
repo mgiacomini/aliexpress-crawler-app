@@ -24,9 +24,7 @@ class Crawler < ActiveRecord::Base
             begin
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
-              if product.nil?
-                raise "Produto não encontrado, necessário importar do wordpress"
-                break
+                raise "Produto não encontrado, necessário importar do wordpress" if product.nil?
               end
               if (meta = item["meta"]).empty?
                 product_type = ProductType.find_by(product: product)
@@ -37,10 +35,8 @@ class Crawler < ActiveRecord::Base
                 end
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
-              if product_type.aliexpress_link.nil?
-                raise "Link aliexpress não cadastrado para esse produto"
-                break
-              end
+              raise "Produto não encontrado, necessário importar do wordpress" if product_type.nil?
+              raise "Link aliexpress não cadastrado para esse produto" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
               p 'Selecionando opções'
               user_options = [product_type.option_1,product_type.option_2 ,product_type.option_3]
@@ -48,20 +44,15 @@ class Crawler < ActiveRecord::Base
                 #Ações dos produtos
                 p "Adicionando #{quantity} ao carrinho"
                 self.add_quantity quantity
-                if @b.text_field(name: 'quantity').value.to_i != quantity #Verifica quantidade
-                  @error =  "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!"
-                  @log.add_message(@error)
-                  break
-                end
+                raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity #Verifica quantidade
                 self.set_shipping product_type.shipping unless product_type.shipping.nil?
                 p 'Adicionando ao carrinho'
                 self.add_to_cart
-                product_type.update(product_errors: 0)
             rescue => e
               @log.add_message(e.message)
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
-              product_type.add_error
+              product_type.add_error if !product_type.nil?
               break
             end
           end
@@ -77,6 +68,7 @@ class Crawler < ActiveRecord::Base
           @error = self.wordpress.error
           @log.add_message(@error)
           @log.add_processed("Pedido #{order["id"]} processado com sucesso! Links aliexpress: #{order_nos.text}")
+          product_type.update(product_errors: 0)
         else
           raise
         end
@@ -87,7 +79,7 @@ class Crawler < ActiveRecord::Base
       end
     end
   @b.close
-  rescue TimeoutError => e
+  rescue Net::ReadTimeout => e
     @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
     retry unless (tries -= 1).zero?
   rescue => e
