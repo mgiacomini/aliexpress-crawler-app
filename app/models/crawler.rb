@@ -79,7 +79,7 @@ class Crawler < ActiveRecord::Base
       end
     end
   @b.close
-  rescue Net::ReadTimeout => e
+  rescue ReadTimeout => e
     @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
     retry unless (tries -= 1).zero?
   rescue => e
