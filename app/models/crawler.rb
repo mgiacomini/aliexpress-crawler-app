@@ -25,7 +25,6 @@ class Crawler < ActiveRecord::Base
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
                 raise "Produto não encontrado, necessário importar do wordpress" if product.nil?
-              end
               if (meta = item["meta"]).empty?
                 product_type = ProductType.find_by(product: product)
               else
@@ -41,13 +40,13 @@ class Crawler < ActiveRecord::Base
               p 'Selecionando opções'
               user_options = [product_type.option_1,product_type.option_2 ,product_type.option_3]
               self.set_options user_options
-                #Ações dos produtos
-                p "Adicionando #{quantity} ao carrinho"
-                self.add_quantity quantity
-                raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity #Verifica quantidade
-                self.set_shipping product_type.shipping unless product_type.shipping.nil?
-                p 'Adicionando ao carrinho'
-                self.add_to_cart
+              #Ações dos produtos
+              p "Adicionando #{quantity} ao carrinho"
+              self.add_quantity quantity
+              raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity #Verifica quantidade
+              self.set_shipping product_type.shipping unless product_type.shipping.nil?
+              p 'Adicionando ao carrinho'
+              self.add_to_cart
             rescue => e
               @log.add_message(e.message)
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
