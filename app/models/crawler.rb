@@ -73,7 +73,7 @@ class Crawler < ActiveRecord::Base
         end
       rescue => e
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
-        p e.message
+        @log.add_message(e.message)
         @log.add_message(@error)
       end
     end
@@ -83,7 +83,7 @@ class Crawler < ActiveRecord::Base
     retry unless (tries -= 1).zero?
   rescue => e
     @error = "Erro desconhecido, procurar administrador."
-    p e.message
+    @log.add_message(e.message)
     @log.add_message(@error)
   end
 
