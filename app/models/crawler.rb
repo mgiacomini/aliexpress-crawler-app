@@ -10,7 +10,7 @@ class Crawler < ActiveRecord::Base
   # def run
     # order = self.wordpress.woocommerce.get("orders/93696")['order']
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
-    
+
     raise "Não há pedidos a serem executados" if orders.count == 0
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
     orders.each do |order|
