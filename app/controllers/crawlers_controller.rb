@@ -1,7 +1,7 @@
 class CrawlersController < ApplicationController
   before_action :set_crawler, only: [:edit, :update, :show, :destroy, :enabled_status]
   def index
-    @crawlers = Crawler.all.order(:created_at
+    @crawlers = Crawler.all.order(:created_at)
   end
 
   def new
