@@ -44,8 +44,9 @@ class Crawler < ActiveRecord::Base
               self.set_options user_options
               #Ações dos produtos
               p "Adicionando #{quantity} ao carrinho"
+              raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if !@b.text_field(name: 'quantity').present? #Verifica disponibilidade
               self.add_quantity quantity
-              raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if !@b.text_field(name: 'quantity').present? || (@b.text_field(name: 'quantity').value.to_i != quantity)  #Verifica quantidade
+              raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity  #Verifica quantidade
               p 'Adicionando ao carrinho'
               self.add_to_cart
             rescue => e
