@@ -9,17 +9,17 @@ class Crawler < ActiveRecord::Base
     tries ||= 3
   # def run
     # order = self.wordpress.woocommerce.get("orders/93696")['order']
-    @log = CrawlerLog.create!(crawler: self)
-    @log.update(orders_count: orders.count)
+    @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
     raise "Não há pedidos a serem executados" if orders.count == 0
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
-    orders.reverse_each do |order|
+    orders.each do |order|
       @error = nil
       begin
         @log.add_message("-------------------")
         @log.add_message("Processando pedido ##{order['id']}")
         self.empty_cart #Esvazia Carrinho
         customer = order["shipping_address"] #Loop para todos os produtos
+        order_items = []
           order["line_items"].each do |item|
             begin
               quantity = item["quantity"]
@@ -34,6 +34,7 @@ class Crawler < ActiveRecord::Base
                 end
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
+              order_items << {product_type: product_type, shipping: 0}
               raise "Produto não encontrado, necessário importar do wordpress" if product_type.nil?
               raise "Link aliexpress não cadastrado para esse produto" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
@@ -44,7 +45,6 @@ class Crawler < ActiveRecord::Base
               p "Adicionando #{quantity} ao carrinho"
               self.add_quantity quantity
               raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity #Verifica quantidade
-              self.set_shipping product_type.shipping unless product_type.shipping.nil?
               p 'Adicionando ao carrinho'
               self.add_to_cart
             rescue => e
@@ -59,6 +59,7 @@ class Crawler < ActiveRecord::Base
         if @error.nil?
           @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
           raise "Erro com itens do carrinho, cancelando pedido" if @b.lis(id: "shopcart-").count != order["line_items"].count
+          self.set_shipping order_items
           order_nos = self.complete_order(customer)
           raise if !@error.nil?
           @log.add_message("Pedido completado na Aliexpress")
@@ -67,7 +68,7 @@ class Crawler < ActiveRecord::Base
           @error = self.wordpress.error
           @log.add_message(@error)
           @log.add_processed("Pedido #{order["id"]} processado com sucesso! Links aliexpress: #{order_nos.text}")
-          product_type.update(product_errors: 0)
+          ProductType.clear_errors(order_items)
         else
           raise
         end
@@ -78,7 +79,7 @@ class Crawler < ActiveRecord::Base
       end
     end
   @b.close
-  rescue ReadTimeout => e
+  rescue Net::ReadTimeout => e
     @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
     retry unless (tries -= 1).zero?
   rescue => e
@@ -131,12 +132,21 @@ class Crawler < ActiveRecord::Base
   end
 
   #Seleciona o frete
-  def set_shipping shipping
-    @b.a(class: "shipping-link").when_present.click
-    sleep 5
-    @b.tds(class: "col-cam")[shipping].when_present.click
-    @b.button(value: "OK").click
-    sleep 5
+  def set_shipping order_items
+    order_items.each do |item|
+      product_link = item[:product_type].aliexpress_link
+      shipping = item[:shipping]
+      unless shipping == 0
+        @b.lis(id: "shopcart-").each do |product_info|
+          if product_info.div(class:"pi-details").a.href.include?(product_link.link_id[:id])
+            product_info.div(class: "shipping").click
+            sleep 3
+            @b.divs(class: "li")[shipping-1].click
+            @log.add_message("Produto com frete, selecionando")
+          end
+        end
+      end
+    end
   end
 
   #Selecionar opções do produto na Aliexpress usando array de opções da planilha
