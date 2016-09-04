@@ -11,6 +11,9 @@ class Crawler < ActiveRecord::Base
     # order = self.wordpress.woocommerce.get("orders/93696")['order']
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
     raise "Não há pedidos a serem executados" if orders.count == 0
+    @b = Watir::Browser.new :chrome
+    Watir.default_timeout = 90
+    @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
     orders.each do |order|
       @error = nil
@@ -24,7 +27,7 @@ class Crawler < ActiveRecord::Base
             begin
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
-                raise "Produto não encontrado, necessário importar do wordpress" if product.nil?
+              raise "Produto não encontrado, necessário importar do wordpress" if product.nil?
               if (meta = item["meta"]).empty?
                 product_type = ProductType.find_by(product: product)
               else
@@ -34,12 +37,13 @@ class Crawler < ActiveRecord::Base
                 end
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
-              order_items << {product_type: product_type, shipping: 0}
+              shipping = product_type.shipping.nil? ? 0 : product_type.shipping
+              order_items << {product_type: product_type, shipping: shipping}
               raise "Produto não encontrado, necessário importar do wordpress" if product_type.nil?
               raise "Link aliexpress não cadastrado para esse produto" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
               p 'Selecionando opções'
-              user_options = [product_type.option_1,product_type.option_2 ,product_type.option_3]
+              user_options = [product_type.option_1, product_type.option_2 ,product_type.option_3]
               self.set_options user_options
               #Ações dos produtos
               p "Adicionando #{quantity} ao carrinho"
@@ -93,9 +97,6 @@ class Crawler < ActiveRecord::Base
   def login
     tries ||= 3
     @log.add_message("Efetuando login com #{self.aliexpress.email}")
-    @b = Watir::Browser.new :phantomjs
-    Watir.default_timeout = 90
-    @b.window.maximize
     user = self.aliexpress
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
@@ -134,15 +135,17 @@ class Crawler < ActiveRecord::Base
   #Seleciona o frete
   def set_shipping order_items
     order_items.each do |item|
-      product_link = item[:product_type].aliexpress_link
+      product_link = item[:product_type].link_id
       shipping = item[:shipping]
       unless shipping == 0
         @b.lis(id: "shopcart-").each do |product_info|
-          if product_info.div(class:"pi-details").a.href.include?(product_link.link_id[:id])
+          binding.pry
+          if product_info.div(class:"pi-details").a.href.include?(product_link)
             product_info.div(class: "shipping").click
             sleep 3
+            shipping_name = @b.divs(class: "li")[shipping-1].text.split("\n")[1]
+            @log.add_message("Produto com frete, selecionando #{shipping_name}")
             @b.divs(class: "li")[shipping-1].click
-            @log.add_message("Produto com frete, selecionando")
           end
         end
       end
