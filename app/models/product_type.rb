@@ -21,7 +21,6 @@ class ProductType < ActiveRecord::Base
     {id: id,item: item}
   end
 
-
   def self.clear_errors(order_items)
     order_items.each do |item|
       item[:product_type].update(product_errors: 0)

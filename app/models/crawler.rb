@@ -10,8 +10,9 @@ class Crawler < ActiveRecord::Base
   # def run
     # order = self.wordpress.woocommerce.get("orders/93696")['order']
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
+
     raise "Não há pedidos a serem executados" if orders.count == 0
-    @b = Watir::Browser.new :chrome
+    @b = Watir::Browser.new :phantomjs
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
@@ -47,8 +48,9 @@ class Crawler < ActiveRecord::Base
               self.set_options user_options
               #Ações dos produtos
               p "Adicionando #{quantity} ao carrinho"
+              raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if !@b.text_field(name: 'quantity').present? #Verifica disponibilidade
               self.add_quantity quantity
-              raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity #Verifica quantidade
+              raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity  #Verifica quantidade
               p 'Adicionando ao carrinho'
               self.add_to_cart
             rescue => e
