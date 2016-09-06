@@ -138,8 +138,8 @@ class Crawler < ActiveRecord::Base
       product_link = item[:product_type].link_id
       shipping = item[:shipping]
       unless shipping == 0
+        binding.pry
         @b.trs(class: "item-product").each do |product_info|
-          binding.pry
           if product_info.div(class:"p-title").a.href.include?(product_link)
             product_info.div(class: "product-shipping-select").when_present.click
             sleep 3
