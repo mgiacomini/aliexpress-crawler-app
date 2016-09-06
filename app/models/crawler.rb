@@ -139,8 +139,8 @@ class Crawler < ActiveRecord::Base
       shipping = item[:shipping]
       unless shipping == 0
         @b.trs(class: "item-product").each do |product_info|
+          binding.pry
           if product_info.div(class:"p-title").a.href.include?(product_link)
-            binding.pry
             product_info.div(class: "product-shipping-select").when_present.click
             sleep 3
             shipping_name = @b.divs(class: "shipping-line")[shipping-1].when_present.text.split("\n")[1]
