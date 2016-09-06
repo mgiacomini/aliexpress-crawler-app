@@ -138,13 +138,13 @@ class Crawler < ActiveRecord::Base
       product_link = item[:product_type].link_id
       shipping = item[:shipping]
       unless shipping == 0
-        @b.lis(id: "shopcart-").each do |product_info|
-          if product_info.div(class:"pi-details").a.href.include?(product_link)
-            product_info.div(class: "shipping").when_present.click
+        @b.trs(class: "item-product").each do |product_info|
+          if product_info.div(class:"p-title").a.href.include?(product_link)
+            product_info.div(class: "product-shipping-select").when_present.click
             sleep 3
-            shipping_name = @b.divs(class: "li")[shipping-1].when_present.text.split("\n")[1]
+            shipping_name = @b.divs(class: "shipping-line")[shipping-1].when_present.text.split("\n")[1]
             @log.add_message("Produto com frete, selecionando frete: #{shipping_name}")
-            @b.divs(class: "li")[shipping-1].when_present.click
+            @b.divs(class: "shipping-line")[shipping-1].when_present.click
           end
         end
       end
