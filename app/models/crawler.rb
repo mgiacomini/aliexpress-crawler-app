@@ -140,11 +140,11 @@ class Crawler < ActiveRecord::Base
       unless shipping == 0
         @b.lis(id: "shopcart-").each do |product_info|
           if product_info.div(class:"pi-details").a.href.include?(product_link)
-            product_info.div(class: "shipping").click
+            product_info.div(class: "shipping").when_present.click
             sleep 3
-            shipping_name = @b.divs(class: "li")[shipping-1].text.split("\n")[1]
+            shipping_name = @b.divs(class: "li")[shipping-1].when_present.text.split("\n")[1]
             @log.add_message("Produto com frete, selecionando frete: #{shipping_name}")
-            @b.divs(class: "li")[shipping-1].click
+            @b.divs(class: "li")[shipping-1].when_present.click
           end
         end
       end
