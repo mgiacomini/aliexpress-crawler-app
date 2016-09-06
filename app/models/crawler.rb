@@ -12,7 +12,7 @@ class Crawler < ActiveRecord::Base
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
 
     raise "Não há pedidos a serem executados" if orders.count == 0
-    @b = Watir::Browser.new :phantomjs
+    @b = Watir::Browser.new :chrome
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
@@ -28,7 +28,7 @@ class Crawler < ActiveRecord::Base
             begin
               quantity = item["quantity"]
               product = Product.find_by_name(item["name"])
-              raise "Produto não encontrado, necessário importar do wordpress" if product.nil?
+              raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress" if product.nil?
               if (meta = item["meta"]).empty?
                 product_type = ProductType.find_by(product: product)
               else
@@ -40,19 +40,17 @@ class Crawler < ActiveRecord::Base
               end
               shipping = product_type.shipping.nil? ? 0 : product_type.shipping
               order_items << {product_type: product_type, shipping: shipping}
-              raise "Produto não encontrado, necessário importar do wordpress" if product_type.nil?
-              raise "Link aliexpress não cadastrado para esse produto" if product_type.aliexpress_link.nil?
+              raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress" if product_type.nil?
+              raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
-              p 'Selecionando opções'
               user_options = [product_type.option_1, product_type.option_2 ,product_type.option_3]
               self.set_options user_options
               #Ações dos produtos
-              p "Adicionando #{quantity} ao carrinho"
               raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if !@b.text_field(name: 'quantity').present? #Verifica disponibilidade
               self.add_quantity quantity
               raise "Erro de estoque, produto #{item["name"]} não disponível na aliexpress!" if @b.text_field(name: 'quantity').value.to_i != quantity  #Verifica quantidade
-              p 'Adicionando ao carrinho'
               self.add_to_cart
+              @log.add_message("Adicionando #{quantity} #{item["name"]} ao carrinho")
             rescue => e
               @log.add_message(e.message)
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
@@ -120,7 +118,6 @@ class Crawler < ActiveRecord::Base
     @b.link(id: "j-add-cart-btn").when_present.click
     sleep 5
     if @b.div(class: "ui-add-shopcart-dialog").present?
-      p "Adicionado OK"
     else
       @error = "Falha ao adicionar ao carrinho: #{@b.url}"
       @log.add_message(@error)
@@ -136,17 +133,17 @@ class Crawler < ActiveRecord::Base
 
   #Seleciona o frete
   def set_shipping order_items
+    sleep 3
     order_items.each do |item|
       product_link = item[:product_type].link_id
       shipping = item[:shipping]
       unless shipping == 0
         @b.lis(id: "shopcart-").each do |product_info|
-          binding.pry
           if product_info.div(class:"pi-details").a.href.include?(product_link)
             product_info.div(class: "shipping").click
             sleep 3
             shipping_name = @b.divs(class: "li")[shipping-1].text.split("\n")[1]
-            @log.add_message("Produto com frete, selecionando #{shipping_name}")
+            @log.add_message("Produto com frete, selecionando frete: #{shipping_name}")
             @b.divs(class: "li")[shipping-1].click
           end
         end
