@@ -12,7 +12,7 @@ class Crawler < ActiveRecord::Base
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
 
     raise "Não há pedidos a serem executados" if orders.count == 0
-    @b = Watir::Browser.new :chrome
+    @b = Watir::Browser.new :phantomjs
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
