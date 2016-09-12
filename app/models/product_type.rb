@@ -28,6 +28,8 @@ class ProductType < ActiveRecord::Base
   end
 
   def add_error
-    self.update(product_errors: self.product_errors+=1)
+    self.product_errors = 0 if self.product_errors.nil?
+    self.product_errors+=1
+    self.save
   end
 end
