@@ -16,7 +16,7 @@ class Crawler < ActiveRecord::Base
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
-    orders.reverse_each do |order|
+    orders.each do |order|
       @error = nil
       begin
         @log.add_message("-------------------")
