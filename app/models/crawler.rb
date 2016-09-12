@@ -6,7 +6,6 @@ class Crawler < ActiveRecord::Base
   has_many :crawler_logs
 
   def run(orders)
-    tries ||= 3
   # def run
     # order = self.wordpress.woocommerce.get("orders/93696")['order']
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
@@ -17,8 +16,10 @@ class Crawler < ActiveRecord::Base
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
     orders.reverse_each do |order|
+      @finished = false
       @error = nil
       begin
+        tries ||= 3
         @log.add_message("-------------------")
         @log.add_message("Processando pedido ##{order['id']}")
         notes = self.wordpress.get_notes order
@@ -46,9 +47,9 @@ class Crawler < ActiveRecord::Base
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
               raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress" if product_type.nil?
-              raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
               shipping = product_type.shipping.nil? ? 0 : product_type.shipping
               order_items << {product_type: product_type, shipping: shipping}
+              raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
               user_options = [product_type.option_1, product_type.option_2 ,product_type.option_3]
               self.set_options user_options
@@ -87,12 +88,12 @@ class Crawler < ActiveRecord::Base
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(e.message)
         @log.add_message(@error)
+      rescue => Net::ReadTimeout
+        @log.add_message("Erro de timeout, Tentando mais #{tries-1} vezes")
+        retry unless (tries -= 1).zero? || @finished
       end
     end
-  @b.close
-  rescue Net::ReadTimeout => e
-    @log.add_message("Erro de timeout, Tentando mais #{tries} vezes")
-    retry unless (tries -= 1).zero?
+    @b.close
   rescue => e
     @error = "Erro desconhecido, procurar administrador."
     @log.add_message(e.message)
@@ -234,9 +235,9 @@ class Crawler < ActiveRecord::Base
     @b.text_field(name: "_fmh.m._0.z").when_present.set customer["postcode"]
     @b.text_field(name: "_fmh.m._0.m").when_present.set '11941873849'
     @b.button.click
-    p 'Salvando'
     @b.button(id: "create-order").when_present.click #Botão Finalizar pedido
-    p 'Finalizando Pedido'
+    @log.add_message('Finalizando Pedido')
+    @finished = true
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @b.div(class:"desc_txt").wait_until_present
     @b.div(class:"desc_txt")
   end
