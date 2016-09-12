@@ -45,10 +45,10 @@ class Crawler < ActiveRecord::Base
                 end
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
-              shipping = product_type.shipping.nil? ? 0 : product_type.shipping
-              order_items << {product_type: product_type, shipping: shipping}
               raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress" if product_type.nil?
               raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
+              shipping = product_type.shipping.nil? ? 0 : product_type.shipping
+              order_items << {product_type: product_type, shipping: shipping}
               @b.goto product_type.parsed_link #Abre link do produto
               user_options = [product_type.option_1, product_type.option_2 ,product_type.option_3]
               self.set_options user_options
