@@ -56,4 +56,9 @@ class Wordpress < ActiveRecord::Base
   rescue
     @error =  "Erro ao importar pedidos do Wordpress, favor verificar configurações."
   end
+
+  def get_notes order
+    all_notes = woocommerce.get("orders/#{order["id"]}/notes").parsed_response
+    all_notes["order_notes"]
+  end
 end

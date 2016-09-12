@@ -16,11 +16,18 @@ class Crawler < ActiveRecord::Base
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
-    orders.each do |order|
+    orders.reverse_each do |order|
       @error = nil
       begin
         @log.add_message("-------------------")
         @log.add_message("Processando pedido ##{order['id']}")
+        notes = self.wordpress.get_notes order
+        unless notes.empty?
+          notes.each do |note|
+            raise "Pedido duplicado!" if note["note"].include? "Concluído"
+          end
+        end
+
         self.empty_cart #Esvazia Carrinho
         customer = order["shipping_address"] #Loop para todos os produtos
         order_items = []
@@ -55,7 +62,7 @@ class Crawler < ActiveRecord::Base
               @log.add_message(e.message)
               @error = "Erro no produto #{item["name"]}, verificar se o link da aliexpress está correto, este pedido será pulado."
               @log.add_message(@error)
-              product_type.add_error if !product_type.nil?
+              product_type.add_error if product && product_type
               break
             end
           end
@@ -141,9 +148,9 @@ class Crawler < ActiveRecord::Base
         @b.uls(class:"product").each do |product_info|
           binding.pry
           if product_info.div(class:"pi-details").a.href.include?(product_link)
-            product_info.div(class: "shipping").when_present.click
+            product_info.div(class: "pi-shipping").when_present.click
             sleep 3
-            shipping_name = @b.divs(class: "li")[shipping-1].when_present.text.split("\n")[1]
+            shipping_name = @b.divs(class: "li")[shipping-1].text.split("\n")[1]
             @log.add_message("Produto com frete, selecionando frete: #{shipping_name}")
             @b.divs(class: "li")[shipping-1].when_present.click
           end
