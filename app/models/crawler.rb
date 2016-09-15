@@ -51,6 +51,8 @@ class Crawler < ActiveRecord::Base
               order_items << {product_type: product_type, shipping: shipping}
               raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
+              frete = @b.div(class: "p-logistics-detail").present? ? @b.div(class: "p-logistics-detail").text : ""
+              raise "Frete não é grátis para produto #{item["name"]}, cancelando pedido" if !frete.include? "gratuita" || !frete.include? "free"
               user_options = [product_type.option_1, product_type.option_2 ,product_type.option_3]
               self.set_options user_options
               #Ações dos produtos
