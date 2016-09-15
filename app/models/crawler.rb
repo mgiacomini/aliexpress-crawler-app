@@ -6,11 +6,9 @@ class Crawler < ActiveRecord::Base
   has_many :crawler_logs
 
   def run(orders)
-  # def run
-    # order = self.wordpress.woocommerce.get("orders/93696")['order']
-    @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
+    raise "Não há pedidos a serem executados" if orders.nil? || orders.count == 0
 
-    raise "Não há pedidos a serem executados" if orders.count == 0
+    @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
     @b = Watir::Browser.new :phantomjs
     Watir.default_timeout = 90
     @b.window.maximize
@@ -51,6 +49,8 @@ class Crawler < ActiveRecord::Base
               order_items << {product_type: product_type, shipping: shipping}
               raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
+              frete = @b.div(class: "p-logistics-detail").present? ? @b.div(class: "p-logistics-detail").text : ""
+              raise "Frete não é grátis para produto #{item["name"]}, cancelando pedido. Frete: #{frete}" unless frete.include?("gratuita") || frete.include?("free") || !product_type.shipping.nil?
               user_options = [product_type.option_1, product_type.option_2 ,product_type.option_3]
               self.set_options user_options
               #Ações dos produtos
