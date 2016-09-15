@@ -88,7 +88,7 @@ class Crawler < ActiveRecord::Base
         @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(e.message)
         @log.add_message(@error)
-      rescue => Net::ReadTimeout
+      rescue Net::ReadTimeout
         @log.add_message("Erro de timeout, Tentando mais #{tries-1} vezes")
         retry unless (tries -= 1).zero? || @finished
       end
