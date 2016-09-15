@@ -6,11 +6,9 @@ class Crawler < ActiveRecord::Base
   has_many :crawler_logs
 
   def run(orders)
-  # def run
-    # order = self.wordpress.woocommerce.get("orders/93696")['order']
-    @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
+    raise "Não há pedidos a serem executados" if orders.nil? || orders.count == 0
 
-    raise "Não há pedidos a serem executados" if orders.count == 0
+    @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
     @b = Watir::Browser.new :phantomjs
     Watir.default_timeout = 90
     @b.window.maximize
