@@ -13,14 +13,14 @@ class Crawler < ActiveRecord::Base
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
-    @b.div(class: "ng-switcher").when_present.click
-    sleep 1
-    @b.div(class: "country-selector").when_present.click
-    sleep 1
-    @b.span(class: "css_br").when_present.click
-    sleep 1
-    @b.button(class: "go-contiune-btn").when_present.click
-    sleep 1
+    # @b.div(class: "ng-switcher").when_present.click
+    # sleep 1
+    # @b.div(class: "country-selector").when_present.click
+    # sleep 1
+    # @b.span(class: "css_br").when_present.click
+    # sleep 1
+    # @b.button(class: "go-contiune-btn").when_present.click
+    # sleep 1
     orders.reverse_each do |order|
       @finished = false
       @error = nil
@@ -152,6 +152,7 @@ class Crawler < ActiveRecord::Base
 
   #Seleciona o frete
   def set_shipping order_items
+    binding.pry
     order_items.each do |item|
       product_link = item[:product_type].link_id
       shipping = item[:shipping]
