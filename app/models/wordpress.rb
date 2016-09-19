@@ -23,11 +23,18 @@ class Wordpress < ActiveRecord::Base
   end
 
   def get_products
-    products = self.woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,attributes").parsed_response
+    products = self.woocommerce.get("products?filter[limit]=1000&fields[order]=asc&fields=id,permalink,title,attributes").parsed_response
     products['products']
   end
 
-  def update_order order, order_nos
+  def update_order order_nos, order
+    self.complete_order order
+    self.update_note order, order_nos
+  rescue
+    @error = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
+  end
+
+  def update_note order, order_nos
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
     data = {
       order_note: {
@@ -36,6 +43,9 @@ class Wordpress < ActiveRecord::Base
     }
     #POST em order notes
     woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
+  end
+
+  def complete_order order
     data = {
       order: {
         status: "completed"
@@ -43,8 +53,6 @@ class Wordpress < ActiveRecord::Base
     }
     #PUT para mudar a ordem para concluída
     woocommerce.put("orders/#{order["id"]}", data).parsed_response
-  rescue
-    @error = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
   end
 
   def get_orders
