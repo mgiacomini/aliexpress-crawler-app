@@ -9,7 +9,7 @@ class Crawler < ActiveRecord::Base
     raise "Não há pedidos a serem executados" if orders.nil? || orders.count == 0
 
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
-    @b = Watir::Browser.new :phantomjs
+    @b = Watir::Browser.new
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
@@ -23,7 +23,10 @@ class Crawler < ActiveRecord::Base
         notes = self.wordpress.get_notes order
         unless notes.empty?
           notes.each do |note|
-            raise "Pedido ja executado!" if note["note"].include? "Concluído"
+            if note["note"].include? "Concluído"
+              order.complete_order(order)
+              raise "Pedido ja executado!"
+            end
           end
         end
 
@@ -45,7 +48,7 @@ class Crawler < ActiveRecord::Base
                 product_type = ProductType.find_by(product: product, name: name.strip)
               end
               raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress" if product_type.nil?
-              shipping = product_type.shipping.nil? ? 0 : product_type.shipping
+              shipping = product_type.shipping
               order_items << {product_type: product_type, shipping: shipping}
               raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
@@ -69,9 +72,9 @@ class Crawler < ActiveRecord::Base
           end
         #Finaliza pedido
         if @error.nil?
+          self.set_shipping order_items
           @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
           raise "Erro com itens do carrinho, cancelando pedido" if @b.lis(id: "shopcart-").count != order["line_items"].count
-          self.set_shipping order_items
           order_nos = self.complete_order(customer)
           raise if !@error.nil?
           @log.add_message("Pedido completado na Aliexpress")
@@ -141,19 +144,27 @@ class Crawler < ActiveRecord::Base
 
   #Seleciona o frete
   def set_shipping order_items
-    sleep 3
     order_items.each do |item|
       product_link = item[:product_type].link_id
       shipping = item[:shipping]
-      unless shipping == 0
-        @b.uls(class:"product").each do |product_info|
-          binding.pry
-          if product_info.div(class:"pi-details").a.href.include?(product_link)
-            product_info.div(class: "pi-shipping").when_present.click
-            sleep 3
-            shipping_name = @b.divs(class: "li")[shipping-1].text.split("\n")[1]
+      unless shipping.nil? || shipping == 0
+        @b.goto 'https://shoppingcart.aliexpress.com/'
+        @b.tbodys.each do |product_info|
+          if product_info.a(class: "lnk-product-name").href.include?(product_link)
+            product_info.div(class: "product-shipping-select").when_present.click
+            sleep 2
+            shipping_name = product_info.form.divs(class: "shipping-line")[shipping-1].text.split("\n")[0]
             @log.add_message("Produto com frete, selecionando frete: #{shipping_name}")
-            @b.divs(class: "li")[shipping-1].when_present.click
+            product_info.form.divs(class: "shipping-line")[shipping-1].when_present.click
+            sleep 2
+            product_info.form.button.when_present.click
+        # @b.uls(class:"product").each do |product_info|
+        #   if product_info.div(class:"pi-details").a.href.include?(product_link)
+        #     product_info.div(class: "pi-shipping").when_present.click
+        #     sleep 3
+        #     shipping_name = @b.divs(class: "li")[shipping-1].text.split("\n")[1]
+        #     @log.add_message("Produto com frete, selecionando frete: #{shipping_name}")
+        #     @b.divs(class: "li")[shipping-1].when_present.click
           end
         end
       end
