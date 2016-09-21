@@ -32,7 +32,7 @@ class Crawler < ActiveRecord::Base
         unless notes.empty?
           notes.each do |note|
             if note["note"].include? "Concluído"
-              order.complete_order(order)
+              self.wordpress.complete_order(order)
               raise "Pedido ja executado!"
             end
           end
