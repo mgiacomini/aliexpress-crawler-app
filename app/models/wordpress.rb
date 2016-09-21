@@ -27,7 +27,7 @@ class Wordpress < ActiveRecord::Base
     products['products']
   end
 
-  def update_order order_nos, order
+  def update_order order, order_nos
     self.complete_order order
     self.update_note order, order_nos
   rescue
@@ -38,11 +38,11 @@ class Wordpress < ActiveRecord::Base
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
     data = {
       order_note: {
-        note: order_nos.text
+        note: order_nos
       }
     }
     #POST em order notes
-    woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
+    # woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
   end
 
   def complete_order order
@@ -52,7 +52,7 @@ class Wordpress < ActiveRecord::Base
       }
     }
     #PUT para mudar a ordem para concluída
-    woocommerce.put("orders/#{order["id"]}", data).parsed_response
+    # woocommerce.put("orders/#{order["id"]}", data).parsed_response
   end
 
   def get_orders

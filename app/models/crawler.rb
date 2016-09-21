@@ -9,7 +9,7 @@ class Crawler < ActiveRecord::Base
     raise "Não há pedidos a serem executados" if orders.nil? || orders.count == 0
 
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
-    @b = Watir::Browser.new :phantomjs
+    @b = Watir::Browser.new
     Watir.default_timeout = 90
     @b.window.maximize
     raise "Falha no login, verifique as informações de configuração aliexpress ou tente novamente mais tarde" unless self.login
@@ -84,11 +84,12 @@ class Crawler < ActiveRecord::Base
           # self.set_shipping order_items
           @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
           raise "Erro com itens do carrinho, cancelando pedido" if @b.lis(id: "shopcart-").count != order["line_items"].count
+          binding.pry
           order_nos = self.complete_order(customer)
           raise if !@error.nil?
           @log.add_message("Pedido completado na Aliexpress")
           raise "Erro com numero do pedido vazio" if order_nos.nil?
-          self.wordpress.update_order(order, order_nos)
+          self.wordpress.update_order(order, order_nos.text)
           @error = self.wordpress.error
           @log.add_message(@error)
           @log.add_processed("Pedido #{order["id"]} processado com sucesso! Links aliexpress: #{order_nos.text}")
