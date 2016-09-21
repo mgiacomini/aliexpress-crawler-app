@@ -42,7 +42,7 @@ class Wordpress < ActiveRecord::Base
       }
     }
     #POST em order notes
-    # woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
+    woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
   end
 
   def complete_order order
@@ -52,7 +52,7 @@ class Wordpress < ActiveRecord::Base
       }
     }
     #PUT para mudar a ordem para concluída
-    # woocommerce.put("orders/#{order["id"]}", data).parsed_response
+    woocommerce.put("orders/#{order["id"]}", data).parsed_response
   end
 
   def get_orders
