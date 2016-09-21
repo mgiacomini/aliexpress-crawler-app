@@ -57,7 +57,7 @@ class Crawler < ActiveRecord::Base
               end
               raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress" if product_type.nil?
               shipping = product_type.shipping
-              raise "Frete não implementado, pulando pedido!" if shipping == 0 || shipping.nil?
+              raise "Frete não implementado, pulando pedido!" unless shipping == 0 || shipping.nil?
               order_items << {product_type: product_type, shipping: shipping}
               raise "Link aliexpress não cadastrado para #{item["name"]}" if product_type.aliexpress_link.nil?
               @b.goto product_type.parsed_link #Abre link do produto
@@ -97,7 +97,7 @@ class Crawler < ActiveRecord::Base
           raise
         end
       rescue => e
-        @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
+        # @error = "Erro ao concluir pedido #{order["id"]}, verificar aliexpress e wordpress."
         @log.add_message(e.message)
         @log.add_message(@error)
       rescue Net::ReadTimeout => e
