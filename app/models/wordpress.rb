@@ -24,6 +24,7 @@ class Wordpress < ActiveRecord::Base
 
   def get_products
     products = woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,attributes").parsed_response
+    
     products['products']
   end
 
