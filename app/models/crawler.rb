@@ -81,7 +81,6 @@ class Crawler < ActiveRecord::Base
           end
         #Finaliza pedido
         if @error.nil?
-          # self.set_shipping order_items
           @b.goto 'https://m.aliexpress.com/shopcart/detail.htm'
           raise "Erro com itens do carrinho, cancelando pedido" if @b.lis(id: "shopcart-").count != order["line_items"].count
           order_nos = self.complete_order(customer)
@@ -167,13 +166,6 @@ class Crawler < ActiveRecord::Base
             product_info.form.divs(class: "shipping-line")[shipping-1].when_present.click
             sleep 2
             product_info.form.button.when_present.click
-        # @b.uls(class:"product").each do |product_info|
-        #   if product_info.div(class:"pi-details").a.href.include?(product_link)
-        #     product_info.div(class: "pi-shipping").when_present.click
-        #     sleep 3
-        #     shipping_name = @b.divs(class: "li")[shipping-1].text.split("\n")[1]
-        #     @log.add_message("Produto com frete, selecionando frete: #{shipping_name}")
-        #     @b.divs(class: "li")[shipping-1].when_present.click
           end
         end
       end
