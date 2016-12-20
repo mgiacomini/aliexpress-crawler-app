@@ -122,13 +122,14 @@ class Crawler < ActiveRecord::Base
   def login
     puts "========= Performing Login"
     tries ||= 3
-    @log.add_message("Efetuando login com #{self.aliexpress.email}")
+    @log.add_message("Efetuando login com #{self.aliexpress.email}\n")
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
     frame.text_field(name: 'password').set self.aliexpress.password
-    sleep 2
+    sleep 1
     frame.button(name: 'submit-btn').click
+    sleep 5
   rescue
     @log.add_message("Erro de login, Tentando mais #{tries} vezes")
     retry unless (tries -= 1).zero?
