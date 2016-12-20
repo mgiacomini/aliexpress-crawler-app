@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160730190935) do
+ActiveRecord::Schema.define(version: 20161216182153) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -51,12 +51,12 @@ ActiveRecord::Schema.define(version: 20160730190935) do
     t.string   "name"
     t.string   "aliexpress_link"
     t.integer  "product_id"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
     t.integer  "option_1"
     t.integer  "option_2"
     t.integer  "option_3"
-    t.integer  "shipping"
+    t.string   "shipping",        default: ""
     t.integer  "product_errors"
   end
 

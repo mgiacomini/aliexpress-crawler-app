@@ -35,11 +35,11 @@ class Wordpress < ActiveRecord::Base
     @error = "Erro ao atualizar pedido #{order["id"]} no wordpress, verificar ultimo pedido na aliexpress."
   end
 
-  def update_note order, order_nos
+  def update_note order, ali_order_num
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
     data = {
       order_note: {
-        note: order_nos
+        note: ali_order_num
       }
     }
     #POST em order notes
