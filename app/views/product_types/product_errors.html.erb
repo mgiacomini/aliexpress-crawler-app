@@ -10,7 +10,9 @@
   </h4>
 </div>
 <div class="table-responsive">
-  <%= will_paginate @product_types %>
+  <div class="text-center">
+    <%= will_paginate @product_types, renderer: BootstrapPagination::Rails %>
+  </div>
   <table class="table table-condensed">
     <thead>
       <tr>
@@ -56,5 +58,7 @@
       <% end %>
     </tbody>
   </table>
-  <%= will_paginate @product_types %>
+  <div class="text-center">
+    <%= will_paginate @product_types, renderer: BootstrapPagination::Rails %>
+  </div>
 </div>

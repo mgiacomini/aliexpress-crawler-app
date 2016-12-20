@@ -31,7 +31,9 @@
               method: :post,
               :class => 'btn btn-primary' %>
 <div class="table-responsive">
-  <%= will_paginate @product_types %>
+  <div class="text-center">
+    <%= will_paginate @product_types, renderer: BootstrapPagination::Rails %>
+  </div>
   <table class="table table-condensed">
     <thead>
       <tr>
@@ -54,7 +56,7 @@
           <td><%= product_type.product.name %></td>
           <td><%= product_type.name %></td>
           <td><a href="<%=product_type.product.link%>"><%=product_type.product.link%></a></td>
-          <td><a href="<%=product_type.aliexpress_link%>"><%=product_type.aliexpress_link%></a></td>
+          <td><a href="<%=product_type.aliexpress_link%>"><%=product_type.aliexpress_link.first(50) if product_type.aliexpress_link%></a></td>
           <td><%= product_type.option_1 %></td>
           <td><%= product_type.option_2 %></td>
           <td><%= product_type.option_3 %></td>
@@ -73,5 +75,7 @@
       <% end %>
     </tbody>
   </table>
-  <%= will_paginate @product_types %>
+  <div class="text-center">
+    <%= will_paginate @product_types, renderer: BootstrapPagination::Rails %>
+  </div>
 </div>

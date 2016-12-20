@@ -10,7 +10,9 @@
 </div>
 <div class="table-responsive">
   <table class="table table-striped">
-    <%= will_paginate @crawler_logs %>
+    <div class="text-center">
+      <%= will_paginate @crawler_logs, renderer: BootstrapPagination::Rails %>
+    </div>
     <thead>
       <tr>
         <th><%= model_class.human_attribute_name(:crawler) %></th>
@@ -41,5 +43,7 @@
       <% end %>
     </tbody>
   </table>
-  <%= will_paginate @crawler_logs %>
+  <div class="text-center">
+    <%= will_paginate @crawler_logs, renderer: BootstrapPagination::Rails %>
+  </div>
 </div>
