@@ -325,6 +325,10 @@ class Crawler < ActiveRecord::Base
       self.wordpress.update_order(order, ali_order_num)
       @log.add_message("Erro com numero do pedido vazio\n"+self.wordpress.error)
       raise message
+      false
+    else
+      # return true to proceed with log messages
+      true
     end
   end
 end
