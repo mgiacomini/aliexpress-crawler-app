@@ -104,7 +104,7 @@ class Crawler < ActiveRecord::Base
 
   def set_destination_to_brazil
     puts "========= Setting destination to Brazil"
-    sleep 1
+    @b.span(class: 'ship-to').wait_until_present
     @b.span(class: 'ship-to').click
     sleep 1
     @b.div(data_role: 'switch-country').click
@@ -213,20 +213,19 @@ class Crawler < ActiveRecord::Base
     sleep 3
     if @b.span(class:"order-no").exists?
       # Return the number of the Order if there is no captcha
-      # @finished = true
+      @finished = true
       @b.span(class:"order-no").text
     else
       puts "========= Captcha detected, going to mobile..."
       @log.add_message('Captcha detectado, indo para carrinho mobile')
       @b.goto 'm.aliexpress.com/shopcart/detail.htm'
-      sleep 2
+      @b.div(class:"buyall").wait_until_present
       @b.div(class:"buyall").click
       # Create the final order on mobile website to avoid captcha
-      sleep 2
+      @b.button(id:"create-order").wait_until_present
       @b.button(id:"create-order").click
-      # wait for final page to load
-      sleep 7
-      # @finished = true
+      @finished = true
+      @b.div(class:"desc_txt").wait_until_present
       @b.div(class:"desc_txt").text
     end
   end
