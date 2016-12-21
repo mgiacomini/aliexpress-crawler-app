@@ -146,13 +146,15 @@ class Crawler < ActiveRecord::Base
 
   def set_item_shipping(shipping)
     puts "========= Setting shipping"
-    @b.a(class: 'shipping-link').click
-    # Wait for the popup to open
-    sleep 3
-    @b.radio(name: 'shipping-company', data_full_name: "#{shipping}").click
-    # Wait for the change to propagate
-    sleep 2
-    @b.div(class: 'ui-window-btn').button(data_role: 'yes').click
+    unless shipping == 'default'
+      @b.a(class: 'shipping-link').click
+      # Wait for the popup to open
+      sleep 3
+      @b.radio(name: 'shipping-company', data_full_name: "#{shipping}").click
+      # Wait for the change to propagate
+      sleep 2
+      @b.div(class: 'ui-window-btn').button(data_role: 'yes').click
+    end
   end
 
   def add_to_cart_mobile
@@ -332,7 +334,9 @@ class Crawler < ActiveRecord::Base
     if product_type.shipping.present?
       product_type.shipping
     else
-      raise "Método de entrega não especificado para #{item['name']}"
+      @log.add_message("Frete, não especificado para #{item['name']}, usando o padrão")
+      # return default choice
+      'default'
     end
   end
 end
