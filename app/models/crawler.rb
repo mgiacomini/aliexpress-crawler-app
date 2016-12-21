@@ -42,12 +42,12 @@ class Crawler < ActiveRecord::Base
           product_type = ProductType.find_by(product: product)
           # Check if product was found on database
           self.check_product_or_product_type(product, product_type, item)
+          # If found, go to aliexpress link and check for quantities and availability
+          self.check_and_go_to_aliexpress_link(product_type, item)
           # First check if shipping is set for Product
           shipping = self.get_product_shipping(product_type, item)
           # Qhen order is completed the errors for this item are removed
           order_items << { product_type: product_type, shipping: shipping }
-          # If found, go to aliexpress link and check for quantities and availability
-          self.check_and_go_to_aliexpress_link(product_type, item)
           # Set the options (color, size...) for the product
           self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
           # Set Shipping
