@@ -13,8 +13,9 @@ class Crawler < ActiveRecord::Base
     Watir.default_timeout = 90
     @b.window.maximize
 
-    # First of all
+    # Login and change location to Brazil
     self.login
+    self.set_destination_to_brazil
 
     orders.reverse_each do |order|
       @error = nil
@@ -89,15 +90,27 @@ class Crawler < ActiveRecord::Base
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
+    sleep 1
     frame.text_field(name: 'password').set self.aliexpress.password
     sleep 1
     frame.button(name: 'submit-btn').click
-    sleep 3
-  rescue
-    message = "Erro de login, Tentando mais #{tries} vezes"
-    puts message
-    @log.add_message(message)
+    sleep 5
+  rescue => e
+    puts e.message
+    @log.add_message "Erro de login, Tentando mais #{tries} vezes"
+    @log.add_message e.message
     retry unless (tries -= 1).zero?
+  end
+
+  def set_destination_to_brazil
+    puts "========= Setting destination to Brazil"
+    sleep 1
+    @b.span(class: 'ship-to').click
+    sleep 1
+    @b.div(data_role: 'switch-country').click
+    @b.span(class: 'css_br').click
+    @b.div(class: 'switcher-btn').button(data_role: 'save').click
+    sleep 3
   end
 
   # Add current item to the Cart
@@ -195,10 +208,10 @@ class Crawler < ActiveRecord::Base
 
     puts "========= Finishing Order"
     @log.add_message('Finalizando Pedido')
-    # @finished = true
     sleep 3
     if @b.span(class:"order-no").exists?
       # Return the number of the Order if there is no captcha
+      # @finished = true
       @b.span(class:"order-no").text
     else
       puts "========= Captcha detected, going to mobile..."
@@ -211,6 +224,7 @@ class Crawler < ActiveRecord::Base
       @b.button(id:"create-order").click
       # wait for final page to load
       sleep 7
+      # @finished = true
       @b.div(class:"desc_txt").text
     end
   end
