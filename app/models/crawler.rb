@@ -104,7 +104,7 @@ class Crawler < ActiveRecord::Base
 
   def set_destination_to_brazil
     puts "========= Setting destination to Brazil"
-    @b.span(class: 'ship-to').wait_until_present
+    @b.span(class: 'ship-to').wait_until_present(10)
     @b.span(class: 'ship-to').click
     sleep 1
     @b.div(data_role: 'switch-country').click
@@ -184,6 +184,7 @@ class Crawler < ActiveRecord::Base
     @b.a(class: "sa-edit").exists? ? @b.a(class: "sa-edit").click : @b.a(class: "sa-add-a-new-address").click
     puts "========= Adding customer informations"
     @log.add_message('Adicionando informações do cliente')
+    @b.text_field(name: "contactPerson").wait_until_present(3)
     @b.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
     @b.select_list(name: "country").select "Brazil"
     if customer['number'].nil?
@@ -219,13 +220,13 @@ class Crawler < ActiveRecord::Base
       puts "========= Captcha detected, going to mobile..."
       @log.add_message('Captcha detectado, indo para carrinho mobile')
       @b.goto 'm.aliexpress.com/shopcart/detail.htm'
-      @b.div(class:"buyall").wait_until_present
+      @b.div(class:"buyall").wait_until_present(10)
       @b.div(class:"buyall").click
       # Create the final order on mobile website to avoid captcha
-      @b.button(id:"create-order").wait_until_present
+      @b.button(id:"create-order").wait_until_present(10)
       @b.button(id:"create-order").click
       @finished = true
-      @b.div(class:"desc_txt").wait_until_present
+      @b.div(class:"desc_txt").wait_until_present(10)
       @b.div(class:"desc_txt").text
     end
   end
