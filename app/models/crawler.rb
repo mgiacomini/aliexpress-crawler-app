@@ -149,7 +149,7 @@ class Crawler < ActiveRecord::Base
     unless shipping == 'default'
       @b.a(class: 'shipping-link').click
       # Wait for the popup to open
-      sleep 3
+      @b.div(class: 'ui-window-btn').wait_until_present(10)
       @b.radio(name: 'shipping-company', data_full_name: "#{shipping}").click
       # Wait for the change to propagate
       sleep 2
@@ -174,7 +174,7 @@ class Crawler < ActiveRecord::Base
     # Go to Cart Page
     @b.goto 'https://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     # Go to Checkout page
-    sleep 2
+    @b.button(class: "buy-now").wait_until_present(10)
     @b.button(class: "buy-now").click
     # Check if current session if up
     unless @b.a(class: "sa-edit").exists?
