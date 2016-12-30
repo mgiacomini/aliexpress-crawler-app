@@ -31,7 +31,7 @@ class Crawler < ActiveRecord::Base
       # Empty the Cart before go to next Order
       self.empty_cart
       # Check if this Order is already processed
-      next if self.check_order_notes(order)
+      self.check_order_notes(order)
 
       # Start putting items inside the cart and setting options
       begin
@@ -325,9 +325,7 @@ class Crawler < ActiveRecord::Base
         if note["note"].include? "Concluído"
           self.wordpress.complete_order(order)
           @log.add_message "Pedido ja executado!"
-          true
-        else
-          false
+          next
         end
       end
     end
