@@ -104,13 +104,18 @@ class Crawler < ActiveRecord::Base
 
   def set_destination_to_brazil
     puts "========= Setting destination to Brazil"
-    @b.span(class: 'ship-to').wait_until_present(10)
+    @b.span(class: 'ship-to').wait_until_present(20)
     @b.span(class: 'ship-to').click
-    sleep 1
+    sleep 5
+    @b.div(data_role: 'switch-country').wait_until_present(20)
     @b.div(data_role: 'switch-country').click
+
+    @b.span(class: 'css_br').wait_until_present(20)
     @b.span(class: 'css_br').click
+
+    @b.div(class: 'switcher-btn').button(data_role: 'save').wait_until_present(20)
     @b.div(class: 'switcher-btn').button(data_role: 'save').click
-    sleep 3
+    sleep 5
   end
 
   # Add current item to the Cart
@@ -149,7 +154,7 @@ class Crawler < ActiveRecord::Base
     unless shipping == 'default'
       @b.a(class: 'shipping-link').click
       # Wait for the popup to open
-      @b.div(class: 'ui-window-btn').wait_until_present(10)
+      @b.div(class: 'ui-window-btn').wait_until_present(20)
       @b.radio(name: 'shipping-company', data_full_name: "#{shipping}").click
       # Wait for the change to propagate
       sleep 2
@@ -174,7 +179,7 @@ class Crawler < ActiveRecord::Base
     # Go to Cart Page
     @b.goto 'https://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     # Go to Checkout page
-    @b.button(class: "buy-now").wait_until_present(10)
+    @b.button(class: "buy-now").wait_until_present(20)
     @b.button(class: "buy-now").click
     # Check if current session if up
     unless @b.a(class: "sa-edit").exists?
@@ -220,13 +225,13 @@ class Crawler < ActiveRecord::Base
       puts "========= Captcha detected, going to mobile..."
       @log.add_message('Captcha detectado, indo para carrinho mobile')
       @b.goto 'm.aliexpress.com/shopcart/detail.htm'
-      @b.div(class:"buyall").wait_until_present(10)
+      @b.div(class:"buyall").wait_until_present(20)
       @b.div(class:"buyall").click
       # Create the final order on mobile website to avoid captcha
-      @b.button(id:"create-order").wait_until_present(10)
+      @b.button(id:"create-order").wait_until_present(20)
       @b.button(id:"create-order").click
       @finished = true
-      @b.div(class:"desc_txt").wait_until_present(10)
+      @b.div(class:"desc_txt").wait_until_present(20)
       @b.div(class:"desc_txt").text
     end
   end
