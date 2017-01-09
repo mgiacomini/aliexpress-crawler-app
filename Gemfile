@@ -9,7 +9,7 @@ gem 'jquery-rails', '~> 4.2.1'
 gem 'turbolinks', '~> 5.0.0'
 # gem 'jbuilder', '~> 2.0'
 # gem 'sdoc', '~> 0.4.0', group: :doc
-gem 'woocommerce_api', '~> 1.2.1'
+gem 'woocommerce_api', '~> 1.3.0'
 gem 'watir-webdriver', '~> 0.9.9'
 gem 'simple_form', '3.3'
 gem 'devise', '3.5.6'
