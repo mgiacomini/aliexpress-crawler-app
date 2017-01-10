@@ -122,6 +122,7 @@ class Crawler < ActiveRecord::Base
   def add_item_to_cart
     puts "========= Adding to cart"
     @b.link(id: "j-add-cart-btn").click
+    @b.div(class: "ui-add-shopcart-dialog").wait_until_present(timeout: 20)
     unless @b.div(class: "ui-add-shopcart-dialog").exists?
       @error = "Falha ao adicionar ao carrinho: #{@b.url}"
       @log.add_message(@error)
@@ -178,14 +179,20 @@ class Crawler < ActiveRecord::Base
     puts "========= Completing Order"
     # Go to Cart Page
     @b.goto 'https://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
-    # Go to Checkout page
-    @b.button(class: "buy-now").wait_until_present(timeout: 20)
-    @b.button(class: "buy-now").click
+    # Check if all items can be purchased
+    @b.button(class: "buy-now").wait_until_present(timeout: 20) do
+      if !@b.button(class: "buy-now").exists?
+        raise "Produto sem estoque na Aliexpress"
+      else
+        @b.button(class: "buy-now").click
+      end
+    end
     # Check if current session if up
     unless @b.a(class: "sa-edit").exists?
       @log.add_message("Sessão desconectada ... logando novamente\n")
       self.login
     end
+    # Fill customer's address
     @b.a(class: "sa-edit").exists? ? @b.a(class: "sa-edit").click : @b.a(class: "sa-add-a-new-address").click
     puts "========= Adding customer informations"
     @log.add_message('Adicionando informações do cliente')
@@ -303,7 +310,7 @@ class Crawler < ActiveRecord::Base
       @b.goto product_type.parsed_link
       # Verify if item is available
       @b.em(id: 'j-sell-stock-num').wait_until_present(timeout: 10)
-      if @b.em(id: 'j-sell-stock-num').text.to_i < item['quantity']
+      if !@b.em(id: 'j-sell-stock-num').exists? || @b.em(id: 'j-sell-stock-num').text.to_i < item['quantity']
         raise "Erro de estoque, produto #{item["name"]} não disponível"
       end
     end
