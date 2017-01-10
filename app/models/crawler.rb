@@ -75,6 +75,7 @@ class Crawler < ActiveRecord::Base
       rescue => e
         # when you raise and pass message, this message is printed here
         puts e.message
+        @b.screenshot.save("#{e}-#{rand(1000)}.png") if Rails.env.development?
         @log.add_message(e.message)
       end
     end
