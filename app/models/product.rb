@@ -1,5 +1,5 @@
 class Product < ActiveRecord::Base
-  has_many :product_types
+  has_many :product_types, dependent: :destroy
   def self.import products, wordpress
     products.each do |data|
       #Criando produtos

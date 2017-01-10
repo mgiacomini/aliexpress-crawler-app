@@ -2,7 +2,7 @@ require 'woocommerce_api'
 
 class Wordpress < ActiveRecord::Base
   validates :name, :url, :consumer_key, :consumer_secret, presence: true
-  has_many :crawlers
+  has_many :crawlers, dependent: :destroy
 
   @error = nil
 

@@ -2,7 +2,7 @@ class Crawler < ActiveRecord::Base
   belongs_to :aliexpress
   belongs_to :wordpress
   validates :aliexpress_id, :wordpress_id, presence: true
-  has_many :crawler_logs
+  has_many :crawler_logs, dependent: :destroy
 
   def run(orders)
     raise "Não há pedidos a serem executados" if orders.nil? || orders.count == 0
@@ -210,21 +210,6 @@ class Crawler < ActiveRecord::Base
     end
     # Check if current session if up
     self.check_if_session_is_up
-    # sleep 5
-    # # @b.a(class: "sa-edit").wait_until_present(timeout: 30)
-    # if !@b.a(class: "sa-edit").exists?
-    #   if @b.a(class: "sa-add-a-new-address").exists?
-    #     @b.a(class: "sa-add-a-new-address").click
-    #   else
-    #     @b.screenshot.save("#{rand(100)}-login.png")
-    #     message = "Sessão desconectada ... logando novamente"
-    #     puts message
-    #     @log.add_message message
-    #     self.login
-    #   end
-    # else
-    #   @b.a(class: "sa-edit").click
-    # end
     # Fill customer's address
     puts "========= Adding customer informations"
     @log.add_message('Adicionando informações do cliente')
