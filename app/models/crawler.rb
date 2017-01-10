@@ -84,9 +84,9 @@ class Crawler < ActiveRecord::Base
 
   # Efetua login no site da Aliexpresss usando user e password
   def login
+    tries ||= 3
     puts "========= Performing Login"
     @log.add_message("Efetuando login com #{self.aliexpress.email}\n")
-    tries ||= 3
     @b.goto "https://login.aliexpress.com/"
     frame = @b.iframe(id: 'alibaba-login-box')
     frame.text_field(name: 'loginId').set self.aliexpress.email
@@ -102,18 +102,36 @@ class Crawler < ActiveRecord::Base
     retry unless (tries -= 1).zero?
   end
 
+  def check_if_session_is_up
+    tries ||= 3
+    sleep 5
+    # @b.a(class: "sa-edit").wait_until_present(timeout: 30)
+    if !@b.a(class: "sa-edit").exists?
+      if !@b.a(class: "sa-add-a-new-address").exists?
+        message = "Sessão desconectada ... logando novamente"
+        puts message
+        @log.add_message message
+        self.login
+      else
+        @b.a(class: "sa-add-a-new-address").click
+      end
+    else
+      @b.a(class: "sa-edit").click
+    end
+  end
+
   def set_destination_to_brazil
     puts "========= Setting destination to Brazil"
-    @b.span(class: 'ship-to').wait_until_present(timeout: 20)
+    @b.span(class: 'ship-to').wait_until_present(timeout: 30)
     @b.span(class: 'ship-to').click
     sleep 5
-    @b.div(data_role: 'switch-country').wait_until_present(timeout: 20)
+    @b.div(data_role: 'switch-country').wait_until_present(timeout: 30)
     @b.div(data_role: 'switch-country').click
 
-    @b.span(class: 'css_br').wait_until_present(timeout: 20)
+    @b.span(class: 'css_br').wait_until_present(timeout: 30)
     @b.span(class: 'css_br').click
 
-    @b.div(class: 'switcher-btn').button(data_role: 'save').wait_until_present(timeout: 20)
+    @b.div(class: 'switcher-btn').button(data_role: 'save').wait_until_present(timeout: 30)
     @b.div(class: 'switcher-btn').button(data_role: 'save').click
     sleep 5
   end
@@ -122,7 +140,7 @@ class Crawler < ActiveRecord::Base
   def add_item_to_cart
     puts "========= Adding to cart"
     @b.link(id: "j-add-cart-btn").click
-    @b.div(class: "ui-add-shopcart-dialog").wait_until_present(timeout: 20)
+    @b.div(class: "ui-add-shopcart-dialog").wait_until_present(timeout: 30)
     unless @b.div(class: "ui-add-shopcart-dialog").exists?
       @error = "Falha ao adicionar ao carrinho: #{@b.url}"
       @log.add_message(@error)
@@ -155,7 +173,7 @@ class Crawler < ActiveRecord::Base
     unless shipping == 'default'
       @b.a(class: 'shipping-link').click
       # Wait for the popup to open
-      @b.div(class: 'ui-window-btn').wait_until_present(timeout: 20)
+      @b.div(class: 'ui-window-btn').wait_until_present(timeout: 30)
       @b.radio(name: 'shipping-company', data_full_name: "#{shipping}").click
       # Wait for the change to propagate
       sleep 2
@@ -180,20 +198,34 @@ class Crawler < ActiveRecord::Base
     # Go to Cart Page
     @b.goto 'https://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     # Check if all items can be purchased
-    @b.button(class: "buy-now").wait_until_present(timeout: 20) do
-      if !@b.button(class: "buy-now").exists?
-        raise "Produto sem estoque na Aliexpress"
-      else
-        @b.button(class: "buy-now").click
-      end
+    sleep 5
+    if @b.button(class: "buy-now-disabled-info").exists?
+      raise "Um dos produtos do carrinho não está mais disponível"
+    end
+    @b.button(class: "buy-now").wait_until_present(timeout: 30)
+    if !@b.button(class: "buy-now").exists?
+      raise "Produto sem estoque na Aliexpress"
+    else
+      @b.button(class: "buy-now").click
     end
     # Check if current session if up
-    unless @b.a(class: "sa-edit").exists?
-      @log.add_message("Sessão desconectada ... logando novamente\n")
-      self.login
-    end
+    self.check_if_session_is_up
+    # sleep 5
+    # # @b.a(class: "sa-edit").wait_until_present(timeout: 30)
+    # if !@b.a(class: "sa-edit").exists?
+    #   if @b.a(class: "sa-add-a-new-address").exists?
+    #     @b.a(class: "sa-add-a-new-address").click
+    #   else
+    #     @b.screenshot.save("#{rand(100)}-login.png")
+    #     message = "Sessão desconectada ... logando novamente"
+    #     puts message
+    #     @log.add_message message
+    #     self.login
+    #   end
+    # else
+    #   @b.a(class: "sa-edit").click
+    # end
     # Fill customer's address
-    @b.a(class: "sa-edit").exists? ? @b.a(class: "sa-edit").click : @b.a(class: "sa-add-a-new-address").click
     puts "========= Adding customer informations"
     @log.add_message('Adicionando informações do cliente')
     @b.text_field(name: "contactPerson").wait_until_present(timeout: 3)
@@ -232,13 +264,13 @@ class Crawler < ActiveRecord::Base
       puts "========= Captcha detected, going to mobile..."
       @log.add_message('Captcha detectado, indo para carrinho mobile')
       @b.goto 'm.aliexpress.com/shopcart/detail.htm'
-      @b.div(class:"buyall").wait_until_present(timeout: 20)
+      @b.div(class:"buyall").wait_until_present(timeout: 30)
       @b.div(class:"buyall").click
       # Create the final order on mobile website to avoid captcha
-      @b.button(id:"create-order").wait_until_present(timeout: 20)
+      @b.button(id:"create-order").wait_until_present(timeout: 30)
       @b.button(id:"create-order").click
       @finished = true
-      @b.div(class:"desc_txt").wait_until_present(timeout: 20)
+      @b.div(class:"desc_txt").wait_until_present(timeout: 30)
       @b.div(class:"desc_txt").text
     end
   end
@@ -301,7 +333,9 @@ class Crawler < ActiveRecord::Base
 
   def check_and_go_to_aliexpress_link(product_type, item)
     if product_type.aliexpress_link.nil?
-      raise "Link aliexpress não cadastrado para #{item['name']}"
+      raise "Link aliexpress não cadastrado para: #{item['name']}"
+    elsif product_type.parsed_link == "http://pt.aliexpress.com/item//"
+      raise "Link aliexpress cadastrdo de forma errada para: #{item['name']}"
     else
       # Go to Product's page
       message = "Going to aliexpress --> #{product_type.parsed_link}"
@@ -309,7 +343,7 @@ class Crawler < ActiveRecord::Base
       @log.add_message message
       @b.goto product_type.parsed_link
       # Verify if item is available
-      @b.em(id: 'j-sell-stock-num').wait_until_present(timeout: 10)
+      sleep 5
       if !@b.em(id: 'j-sell-stock-num').exists? || @b.em(id: 'j-sell-stock-num').text.to_i < item['quantity']
         raise "Erro de estoque, produto #{item["name"]} não disponível"
       end
