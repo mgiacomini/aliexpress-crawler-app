@@ -81,5 +81,5 @@ test:
 production:
   <<: *default
   database: aliexpress_production
-  username: aliexpress
+  username: <%= ENV['ALIEXPRESS_DATABASE_USER'] %>
   password: <%= ENV['ALIEXPRESS_DATABASE_PASSWORD'] %>
