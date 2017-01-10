@@ -1,4 +1,3 @@
-require "watir-webdriver"
 class Crawler < ActiveRecord::Base
   belongs_to :aliexpress
   belongs_to :wordpress
@@ -28,13 +27,14 @@ class Crawler < ActiveRecord::Base
       message = "\n------------------- Processando pedido ##{order['id']}\n"
       puts message
       @log.add_message(message)
-      # Empty the Cart before go to next Order
-      self.empty_cart
       # Check if this Order is already processed
       self.check_order_notes(order)
-
       # Start putting items inside the cart and setting options
       begin
+        # Empty the Cart before go to next Order
+        # empty_cart is inside begin so this way we can rescue the
+        # Net::ReadTimeout problems
+        self.empty_cart
         order["line_items"].each do |item|
           # Set product and product options from Wordpress products
           product = Product.find_by_name(item["name"])
@@ -104,16 +104,16 @@ class Crawler < ActiveRecord::Base
 
   def set_destination_to_brazil
     puts "========= Setting destination to Brazil"
-    @b.span(class: 'ship-to').wait_until_present(20)
+    @b.span(class: 'ship-to').wait_until_present(timeout: 20)
     @b.span(class: 'ship-to').click
     sleep 5
-    @b.div(data_role: 'switch-country').wait_until_present(20)
+    @b.div(data_role: 'switch-country').wait_until_present(timeout: 20)
     @b.div(data_role: 'switch-country').click
 
-    @b.span(class: 'css_br').wait_until_present(20)
+    @b.span(class: 'css_br').wait_until_present(timeout: 20)
     @b.span(class: 'css_br').click
 
-    @b.div(class: 'switcher-btn').button(data_role: 'save').wait_until_present(20)
+    @b.div(class: 'switcher-btn').button(data_role: 'save').wait_until_present(timeout: 20)
     @b.div(class: 'switcher-btn').button(data_role: 'save').click
     sleep 5
   end
@@ -154,7 +154,7 @@ class Crawler < ActiveRecord::Base
     unless shipping == 'default'
       @b.a(class: 'shipping-link').click
       # Wait for the popup to open
-      @b.div(class: 'ui-window-btn').wait_until_present(20)
+      @b.div(class: 'ui-window-btn').wait_until_present(timeout: 20)
       @b.radio(name: 'shipping-company', data_full_name: "#{shipping}").click
       # Wait for the change to propagate
       sleep 2
@@ -179,7 +179,7 @@ class Crawler < ActiveRecord::Base
     # Go to Cart Page
     @b.goto 'https://shoppingcart.aliexpress.com/shopcart/shopcartDetail.htm'
     # Go to Checkout page
-    @b.button(class: "buy-now").wait_until_present(20)
+    @b.button(class: "buy-now").wait_until_present(timeout: 20)
     @b.button(class: "buy-now").click
     # Check if current session if up
     unless @b.a(class: "sa-edit").exists?
@@ -189,7 +189,7 @@ class Crawler < ActiveRecord::Base
     @b.a(class: "sa-edit").exists? ? @b.a(class: "sa-edit").click : @b.a(class: "sa-add-a-new-address").click
     puts "========= Adding customer informations"
     @log.add_message('Adicionando informações do cliente')
-    @b.text_field(name: "contactPerson").wait_until_present(3)
+    @b.text_field(name: "contactPerson").wait_until_present(timeout: 3)
     @b.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
     @b.select_list(name: "country").select "Brazil"
     if customer['number'].nil?
@@ -225,13 +225,13 @@ class Crawler < ActiveRecord::Base
       puts "========= Captcha detected, going to mobile..."
       @log.add_message('Captcha detectado, indo para carrinho mobile')
       @b.goto 'm.aliexpress.com/shopcart/detail.htm'
-      @b.div(class:"buyall").wait_until_present(20)
+      @b.div(class:"buyall").wait_until_present(timeout: 20)
       @b.div(class:"buyall").click
       # Create the final order on mobile website to avoid captcha
-      @b.button(id:"create-order").wait_until_present(20)
+      @b.button(id:"create-order").wait_until_present(timeout: 20)
       @b.button(id:"create-order").click
       @finished = true
-      @b.div(class:"desc_txt").wait_until_present(20)
+      @b.div(class:"desc_txt").wait_until_present(timeout: 20)
       @b.div(class:"desc_txt").text
     end
   end
@@ -297,9 +297,13 @@ class Crawler < ActiveRecord::Base
       raise "Link aliexpress não cadastrado para #{item['name']}"
     else
       # Go to Product's page
+      message = "Going to aliexpress --> #{product_type.parsed_link}"
+      puts message
+      @log.add_message message
       @b.goto product_type.parsed_link
       # Verify if item is available
-      if !@b.text_field(name: 'quantity').exists? || @b.text_field(name: 'quantity').value.to_i != item['quantity']
+      @b.em(id: 'j-sell-stock-num').wait_until_present(timeout: 10)
+      if @b.em(id: 'j-sell-stock-num').text.to_i < item['quantity']
         raise "Erro de estoque, produto #{item["name"]} não disponível"
       end
     end
