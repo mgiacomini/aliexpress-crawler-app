@@ -31,14 +31,7 @@ new_crawler_path,
         <tr>
           <td><%= link_to crawler.wordpress.name, crawler_path(crawler) %></td>
           <td><%= crawler.aliexpress.name %></td>
-          <td><%=
-                  case crawler.enabled
-                  when true
-                    'Habilitado'
-                  else
-                    'Desabilitado'
-                  end
-              %></td>
+          <dd><%= crawler.enabled ? 'Habilitado' : 'Desabilitado'%></dd>
           <td><%= crawler.schedule %></td>
           <td>
             <%= link_to t('.edit', :default => t("helpers.links.edit")),

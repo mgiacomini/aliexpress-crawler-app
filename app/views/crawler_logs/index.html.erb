@@ -26,7 +26,7 @@
       <% @crawler_logs.each do |crawler_log| %>
         <tr>
           <td><%= link_to crawler_log.crawler.wordpress.name, crawler_path(crawler_log.crawler) %></td>
-          <td><%= "Processados: #{crawler_log.orders_count} Sucessos: #{crawler_log.processed}"%></td>
+          <td><%= "Total: #{crawler_log.orders_count} Sucessos: #{crawler_log.processed}"%></td>
           <td><%=l crawler_log.created_at %></td>
           <td><%=l crawler_log.updated_at %></td>
           <td>
