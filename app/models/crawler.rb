@@ -160,11 +160,13 @@ class Crawler < ActiveRecord::Base
   def set_item_options user_options
     puts "========= Setting product options"
     @b.div(id: "j-product-info-sku").dls.each_with_index do |option, index|
-      selected = user_options[index]
-      if selected.nil?
-        option.a.click
+      selected = user_options[index] || 1
+      link = option.as[selected-1]
+
+      if link.exists?
+        link.click
       else
-        option.as[selected-1].click
+        raise 'Variação do produto indisponível'
       end
     end
   end
