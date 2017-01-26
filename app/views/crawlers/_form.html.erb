@@ -3,7 +3,7 @@
   <%= error_span(@crawler[:wordpress_id]) %>
   <%= f.association :aliexpress %>
   <%= error_span(@crawler[:aliexpress_id]) %>
-  <%= f.input :enabled %>
+  <%= f.input :enabled, as: :boolean %>
   <%= error_span(@crawler[:enabled]) %>
   <%= f.collection_radio_buttons :schedule, [['ten_minutes', '10 Minutes'] ,
                                             ['hourly', 'Hourly'],
