@@ -1,6 +1,9 @@
 namespace :crawler do
   desc "Runs Crawler.rb"
   task run: :environment do
+    # When run straight from command line, @crawlers won't be set so
+    @crawlers ||= Crawler.where(enabled: true)
+
     @crawlers.each do |crawler|
       orders = crawler.wordpress.get_orders
       crawler.run orders
