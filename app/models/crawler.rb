@@ -162,8 +162,9 @@ class Crawler < ActiveRecord::Base
     @b.div(id: "j-product-info-sku").dls.each_with_index do |option, index|
       selected = user_options[index] || 1
       link = option.as[selected-1]
+      disabled = link.parent.class_name.include?('disabled')
 
-      if link.exists?
+      if link.exists? && !disabled
         link.click
       else
         raise 'Variação do produto indisponível'
