@@ -178,10 +178,15 @@ class Crawler < ActiveRecord::Base
       @b.a(class: 'shipping-link').click
       # Wait for the popup to open
       @b.div(class: 'ui-window-btn').wait_until_present(timeout: 30)
-      @b.radio(name: 'shipping-company', data_full_name: "#{shipping}").click
-      # Wait for the change to propagate
-      sleep 2
-      @b.div(class: 'ui-window-btn').button(data_role: 'yes').click
+      radio = @b.radio(name: 'shipping-company', data_full_name: "#{shipping}")
+      if radio.exists?
+        radio.click
+        # Wait for the change to propagate
+        sleep 2
+        @b.div(class: 'ui-window-btn').button(data_role: 'yes').click
+      else
+        raise 'Frete inválido'
+      end
     end
   end
 
