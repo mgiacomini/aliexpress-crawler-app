@@ -38,8 +38,15 @@ class Crawler < ActiveRecord::Base
         order["line_items"].each do |item|
           # Set product and product options from Wordpress products
           product = Product.find_by_name(item["name"])
+
           # Search product_types
-          product_type = ProductType.find_by(product: product)
+          if item["meta"].empty?
+            product_type = ProductType.find_by(product: product)
+          else
+            name = item['meta'].map { |m| m['value'] }.join(' ')
+            product_type = ProductType.find_by(product: product, name: name)
+          end
+
           # Check if product was found on database
           self.check_product_or_product_type(product, product_type, item)
           # If found, go to aliexpress link and check for quantities and availability
@@ -332,7 +339,7 @@ class Crawler < ActiveRecord::Base
     if product_type.aliexpress_link.nil?
       raise "Link aliexpress não cadastrado para: #{item['name']}"
     elsif product_type.parsed_link == "http://pt.aliexpress.com/item//"
-      raise "Link aliexpress cadastrdo de forma errada para: #{item['name']}"
+      raise "Link aliexpress cadastrado de forma errada para: #{item['name']}"
     else
       # Go to Product's page
       message = "Going to aliexpress --> #{product_type.parsed_link}"
