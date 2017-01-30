@@ -18,7 +18,7 @@ pt-BR:
         option_1: 'Opção numérica da esquerda para a direita'
         option_2: 'Opção numérica da esquerda para a direita'
         option_3: 'Opção numérica da esquerda para a direita'
-        shipping: 'Opção numérica de cima para baixo'
+        shipping: 'Empresa de expedição (data-full-name do input type="radio")'
       aliexpress:
         name: 'Nome do usuário'
         email: 'user@email.com'
