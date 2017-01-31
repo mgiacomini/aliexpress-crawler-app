@@ -5,7 +5,7 @@ class Crawler < ActiveRecord::Base
   has_many :crawler_logs, dependent: :destroy
 
   def run(orders)
-    raise "Não há pedidos a serem executados" if orders.nil? || orders.count == 0
+    raise "Não há pedidos a serem executados" if orders.nil? || orders.count.zero?
 
     @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
     @b = Watir::Browser.new :phantomjs
@@ -53,7 +53,7 @@ class Crawler < ActiveRecord::Base
           self.check_and_go_to_aliexpress_link(product_type, item)
           # First check if shipping is set for Product
           shipping = self.get_product_shipping(product_type, item)
-          # Qhen order is completed the errors for this item are removed
+          # When order is completed the errors for this item are removed
           order_items << { product_type: product_type, shipping: shipping }
           # Set the options (color, size...) for the product
           self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
@@ -167,10 +167,10 @@ class Crawler < ActiveRecord::Base
   def set_item_options user_options
     puts "========= Setting product options"
     @b.div(id: "j-product-info-sku").dls.each_with_index do |option, index|
-      selected = user_options[index] || 1
+      selected = (user_options[index] - 1) || 0
 
-      if option.as[selected - 1].exists?
-        link = option.as[selected - 1]
+      if option.as[selected].exists?
+        link = option.as[selected]
 
         # Check if the option is not disabled
         if link.parent.class_name.include?('disabled')
@@ -178,6 +178,8 @@ class Crawler < ActiveRecord::Base
         else
           link.click
         end
+      else
+        raise 'Variação do produto indisponível'
       end
     end
   end
@@ -330,7 +332,7 @@ class Crawler < ActiveRecord::Base
   end
 
   def check_product_or_product_type(product, product_type, item)
-    if product.nil? && product_type.nil?
+    unless product && product_type
       raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress"
     end
   end
