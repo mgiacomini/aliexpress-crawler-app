@@ -148,9 +148,16 @@ class Crawler < ActiveRecord::Base
   def add_item_to_cart
     puts "========= Adding to cart"
     @b.link(id: "j-add-cart-btn").click
-    @b.div(class: "ui-add-shopcart-dialog").wait_until_present(timeout: 30)
+
+    # wait up to 30 (6*5) seconds for ui-add-shopcart-dialog to show up
+    6.times do
+      unless @b.div(class: "ui-add-shopcart-dialog").exists?
+        sleep(5)
+      end
+    end
+
     unless @b.div(class: "ui-add-shopcart-dialog").exists?
-      @error = "Falha ao adicionar ao carrinho: #{@b.url}"
+      @error = "Falha ao adicionar ao carrinho"
       @log.add_message(@error)
     end
   end
@@ -369,7 +376,7 @@ class Crawler < ActiveRecord::Base
       raise "Erro com numero do pedido vazio\n"+self.wordpress.error
     else
       if Rails.env.development?
-        puts 'Módo de desenvolvimento - Não atualiza o Wordpress'
+        puts '========= Módo de desenvolvimento - Wordpress não será atualizado'
       else
         self.wordpress.update_order(order, ali_order_num)
       end
