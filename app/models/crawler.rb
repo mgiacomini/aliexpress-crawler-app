@@ -37,7 +37,7 @@ class Crawler < ActiveRecord::Base
         self.empty_cart
         order["line_items"].each do |item|
           # Set product and product options from Wordpress products
-          product = Product.find_by_name(item["name"])
+          product = Product.find_by(wordpress_id: item["product_id"])
 
           # Search product_types
           if item["meta"].empty?
