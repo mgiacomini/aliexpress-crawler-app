@@ -339,8 +339,12 @@ class Crawler < ActiveRecord::Base
   end
 
   def check_product_or_product_type(product, product_type, item)
-    unless product && product_type
-      raise "Produto #{item["name"]} não encontrado, necessário importar do wordpress"
+    if product && product_type
+      @log.add_message "Selecionado produto ##{product.id} na variação ##{producy_type.id}"
+    elsif product
+      raise "Selecionado produto ##{product.id} mas a variação não foi encontrada. Necessário importar do wordpress"
+    else
+      raise "Produto #{item["name"]} não encontrado. Necessário importar do wordpress"
     end
   end
 
