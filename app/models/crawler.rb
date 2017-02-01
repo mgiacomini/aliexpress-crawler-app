@@ -340,7 +340,7 @@ class Crawler < ActiveRecord::Base
 
   def check_product_or_product_type(product, product_type, item)
     if product && product_type
-      @log.add_message "Selecionado produto ##{product.id} na variação ##{producy_type.id}"
+      @log.add_message "Selecionado produto ##{product.id} na variação ##{product_type.id}"
     elsif product
       raise "Selecionado produto ##{product.id} mas a variação não foi encontrada. Necessário importar do wordpress"
     else
