@@ -3,6 +3,7 @@ require 'woocommerce_api'
 class Wordpress < ActiveRecord::Base
   validates :name, :url, :consumer_key, :consumer_secret, presence: true
   has_many :crawlers, dependent: :destroy
+  has_many :products, dependent: :destroy
 
   @error = nil
 
@@ -23,7 +24,7 @@ class Wordpress < ActiveRecord::Base
   end
 
   def get_products
-    products = woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,attributes").parsed_response
+    products = woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,variations").parsed_response
 
     products['products']
   end

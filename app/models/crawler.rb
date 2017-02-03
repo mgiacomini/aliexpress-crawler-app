@@ -36,19 +36,21 @@ class Crawler < ActiveRecord::Base
         # Net::ReadTimeout problems
         self.empty_cart
         order["line_items"].each do |item|
+          id_at_wordpress = item["product_id"]
           # Set product and product options from Wordpress products
-          product = Product.find_by(wordpress_id: item["product_id"])
 
-          # Search product_types
-          if item["meta"].empty?
-            product_type = ProductType.find_by(product: product)
+          product = wordpress.products.find_by(id_at_wordpress: id_at_wordpress)
+
+          if product
+            # Search product_types
+            product_type = product.product_types.first
           else
-            name = item['meta'].map { |m| m['value'] }.join(' ')
-            product_type = ProductType.find_by(product: product, name: name)
+            product = wordpress.products.joins(:product_types).where('product_types.id_at_wordpress = ?', id_at_wordpress).try(:first)
+            product_type = product.product_types.find_by(id_at_wordpress: id_at_wordpress) if product
           end
 
           # Check if product was found on database
-          self.check_product_or_product_type(product, product_type, item)
+          self.check_product_type(product_type, item)
           # If found, go to aliexpress link and check for quantities and availability
           self.check_and_go_to_aliexpress_link(product_type, item)
           # First check if shipping is set for Product
@@ -338,13 +340,11 @@ class Crawler < ActiveRecord::Base
     end
   end
 
-  def check_product_or_product_type(product, product_type, item)
-    if product && product_type
-      @log.add_message "Selecionado produto ##{product.id} na variação ##{product_type.id}"
-    elsif product
-      raise "Selecionado produto ##{product.id} mas a variação não foi encontrada. Necessário importar do wordpress"
+  def check_product_type(product_type, item)
+    if product_type
+      @log.add_message "Produto ##{product_type.id} selecionado"
     else
-      raise "Produto #{item["name"]} não encontrado. Necessário importar do wordpress"
+      raise "Produto não encontrado. Necessário importar do wordpress. Se o erro persistir, é possível que o produto tenha sido excluído na loja wordpress"
     end
   end
 

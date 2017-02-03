@@ -19,7 +19,7 @@ class WordpressesController < ApplicationController
   end
 
   def show
-    @product = Product.where(store: @wordpress.name)
+    @product = @wordpress.products
     @product_types = ProductType.where(product: @product)
                                 .paginate(:page => params[:page])
                                 .joins(:product)
@@ -40,8 +40,8 @@ class WordpressesController < ApplicationController
   end
 
   def import_products
-    @products = @wordpress.get_products
-    Product.import(@products, @wordpress)
+    products_data = @wordpress.get_products
+    Product.import(products_data, @wordpress)
     redirect_to wordpress_path(@wordpress), notice: "Produtos importados."
   rescue
     redirect_to wordpress_path(@wordpress), alert: "Falha ao importar, checar configurações do Wordpress."
