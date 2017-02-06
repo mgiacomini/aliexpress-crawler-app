@@ -36,21 +36,8 @@ class Crawler < ActiveRecord::Base
         # Net::ReadTimeout problems
         self.empty_cart
         order["line_items"].each do |item|
-          id_at_wordpress = item["product_id"]
-          # Set product and product options from Wordpress products
-
-          product = wordpress.products.find_by(id_at_wordpress: id_at_wordpress)
-
-          if product
-            # Search product_types
-            product_type = product.product_types.first
-          else
-            product = wordpress.products.joins(:product_types).where('product_types.id_at_wordpress = ?', id_at_wordpress).try(:first)
-            product_type = product.product_types.find_by(id_at_wordpress: id_at_wordpress) if product
-          end
-
-          # Check if product was found on database
-          self.check_product_type(product_type, item)
+          # Check if product type was found on database
+          product_type = self.find_product_type_by_item(item)
           # If found, go to aliexpress link and check for quantities and availability
           self.check_and_go_to_aliexpress_link(product_type, item)
           # First check if shipping is set for Product
@@ -340,12 +327,34 @@ class Crawler < ActiveRecord::Base
     end
   end
 
-  def check_product_type(product_type, item)
-    if product_type
-      @log.add_message "Produto ##{product_type.id} selecionado"
+  def find_product_type_by_item(item)
+    @log.add_message "Procurando produto: #{item['name']}"
+    product = wordpress.products.find_by(id_at_wordpress: item["product_id"])
+    product ||= wordpress.products.find_by(name: item['name'])
+
+    if product
+      @log.add_message "Produto ##{product.id} selecionado"
     else
-      raise "Produto não encontrado. Necessário importar do wordpress. Se o erro persistir, é possível que o produto tenha sido excluído na loja wordpress"
+      raise "Produto não encontrado. Necessário importar do wordpress."
     end
+
+    if item['meta'].any?
+      name = item['meta'].map { |m| m['value'] }.join(' ').downcase
+    else
+      name = 'unico'
+    end
+
+    product_types = product.product_types
+
+    product_type = product_types.where('lower(name) = ?', name).try(:first)
+
+    if product_type
+      @log.add_message "Variação ##{product_type.id} selecionado"
+    else
+      raise "Variação não encontrada. Necessário importar do wordpress"
+    end
+
+    product_type
   end
 
   def check_and_go_to_aliexpress_link(product_type, item)

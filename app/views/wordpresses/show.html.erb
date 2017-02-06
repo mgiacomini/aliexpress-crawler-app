@@ -37,7 +37,7 @@
   <table class="table table-condensed">
     <thead>
       <tr>
-        <th class="col-sm-1"><%= ProductType.human_attribute_name(:id_at_wordpress) %></th>
+        <th class="col-sm-1"><%= ProductType.human_attribute_name(:wordpress_id) %></th>
         <th class="col-sm-2"><%= ProductType.human_attribute_name(:name) %></th>
         <th class="col-sm-3"><%= ProductType.human_attribute_name(:type) %></th>
         <th><%= ProductType.human_attribute_name(:link) %></th>
@@ -52,7 +52,7 @@
     <tbody>
       <% @product_types.each do |product_type| %>
         <tr>
-          <td><%= link_to product_type.id_at_wordpress, product_type_path(product_type) %></td>
+          <td><%= link_to product_type.product.wordpress_id, product_type_path(product_type) %></td>
           <td><%= product_type.product.name %></td>
           <td><%= product_type.name %></td>
           <td><a href="<%=product_type.product.link%>"><%=product_type.product.link%></a></td>

@@ -161,7 +161,6 @@ pt-BR:
         option_3: 'Opção 3'
         shipping: 'Frete'
         updated_at: 'Atualizado em'
-        id_at_wordpress: 'ID no Wordpress'
       wordpress:
         name: 'Nome'
         consumer_key: 'Consumer key'
