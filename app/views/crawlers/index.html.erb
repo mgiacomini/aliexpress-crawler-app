@@ -23,16 +23,28 @@ new_crawler_path,
         <th><%= model_class.human_attribute_name(:aliexpress_id) %></th>
         <th><%= model_class.human_attribute_name(:status) %></th>
         <th><%= model_class.human_attribute_name(:schedule) %></th>
+        <th><%= model_class.human_attribute_name(:orders_offset) %></th>
         <th><%=t '.actions', :default => t("helpers.actions") %></th>
       </tr>
     </thead>
     <tbody>
       <% @crawlers.each do |crawler| %>
         <tr>
-          <td><%= link_to crawler.wordpress.name, crawler_path(crawler) %></td>
-          <td><%= crawler.aliexpress.name %></td>
-          <dd><%= crawler.enabled ? 'Habilitado' : 'Desabilitado'%></dd>
-          <td><%= crawler.schedule %></td>
+          <td>
+            <%= link_to crawler.wordpress.name, wordpress_path(crawler.wordpress) %>
+          </td>
+          <td>
+            <%= link_to crawler.aliexpress.name, aliexpress_path(crawler.aliexpress) %>
+          </td>
+          <td>
+            <%= crawler.enabled ? 'Habilitado' : 'Desabilitado'%>
+          </td>
+          <td>
+            <%= crawler.schedule %>
+          </td>
+          <td>
+            <%= crawler.orders_offset %>
+          </td>
           <td>
             <%= link_to t('.edit', :default => t("helpers.links.edit")),
                         edit_crawler_path(crawler), :class => 'btn btn-default btn-xs' %>

@@ -10,6 +10,8 @@
   <dd><%= @crawler.enabled ? 'Habilitado' : 'Desabilitado'%></dd>
   <dt><strong><%= model_class.human_attribute_name(:schedule) %>:</strong></dt>
   <dd><%= @crawler.schedule %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:orders_offset) %>:</strong></dt>
+  <dd><%= @crawler.orders_offset %></dd>
 </dl>
 
 <%= link_to 'Voltar',

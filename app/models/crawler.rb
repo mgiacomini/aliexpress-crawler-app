@@ -338,7 +338,7 @@ class Crawler < ActiveRecord::Base
       raise "Produto não encontrado. Necessário importar do wordpress."
     end
 
-    if item['meta'].any?
+    if item['meta'] && item['meta'].any?
       name = item['meta'].map { |m| m['value'] }.join(' ').downcase
     else
       name = 'unico'

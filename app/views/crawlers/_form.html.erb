@@ -4,6 +4,7 @@
   <%= f.association :aliexpress %>
   <%= error_span(@crawler[:aliexpress_id]) %>
   <%= f.input :enabled, as: :boolean %>
+  <%= f.input :orders_offset %>
   <%= error_span(@crawler[:enabled]) %>
   <%= f.collection_radio_buttons :schedule, [['ten_minutes', '10 Minutes'] ,
                                             ['hourly', 'Hourly'],
