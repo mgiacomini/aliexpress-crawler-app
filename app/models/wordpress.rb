@@ -13,12 +13,12 @@ class Wordpress < ActiveRecord::Base
 
   def woocommerce
     woocommerce = WooCommerce::API.new(
-    self.url, #Url do site
-    self.consumer_key, #Consumer Key
-    self.consumer_secret, #Consumer Secret
-      {
-        version: "v1" #Versão da API
-      }
+        self.url, #Url do site
+        self.consumer_key, #Consumer Key
+        self.consumer_secret, #Consumer Secret
+        {
+            version: "v1" #Versão da API
+        }
     )
     woocommerce
   end
@@ -39,9 +39,20 @@ class Wordpress < ActiveRecord::Base
   def update_note order, ali_order_num
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
     data = {
-      order_note: {
-        note: ali_order_num
-      }
+        order_note: {
+            note: ali_order_num
+        }
+    }
+    #POST em order notes
+    woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
+  end
+
+  def update_tracking_number_note order, tracking_number
+    #Atualiza o código de rastreio do pedido
+    data = {
+        order_note: {
+            note: "Código de rastreio: #{tracking_number}"
+        }
     }
     #POST em order notes
     woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
@@ -49,9 +60,9 @@ class Wordpress < ActiveRecord::Base
 
   def complete_order order
     data = {
-      order: {
-        status: "completed"
-      }
+        order: {
+            status: "completed"
+        }
     }
     #PUT para mudar a ordem para concluída
     woocommerce.put("orders/#{order["id"]}", data).parsed_response
@@ -64,7 +75,7 @@ class Wordpress < ActiveRecord::Base
     #Converção para array
     all_orders["orders"]
   rescue
-    @error =  "Erro ao importar pedidos do Wordpress, favor verificar configurações."
+    @error = "Erro ao importar pedidos do Wordpress, favor verificar configurações."
   end
 
   def get_order order_id
