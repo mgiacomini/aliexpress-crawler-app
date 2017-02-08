@@ -23,7 +23,8 @@ new_crawler_path,
         <th><%= model_class.human_attribute_name(:aliexpress_id) %></th>
         <th><%= model_class.human_attribute_name(:status) %></th>
         <th><%= model_class.human_attribute_name(:schedule) %></th>
-        <th><%= model_class.human_attribute_name(:orders_offset) %></th>
+        <th><%= model_class.human_attribute_name(:orders_starting_from_page) %></th>
+        <th><%= model_class.human_attribute_name(:max_amount_of_orders) %></th>
         <th><%=t '.actions', :default => t("helpers.actions") %></th>
       </tr>
     </thead>
@@ -43,7 +44,10 @@ new_crawler_path,
             <%= crawler.schedule %>
           </td>
           <td>
-            <%= crawler.orders_offset %>
+            <%= crawler.max_amount_of_orders %>
+          </td>
+          <td>
+            <%= crawler.orders_starting_from_page %>
           </td>
           <td>
             <%= link_to t('.edit', :default => t("helpers.links.edit")),

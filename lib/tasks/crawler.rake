@@ -5,7 +5,9 @@ namespace :crawler do
     @crawlers ||= Crawler.where(enabled: true)
 
     @crawlers.each do |crawler|
-      orders = crawler.wordpress.get_orders(crawler.orders_offset)
+      amount = crawler.max_amount_of_orders
+      page = crawler.orders_starting_from_page
+      orders = crawler.wordpress.get_orders(amount, page)
       crawler.run orders
     end
   end
