@@ -10,8 +10,10 @@
   <dd><%= @crawler.enabled ? 'Habilitado' : 'Desabilitado'%></dd>
   <dt><strong><%= model_class.human_attribute_name(:schedule) %>:</strong></dt>
   <dd><%= @crawler.schedule %></dd>
-  <dt><strong><%= model_class.human_attribute_name(:orders_offset) %>:</strong></dt>
-  <dd><%= @crawler.orders_offset %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:orders_starting_from_page) %>:</strong></dt>
+  <dd><%= @crawler.orders_starting_from_page %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:max_amount_of_orders) %>:</strong></dt>
+  <dd><%= @crawler.max_amount_of_orders %></dd>
 </dl>
 
 <%= link_to 'Voltar',

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170206220828) do
+ActiveRecord::Schema.define(version: 20170208220256) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -38,11 +38,12 @@ ActiveRecord::Schema.define(version: 20170206220828) do
   create_table "crawlers", force: :cascade do |t|
     t.integer  "aliexpress_id"
     t.integer  "wordpress_id"
-    t.boolean  "enabled",       default: false
-    t.string   "schedule",      default: "daily"
-    t.datetime "created_at",                      null: false
-    t.datetime "updated_at",                      null: false
-    t.integer  "orders_offset", default: 0
+    t.boolean  "enabled",                   default: false
+    t.string   "schedule",                  default: "daily"
+    t.datetime "created_at",                                  null: false
+    t.datetime "updated_at",                                  null: false
+    t.integer  "max_amount_of_orders",      default: 200
+    t.integer  "orders_starting_from_page", default: 1
   end
 
   add_index "crawlers", ["aliexpress_id"], name: "index_crawlers_on_aliexpress_id", using: :btree

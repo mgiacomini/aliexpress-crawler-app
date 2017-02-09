@@ -60,7 +60,7 @@ class Crawler < ActiveRecord::Base
           raise @error
         else
           # ali_order_num is the aliexpress order number returned
-          ali_order_num = self.complete_order(order["shipping_address"])
+          ali_order_num = self.complete_order(order["shipping"])
           # check if order was successful finished
           self.check_order_number(ali_order_num, order)
           # Clean current errors if this order

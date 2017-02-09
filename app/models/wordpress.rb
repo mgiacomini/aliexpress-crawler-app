@@ -13,20 +13,29 @@ class Wordpress < ActiveRecord::Base
 
   def woocommerce
     woocommerce = WooCommerce::API.new(
-        self.url, #Url do site
-        self.consumer_key, #Consumer Key
-        self.consumer_secret, #Consumer Secret
-        {
-            version: "v1" #Versão da API
-        }
+      self.url, #Url do site
+      self.consumer_key, #Consumer Key
+      self.consumer_secret, #Consumer Secret
+      {
+        wp_api: true,
+        version: "wc/v1" #Versão da API
+      }
     )
     woocommerce
   end
 
   def get_products
-    products = woocommerce.get("products?filter[limit]=1000&fields=id,permalink,title,attributes").parsed_response
+    all_products = []
+    page = 1
 
-    products['products']
+    while true
+      response = woocommerce.get("products?page=#{page}&per_page=100").parsed_response
+      break if response.none?
+      all_products.concat(response)
+      page += 1
+    end
+
+    all_products
   end
 
   def update_order order, order_nos
@@ -68,12 +77,18 @@ class Wordpress < ActiveRecord::Base
     woocommerce.put("orders/#{order["id"]}", data).parsed_response
   end
 
-  def get_orders offset = 0
-    #Pegar todos os pedidos com status Processado, 50, ordem ascendente e apenas dados
-    #que serão usados: id,shipping_address,line_items, billing_address
-    all_orders = woocommerce.get("orders?offset=#{offset}&filter[limit]=50&filter[order]=asc&status=processing&fields=id,shipping_address,billing_address,line_items").parsed_response
-    #Converção para array
-    all_orders["orders"]
+  def get_orders amount = 200, page = 1, order = 'asc', status = 'processing'
+    all_orders = []
+
+    while true
+      response = woocommerce.get("orders?page=#{page}&per_page=100&order=#{order}&status=#{status}").parsed_response
+      break if response.none?
+      all_orders.concat(response)
+      break if all_orders.count >= amount
+      page += 1
+    end
+
+    all_orders
   rescue
     @error = "Erro ao importar pedidos do Wordpress, favor verificar configurações."
   end
@@ -81,11 +96,9 @@ class Wordpress < ActiveRecord::Base
   def get_order order_id
     # This method only exists for debugging porpouses
     order = woocommerce.get("orders/#{order_id}").parsed_response
-    order['order']
   end
 
   def get_notes order
     all_notes = woocommerce.get("orders/#{order["id"]}/notes").parsed_response
-    all_notes["order_notes"]
   end
 end

@@ -62,6 +62,7 @@ class CrawlersController < ApplicationController
 
   def crawler_params
     params.require(:crawler).permit(:aliexpress_id, :wordpress_id, :schedule,
-                                    :enabled, :orders_offset)
+                                    :enabled, :orders_starting_from_page,
+                                    :max_amount_of_orders)
   end
 end

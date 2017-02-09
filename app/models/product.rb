@@ -7,7 +7,7 @@ class Product < ActiveRecord::Base
       #Criando produto
       products = wordpress.products
       product = products.find_or_initialize_by(id_at_wordpress: data["id"])
-      product.name = data['title']
+      product.name = data['name']
       product.link = data['permalink']
       product.save
 
