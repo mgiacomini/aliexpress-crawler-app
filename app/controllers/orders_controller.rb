@@ -10,7 +10,13 @@ class OrdersController < ApplicationController
   def create
     order_creation_service = Orders::CreationService.new(Order.new(order_params))
     @order = order_creation_service.build_order
-    respond_with @order
+
+    if @order.persisted?
+      respond_with @order
+    else
+      flash[:notice] = 'Não foi possível localizar seu pedido!'
+      respond_with nil, location: orders_path
+    end
   end
 
   def show
