@@ -15,6 +15,7 @@ pt-BR:
       confirm: "Tem certeza?"
       destroy: "Deletar"
       new: "Novo"
+      track_order: "Rastrear pedido"
       edit: "Editar"
       import_products: "Importar Produtos"
       show: "Ver Mais"
@@ -25,3 +26,4 @@ pt-BR:
       save: "Salvar %{model}"
       new: "Novo %{model}"
       delete: "Deletar %{model}"
+      track_order: "Rastrear %{model}"

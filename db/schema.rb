@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170206203532) do
+ActiveRecord::Schema.define(version: 20170206220828) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -47,6 +47,18 @@ ActiveRecord::Schema.define(version: 20170206203532) do
 
   add_index "crawlers", ["aliexpress_id"], name: "index_crawlers_on_aliexpress_id", using: :btree
   add_index "crawlers", ["wordpress_id"], name: "index_crawlers_on_wordpress_id", using: :btree
+
+  create_table "orders", force: :cascade do |t|
+    t.integer  "crawler_id"
+    t.string   "aliexpress_number"
+    t.string   "wordpress_reference"
+    t.string   "tracking_number"
+    t.boolean  "tracked",             default: false
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
+  end
+
+  add_index "orders", ["crawler_id"], name: "index_orders_on_crawler_id", using: :btree
 
   create_table "product_types", force: :cascade do |t|
     t.string   "name"
@@ -103,5 +115,6 @@ ActiveRecord::Schema.define(version: 20170206203532) do
   add_foreign_key "crawler_logs", "crawlers"
   add_foreign_key "crawlers", "aliexpresses"
   add_foreign_key "crawlers", "wordpresses"
+  add_foreign_key "orders", "crawlers"
   add_foreign_key "product_types", "products"
 end

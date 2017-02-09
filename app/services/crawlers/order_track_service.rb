@@ -40,7 +40,6 @@ module Crawlers
     end
 
     def build_order_url(order_number)
-      #"https://trade.aliexpress.com/order_detail.htm?orderId=#{order_number}"
       "http://track.aliexpress.com/logisticsdetail.htm?tradeId=#{order_number}"
     end
 

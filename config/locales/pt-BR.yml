@@ -144,6 +144,7 @@ pt-BR:
     models:
       product_type: 'Produto'
       product: 'Produto'
+      order: 'Pedido'
       crawler_log: 'Log'
     attributes:
       aliexpress:
@@ -171,6 +172,10 @@ pt-BR:
         created_at: 'Executado em'
         updated_at: 'Finalizado em'
         history: 'Histórico'
+      order:
+        aliexpress_number: 'Cód. do Pedido (Aliexpress)'
+        wordpress_reference: 'Cód. do Pedido (Wordpress)'
+        tracking_number: 'Código de rastreio'
     errors:
       template:
         header:

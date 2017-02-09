@@ -1,0 +1,14 @@
+<%= simple_form_for @order, html: { class: 'form-horizontal' } do |f| %>
+  <%= f.association :crawler, label_method: lambda { |c| "#{c.wordpress.name} | #{c.aliexpress.name}" } %>
+  <%= error_span(@order[:crawler_id]) %>
+  <%= f.input :aliexpress_number, as: :string %>
+  <%= error_span(@order[:aliexpress_number]) %>
+  <%= f.input :wordpress_reference, as: :string %>
+  <%= error_span(@order[:wordpress_reference]) %>
+
+  <br>
+
+  <%= f.button :submit, class: 'btn-primary' %>
+  <%= link_to t('.cancel', default: t("helpers.links.cancel")),
+                orders_path, class: 'btn btn-default' %>
+<% end %>

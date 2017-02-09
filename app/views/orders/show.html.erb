@@ -1,0 +1,22 @@
+<%- model_class = Order -%>
+<div class="page-header">
+  <h1>#<%= @order.aliexpress_number %></h1>
+</div>
+
+<dl class="dl-horizontal">
+  <dt><strong><%= model_class.human_attribute_name(:crawler) %>:</strong></dt>
+  <dd><%= "#{@order.crawler.wordpress.name} | #{@order.crawler.aliexpress.name}" %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:aliexpress_number) %>:</strong></dt>
+  <dd><%= @order.aliexpress_number %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:wordpress_reference) %>:</strong></dt>
+  <dd><%= @order.wordpress_reference %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:tracking_number) %>:</strong></dt>
+  <dd><%= @order.tracking_number %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:updated_at) %>:</strong></dt>
+  <dd><%= @order.updated_at %></dd>
+  <dt><strong><%= model_class.human_attribute_name(:created_at) %>:</strong></dt>
+  <dd><%= @order.created_at %></dd>
+</dl>
+
+<%= link_to 'Voltar',
+              orders_path, :class => 'btn btn-default'  %>

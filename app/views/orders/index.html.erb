@@ -1,0 +1,47 @@
+<%- model_class = Order -%>
+<div class="page-header">
+  <h1><%=t '.title', :default => model_class.model_name.human.pluralize.titleize %></h1>
+</div>
+<%= link_to t('.new', :default => t("helpers.links.track_order")), new_order_path, :class => 'btn btn-primary' %>
+<div class="table-responsive">
+  <table class="table table-condensed">
+    <thead>
+      <tr>
+        <th><%= model_class.human_attribute_name(:crawler_id) %></th>
+        <th><%= model_class.human_attribute_name(:aliexpress_number) %></th>
+        <th><%= model_class.human_attribute_name(:wordpress_reference) %></th>
+        <th><%= model_class.human_attribute_name(:tracking_number) %></th>
+        <th><%= model_class.human_attribute_name(:updated_at) %></th>
+        <th><%=t '.actions', :default => t("helpers.actions") %></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @orders.each do |o| %>
+        <tr>
+          <td>
+            <%= link_to o.crawler.wordpress.name, wordpress_path(o.crawler.wordpress) %>
+            - <%= link_to o.crawler.aliexpress.name, aliexpress_path(o.crawler.aliexpress) %>
+          </td>
+          <td>
+            <%= o.aliexpress_number %>
+          </td>
+          <td>
+            <%= o.wordpress_reference %>
+          </td>
+          <td>
+            <%= o.tracking_number %>
+          </td>
+          <td>
+            <%= o.updated_at %>
+          </td>
+          <td>
+            <%#= link_to 'Notificar cliente',
+                        notify_client_order_path(o),
+                        method: :put,
+                        class: 'btn btn-info' unless o.notified? %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

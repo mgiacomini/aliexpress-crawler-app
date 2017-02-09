@@ -4,12 +4,17 @@ class Order < ActiveRecord::Base
   scope :tracked, -> { where(tracked: true) }
   scope :untracked, -> { where(tracked: false) }
 
-  def mark_as_tracked(tracking_number)
+  def mark_as_tracked(tracking_number) #, notifier = nil)
     self.tracking_number = tracking_number
     self.tracked = true
     self.save
 
-    notify_wordpress
+    #notify_wordpress
+    #notifier.(self)
+  end
+
+  def notified?
+    true
   end
 
   def self.track(params={})
