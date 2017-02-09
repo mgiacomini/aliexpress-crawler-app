@@ -47,32 +47,22 @@ class Wordpress < ActiveRecord::Base
 
   def update_note order, ali_order_num
     #Atualiza pedidos no wordpress com o numero dos pedidos da aliexpress
-    data = {
-        order_note: {
-            note: ali_order_num
-        }
-    }
+    data = { note: ali_order_num }
+
     #POST em order notes
     woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
   end
 
   def update_tracking_number_note order, tracking_number
     #Atualiza o código de rastreio do pedido
-    data = {
-        order_note: {
-            note: "Código de rastreio: #{tracking_number}"
-        }
-    }
+    data = { note: "Código de rastreio: #{tracking_number}" }
     #POST em order notes
     woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
   end
 
   def complete_order order
-    data = {
-        order: {
-            status: "completed"
-        }
-    }
+
+    data = { status: "completed" }
     #PUT para mudar a ordem para concluída
     woocommerce.put("orders/#{order["id"]}", data).parsed_response
   end
