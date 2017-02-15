@@ -22,9 +22,11 @@ class OrdersController < ApplicationController
   end
 
   def track
-    order = Order.find_by(aliexpress_number: order_params[:aliexpress_number], wordpress_reference: order_params[:wordpress_reference])
+    order = Order.find_by!(aliexpress_number: order_params[:aliexpress_number], wordpress_reference: order_params[:wordpress_reference])
     order.mark_as_tracked order_params[:tracking_number]
     head :ok
+  rescue ActiveRecord::RecordNotFound
+    head :not_found
   end
 
   def show
