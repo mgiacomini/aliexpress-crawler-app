@@ -1,5 +1,6 @@
 class OrdersController < ApplicationController
-  skip_action :authenticate_user!, only: :track
+  skip_before_action :authenticate_user!, only: :track
+
   def index
     @orders = Order.tracked.order(:created_at)
   end
