@@ -17,5 +17,7 @@ Rails.application.routes.draw do
     put :enabled_status, on: :member
   end
   resources :crawler_logs, only: [:show, :index, :destroy]
-  resources :orders, only: [:index, :show, :new, :create]
+  resources :orders, only: [:index, :show, :new, :create] do
+    collection { post :track }
+  end
 end
