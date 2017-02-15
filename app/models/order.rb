@@ -10,11 +10,11 @@ class Order < ActiveRecord::Base
     self.save
   end
 
-  def track(params={})
+  def self.track(params={})
     create params
   end
 
-  def track!(params={})
+  def self.track!(params={})
     create! params
   end
 end
