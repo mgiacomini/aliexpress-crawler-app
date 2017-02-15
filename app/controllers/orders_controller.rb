@@ -9,14 +9,19 @@ class OrdersController < ApplicationController
 
   def create
     order_creation_service = Orders::CreationService.new(Order.new(order_params))
-    @order = order_creation_service.build_order
+    @order = order_creation_service.create
 
-    if @order.persisted?
-      respond_with @order
+    if @order.instance_of? Order
+      redirect_to order_path(@order)
     else
-      flash[:notice] = 'Não foi possível localizar seu pedido!'
-      respond_with nil, location: orders_path
+      redirect_to orders_path, notice: 'Seu pedido está sendo rastreado e pode levar alguns minutos.'
     end
+  end
+
+  def track
+    order = Order.find_by(aliexpress_number: order_params[:aliexpress_number], wordpress_reference: order_params[:wordpress_reference])
+    order.mark_as_tracked order_params[:tracking_number]
+    head :ok
   end
 
   def show
@@ -27,6 +32,6 @@ class OrdersController < ApplicationController
   private
 
   def order_params
-    params.require(:order).permit(:crawler_id, :aliexpress_number, :wordpress_reference)
+    params.require(:order).permit(:crawler_id, :aliexpress_number, :wordpress_reference, :tracking_number)
   end
 end
