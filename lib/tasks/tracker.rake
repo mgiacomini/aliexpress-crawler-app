@@ -1,18 +1,12 @@
 namespace :tracker do
 
-  desc "Runs Crawler::OrderTrackService"
+  desc "Request for aliexpress-tracker app track the order"
   task run: :environment do
-    @browser = Watir::Browser.new :phantomjs
-    Watir.default_timeout = 90
-    @browser.window.maximize
-
-    orders = Order.untracked
-    orders.each do |order|
-      tracking_service = Crawlers::OrderTrackService.new(order, @browser, OrderLog.new)
-      tracking_service.track!
+    orders = Order.untracked.where('created_at <= :four_days_ago',
+                                   four_days_ago: Time.now - 4.days)
+    orders.each do |o|
+      Orders::CreationService.new(o).create
     end
-
-    @browser.close
   end
 
 end
