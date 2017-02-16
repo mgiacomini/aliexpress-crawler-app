@@ -46,6 +46,7 @@
         <th><%= ProductType.human_attribute_name(:option_2) %></th>
         <th><%= ProductType.human_attribute_name(:option_3) %></th>
         <th><%= ProductType.human_attribute_name(:frete) %></th>
+        <th><%= ProductType.human_attribute_name(:max_value) %></th>
         <th><%= ProductType.human_attribute_name(:updated_at) %></th>
       </tr>
     </thead>
@@ -61,6 +62,7 @@
           <td><%= product_type.option_2 %></td>
           <td><%= product_type.option_3 %></td>
           <td><%= product_type.shipping %></td>
+          <td><%= number_to_currency product_type.max_value, unit: '$' %></td>
           <td><%= product_type.product.updated_at.strftime('%a, %d %b %Y %H:%M:%S') %></td>
           <td>
             <%= link_to t('.edit', :default => t("helpers.links.edit")),

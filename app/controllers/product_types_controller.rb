@@ -57,6 +57,7 @@ class ProductTypesController < ApplicationController
 
   def product_type_params
     params.require(:product_type).permit(:name, :aliexpress_link, :option_1,
-                                         :option_2, :option_3, :shipping)
+                                         :option_2, :option_3, :shipping,
+                                         :max_value)
   end
 end

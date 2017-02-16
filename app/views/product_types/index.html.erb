@@ -29,6 +29,7 @@ import_all_products_path, method: :post,
         <th><%= model_class.human_attribute_name(:option_2) %></th>
         <th><%= model_class.human_attribute_name(:option_3) %></th>
         <th><%= model_class.human_attribute_name(:shipping) %></th>
+        <th><%= model_class.human_attribute_name(:max_value) %></th>
         <th><%= model_class.human_attribute_name(:updated_at) %></th>
         <th><%=t '.actions', :default => t("helpers.actions") %></th>
       </tr>
@@ -45,6 +46,7 @@ import_all_products_path, method: :post,
           <td><%= product_type.option_2 %></td>
           <td><%= product_type.option_3 %></td>
           <td><%= product_type.shipping %></td>
+          <td><%= product_type.max_value %></td>max_value
           <td><%=l product_type.updated_at %></td>
           <td>
             <%= link_to t('.edit', :default => t("helpers.links.edit")),

@@ -9,6 +9,8 @@
   <%= error_span(@product_type[:option_3]) %>
   <%= f.input :shipping %>
   <%= error_span(@product_type[:shipping]) %>
+  <%= f.input :max_value, as: :decimal %>
+  <%= error_span(@product_type[:max_value]) %>
 
   <%= f.button :submit, :class => 'btn-primary' %>
   <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
