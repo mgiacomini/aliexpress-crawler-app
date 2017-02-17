@@ -174,6 +174,16 @@ class Crawler < ActiveRecord::Base
           raise 'Variação do produto indisponível'
         else
           link.click
+          unless link.parent.class_name.include?('active')
+            other_link = selected.zero? ? option.as[1] : option.as[0]
+            other_link.click
+            sleep(1)
+            link.click
+            sleep(1)
+            unless link.parent.class_name.include?('active')
+              raise 'Não foi possível selecionar a variação'
+            end
+          end
         end
       else
         raise 'Variação do produto indisponível'
