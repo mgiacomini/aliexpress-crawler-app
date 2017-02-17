@@ -9,7 +9,7 @@ module Orders
 
     ## create method will find existing order or request to aliexpress-tracker app
     def create
-      Order.find_by_aliexpress_number!(@order.aliexpress_number)
+      Order.find_by!(aliexpress_number: @order.aliexpress_number, tracked: true)
     rescue ActiveRecord::RecordNotFound
       post_api_request 'http://aliexpress-tracker.herokuapp.com/orders/track', order_payload(@order) if @order.save
     end
