@@ -43,7 +43,7 @@ class Crawler < ActiveRecord::Base
           self.check_and_go_to_aliexpress_link(product_type, item)
           # First check if shipping is set for Product
           shipping = self.get_product_shipping(product_type, item)
-          # When order is completed the errors for this item are removed
+          # When order is completed the errors for these items are removed
           order_items << { product_type: product_type, shipping: shipping }
           # Set the options (color, size...) for the product
           self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
@@ -340,7 +340,7 @@ class Crawler < ActiveRecord::Base
     end
 
     if item['meta'] && item['meta'].any?
-      name = item['meta'].map { |m| m['value'] }.join(' ').downcase
+      name = item['meta'].map { |m| m['value'].gsub('-', ' ').downcase }
     else
       name = 'unico'
     end
