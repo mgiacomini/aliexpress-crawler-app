@@ -51,6 +51,8 @@ class Crawler < ActiveRecord::Base
           self.set_item_shipping(shipping)
           # Set correct quantity
           self.set_item_quantity(item['quantity'])
+          # Verify if the product is not over the maximum value
+          self.check_max_value(product_type, item['quantity'])
           # Finally add the current product to cart
           self.add_item_to_cart
         end
@@ -220,6 +222,21 @@ class Crawler < ActiveRecord::Base
     sleep 1
   end
 
+  def check_max_value product_type, quantity
+    puts "========= Checking value"
+    unless product_type.max_value
+      raise 'Valor máximo não cadastrado para esse produto. Cancelando pedido.'
+    end
+
+    @b.span(id: 'j-total-price-value').wait_until_present
+    value = @b.span(id: 'j-total-price-value').text
+    value = value.slice(4..-1).to_d
+    value_per_item = value / quantity
+    if value_per_item > product_type.max_value
+      raise 'Valor acima do esperado. Cancelando pedido.'
+    end
+  end
+
   # Complete order with Customer informations
   def complete_order customer
     puts "========= Completing Order"
@@ -360,7 +377,7 @@ class Crawler < ActiveRecord::Base
     product_type = product_types.where('lower(name) = ?', name).try(:first)
 
     if product_type
-      @log.add_message "Variação ##{product_type.id} selecionado"
+      @log.add_message "Variação ##{product_type.id} selecionada"
     else
       raise "Variação não encontrada. Necessário importar do wordpress"
     end
