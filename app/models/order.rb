@@ -1,5 +1,6 @@
 class Order < ActiveRecord::Base
   belongs_to :crawler
+  validates_uniqueness_of :aliexpress_number
 
   scope :tracked, -> { where(tracked: true) }
   scope :untracked, -> { where(tracked: false) }
