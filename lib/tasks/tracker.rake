@@ -9,4 +9,13 @@ namespace :tracker do
     end
   end
 
+  desc "Notify Wordpresses clients with tracking number of tracked orders"
+  task notify_wordpresses: :environment do
+    orders = Order.tracked
+    orders.each do |o|
+      p "====== Notificando wordpress: #{o.crawler.wordpress.name}; Pedido: #{o.aliexpress_number}"
+      o.notify_wordpress
+    end
+  end
+
 end

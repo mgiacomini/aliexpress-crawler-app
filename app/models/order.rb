@@ -9,6 +9,8 @@ class Order < ActiveRecord::Base
     self.tracking_number = tracking_number
     self.tracked = true
     self.save
+
+    notify_wordpress
   end
 
   def self.track(params={})
@@ -17,5 +19,9 @@ class Order < ActiveRecord::Base
 
   def self.track!(params={})
     create! params
+  end
+
+  def notify_wordpress
+    self.crawler.wordpress.update_tracking_number_note self.wordpress_reference, self.tracking_number
   end
 end

@@ -53,11 +53,13 @@ class Wordpress < ActiveRecord::Base
     woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
   end
 
-  def update_tracking_number_note order, tracking_number
+  ## Add new wordpress note with tracking number for an order
+  # *wordpress_reference* is the wordpress order id
+  def update_tracking_number_note wordpress_reference, tracking_number
     #Atualiza o código de rastreio do pedido
     data = { note: "Código de rastreio: #{tracking_number}" }
     #POST em order notes
-    woocommerce.post("orders/#{order["id"]}/notes", data).parsed_response
+    woocommerce.post("orders/#{wordpress_reference}/notes", data).parsed_response
   end
 
   def complete_order order
