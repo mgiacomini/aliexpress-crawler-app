@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170216184043) do
+ActiveRecord::Schema.define(version: 20170217080130) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -60,6 +60,15 @@ ActiveRecord::Schema.define(version: 20170216184043) do
   end
 
   add_index "orders", ["crawler_id"], name: "index_orders_on_crawler_id", using: :btree
+
+  create_table "product_type_errors", force: :cascade do |t|
+    t.integer  "product_type_id"
+    t.text     "message"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+  end
+
+  add_index "product_type_errors", ["product_type_id"], name: "index_product_type_errors_on_product_type_id", using: :btree
 
   create_table "product_types", force: :cascade do |t|
     t.string   "name"
@@ -118,5 +127,6 @@ ActiveRecord::Schema.define(version: 20170216184043) do
   add_foreign_key "crawlers", "aliexpresses"
   add_foreign_key "crawlers", "wordpresses"
   add_foreign_key "orders", "crawlers"
+  add_foreign_key "product_type_errors", "product_types"
   add_foreign_key "product_types", "products"
 end
