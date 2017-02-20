@@ -226,7 +226,7 @@ class Crawler < ActiveRecord::Base
     puts "========= Checking value"
     unless product_type.max_value
       message = 'Valor máximo não cadastrado'
-      product_type.product_type_errors.create(message: message)
+      product_type.product_type_errors.find_or_create_by(message: message, solved: false)
       raise message
     end
 
@@ -237,7 +237,7 @@ class Crawler < ActiveRecord::Base
 
     if value_per_item > product_type.max_value
       message = 'Valor acima do esperado'
-      product_type.product_type_errors.create(message: message)
+      product_type.product_type_errors.find_or_create_by(message: message, solved: false)
       raise message
     end
   end
