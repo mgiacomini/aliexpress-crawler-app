@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170208220256) do
+ActiveRecord::Schema.define(version: 20170216184043) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -72,6 +72,7 @@ ActiveRecord::Schema.define(version: 20170208220256) do
     t.integer  "option_3"
     t.string   "shipping",        default: ""
     t.integer  "product_errors"
+    t.decimal  "max_value"
   end
 
   add_index "product_types", ["product_id"], name: "index_product_types_on_product_id", using: :btree

@@ -11,11 +11,17 @@ class Product < ActiveRecord::Base
       product.link = data['permalink']
       product.save
 
+      # Uses 1/10 of wordpress value as max_value
+      # This is to account for profit margin and currency exchange rate
+      max_value = data['price'].to_d / 10
+
       #Criando opções
       attributes = data['attributes']
       product_types = product.product_types
       if attributes.none?
-        product_type = product_types.find_or_create_by(name: 'unico')
+        product_type = product_types.find_or_initialize_by(name: 'unico')
+        product_type.max_value ||= max_value
+        product_type.save
       else
         number_of_attributes = attributes.count
 
@@ -36,7 +42,9 @@ class Product < ActiveRecord::Base
 
         variations.each do |option|
           name = option.present? ? option : 'unico'
-          product_type = product_types.find_or_create_by(name: name)
+          product_type = product_types.find_or_initialize_by(name: name)
+          product_type.max_value ||= max_value
+          product_type.save
         end
       end
     end

@@ -43,7 +43,7 @@ class Crawler < ActiveRecord::Base
           self.check_and_go_to_aliexpress_link(product_type, item)
           # First check if shipping is set for Product
           shipping = self.get_product_shipping(product_type, item)
-          # When order is completed the errors for this item are removed
+          # When order is completed the errors for these items are removed
           order_items << { product_type: product_type, shipping: shipping }
           # Set the options (color, size...) for the product
           self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
@@ -51,6 +51,8 @@ class Crawler < ActiveRecord::Base
           self.set_item_shipping(shipping)
           # Set correct quantity
           self.set_item_quantity(item['quantity'])
+          # Verify if the product is not over the maximum value
+          self.check_max_value(product_type, item['quantity'])
           # Finally add the current product to cart
           self.add_item_to_cart
         end
@@ -174,6 +176,16 @@ class Crawler < ActiveRecord::Base
           raise 'Variação do produto indisponível'
         else
           link.click
+          unless link.parent.class_name.include?('active')
+            other_link = selected.zero? ? option.as[1] : option.as[0]
+            other_link.click
+            sleep(1)
+            link.click
+            sleep(1)
+            unless link.parent.class_name.include?('active')
+              raise 'Não foi possível selecionar a variação'
+            end
+          end
         end
       else
         raise 'Variação do produto indisponível'
@@ -208,6 +220,21 @@ class Crawler < ActiveRecord::Base
       @b.buttons[2].click
     end
     sleep 1
+  end
+
+  def check_max_value product_type, quantity
+    puts "========= Checking value"
+    unless product_type.max_value
+      raise 'Valor máximo não cadastrado para esse produto. Cancelando pedido.'
+    end
+
+    @b.span(id: 'j-total-price-value').wait_until_present
+    value = @b.span(id: 'j-total-price-value').text
+    value = value.slice(4..-1).to_d
+    value_per_item = value / quantity
+    if value_per_item > product_type.max_value
+      raise 'Valor acima do esperado. Cancelando pedido.'
+    end
   end
 
   # Complete order with Customer informations
@@ -340,7 +367,7 @@ class Crawler < ActiveRecord::Base
     end
 
     if item['meta'] && item['meta'].any?
-      name = item['meta'].map { |m| m['value'] }.join(' ').downcase
+      name = item['meta'].map { |m| m['value'].gsub('-', ' ').downcase }
     else
       name = 'unico'
     end
@@ -350,7 +377,7 @@ class Crawler < ActiveRecord::Base
     product_type = product_types.where('lower(name) = ?', name).try(:first)
 
     if product_type
-      @log.add_message "Variação ##{product_type.id} selecionado"
+      @log.add_message "Variação ##{product_type.id} selecionada"
     else
       raise "Variação não encontrada. Necessário importar do wordpress"
     end
