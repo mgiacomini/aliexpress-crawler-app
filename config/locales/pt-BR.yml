@@ -168,6 +168,8 @@ pt-BR:
         updated_at: 'Atualizado em'
       product_type_error:
         message: Mensagem
+        product_type: Produto
+        solved: Resolvido
       wordpress:
         name: 'Nome'
         consumer_key: 'Consumer key'

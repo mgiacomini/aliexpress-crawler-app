@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170217080130) do
+ActiveRecord::Schema.define(version: 20170220163142) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -64,8 +64,9 @@ ActiveRecord::Schema.define(version: 20170217080130) do
   create_table "product_type_errors", force: :cascade do |t|
     t.integer  "product_type_id"
     t.text     "message"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
+    t.datetime "created_at",                      null: false
+    t.datetime "updated_at",                      null: false
+    t.boolean  "solved",          default: false
   end
 
   add_index "product_type_errors", ["product_type_id"], name: "index_product_type_errors_on_product_type_id", using: :btree
