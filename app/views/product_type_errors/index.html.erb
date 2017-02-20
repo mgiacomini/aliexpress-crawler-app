@@ -16,7 +16,8 @@
       <% @errors.each do |error| %>
         <tr>
           <td>
-            <%= link_to error.product_type.name, edit_product_type_path(error.product_type) %>
+            <% product_name = error.product_type.product.name + ' - ' + error.product_type.name %>
+            <%= link_to product_name, edit_product_type_path(error.product_type) %>
           </td>
           <td>
             <%= error.message %>
