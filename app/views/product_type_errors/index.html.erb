@@ -8,6 +8,7 @@
       <tr>
         <th><%= model_class.human_attribute_name(:product_type) %></th>
         <th><%= model_class.human_attribute_name(:message) %></th>
+        <th><%= model_class.human_attribute_name(:occurrences) %></th>
         <th><%= model_class.human_attribute_name(:solved) %></th>
         <th><%=t '.actions', :default => t("helpers.actions") %></th>
       </tr>
@@ -21,6 +22,9 @@
           </td>
           <td>
             <%= error.message %>
+          </td>
+          <td>
+            <%= error.occurrences %>
           </td>
           <td>
             <%= error.solved ? 'Sim' : 'Não' %>

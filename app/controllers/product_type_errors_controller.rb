@@ -1,6 +1,6 @@
 class ProductTypeErrorsController < ApplicationController
   def index
-    @errors = ProductTypeError.order(solved: :asc)
+    @errors = ProductTypeError.order(solved: :asc, occurrences: :desc)
   end
 
   def destroy

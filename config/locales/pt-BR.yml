@@ -169,6 +169,7 @@ pt-BR:
       product_type_error:
         message: Mensagem
         product_type: Produto
+        occurrences: Ocorrências
         solved: Resolvido
       wordpress:
         name: 'Nome'
