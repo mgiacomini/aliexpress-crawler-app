@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+apps = ['aliexpress-app', 'aliexpress-app2', 'aliexpress-app3', 'aliexpress-app4', 'aliexpress-app5', 'aliexpress-app6', 'aliexpress-app7',
+        'aliexpress-app8', 'aliexpress-app9', 'aliexpress-app10', 'aliexpress-app11']
+
+puts "== Running database migrations =="
+
+apps.each do |app|
+  puts "---> migrate #{app}"
+  system "heroku run rake db:migrate -a #{app}"
+end
