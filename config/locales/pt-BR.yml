@@ -143,6 +143,7 @@ pt-BR:
   activerecord:
     models:
       product_type: 'Produto'
+      product_type_error: 'Alerta'
       product: 'Produto'
       order: 'Pedido'
       crawler_log: 'Log'
@@ -165,6 +166,11 @@ pt-BR:
         shipping: 'Frete'
         max_value: 'Valor máximo'
         updated_at: 'Atualizado em'
+      product_type_error:
+        message: Mensagem
+        product_type: Produto
+        occurrences: Ocorrências
+        solved: Resolvido
       wordpress:
         name: 'Nome'
         consumer_key: 'Consumer key'

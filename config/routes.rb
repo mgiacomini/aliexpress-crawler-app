@@ -9,6 +9,11 @@ Rails.application.routes.draw do
     collection { get :product_errors}
     put :clear_errors, on: :member
   end
+
+  resources :product_type_errors, only: %i(index destroy) do
+    put 'toggle_solved', to: 'product_type_errors#toggle_solved', as: 'toggle_solved'
+  end
+
   resources :wordpresses do
     post :import_products, on: :member
   end

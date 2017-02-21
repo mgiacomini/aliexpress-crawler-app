@@ -225,15 +225,26 @@ class Crawler < ActiveRecord::Base
   def check_max_value product_type, quantity
     puts "========= Checking value"
     unless product_type.max_value
-      raise 'Valor máximo não cadastrado para esse produto. Cancelando pedido.'
+      message = 'Valor máximo não cadastrado'
+      errors = product_type.product_type_errors
+      error = errors.find_or_initialize_by(message: message, solved: false)
+      error.occurrences += 1
+      error.save
+      raise message
     end
 
     @b.span(id: 'j-total-price-value').wait_until_present
     value = @b.span(id: 'j-total-price-value').text
     value = value.slice(4..-1).to_d
     value_per_item = value / quantity
+
     if value_per_item > product_type.max_value
-      raise 'Valor acima do esperado. Cancelando pedido.'
+      message = 'Valor acima do esperado'
+      errors = product_type.product_type_errors
+      error = errors.find_or_initialize_by(message: message, solved: false)
+      error.occurrences += 1
+      error.save
+      raise message
     end
   end
 

@@ -50,6 +50,7 @@
           <ul class="nav navbar-nav">
             <li><%=link_to Order.model_name.human.titleize.pluralize, orders_path%></a></li>
             <li><%=link_to Crawler.model_name.human.titleize, crawlers_path%></a></li>
+            <li><%=link_to ProductTypeError.model_name.human.titleize, product_type_errors_path%></a></li>
             <%= drop_down CrawlerLog.model_name.human.titleize.pluralize do %>
               <%= menu_item CrawlerLog.model_name.human.titleize.pluralize, crawler_logs_path %>
               <%= menu_item t('product_errors'), product_errors_product_types_path%>

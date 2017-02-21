@@ -1,5 +1,6 @@
 class ProductType < ActiveRecord::Base
   belongs_to :product
+  has_many :product_type_errors
 
   def parsed_link
     "http://pt.aliexpress.com/item/#{link_item}/#{link_id}"
