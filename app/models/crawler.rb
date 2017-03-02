@@ -285,8 +285,6 @@ class Crawler < ActiveRecord::Base
     @b.text_field(name: "city").set to_english(customer["city"])
     @b.text_field(name: "zip").set customer["postcode"]
     @b.text_field(name: "phoneCountry").set '55'
-    @b.text_field(name: "phoneArea").set '55'
-    @b.text_field(name: "phoneNumber").set '11'
     @b.text_field(name: "mobileNo").set '941873849'
     @b.text_field(name: "cpf").set '35825265856'
     @b.a(class: "sa-confirm").click
