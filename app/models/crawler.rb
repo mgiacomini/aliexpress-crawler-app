@@ -382,12 +382,7 @@ class Crawler < ActiveRecord::Base
     end
 
     product_types = product.product_types
-
-    if name.instance_of? Array
-      product_type = product_types.where('lower(name) IN ?', name).try(:first)
-    else
-      product_type = product_types.where('lower(name) = ?', name).try(:first)
-    end
+    product_type = product_types.where('lower(name) = ?', name).try(:first) if name.class == String
 
     if product_type
       @log.add_message "Variação ##{product_type.id} selecionada"
