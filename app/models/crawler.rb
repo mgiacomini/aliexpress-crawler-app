@@ -373,6 +373,8 @@ class Crawler < ActiveRecord::Base
   # ]
   # and return a string "1 iphone 7"
   def build_variation_name(order_metadata = [])
+    p "--> Criando nome da variação"
+    @log.add_message "Criando nome da variação"
     mapped_name = order_metadata.map { |m| m['value'].gsub('-', ' ').downcase }
     mapped_name.join(' ')
   end
@@ -389,7 +391,7 @@ class Crawler < ActiveRecord::Base
     end
 
     name = 'unico' # default variation name
-    name = build_variation_name item['meta'] if item['meta'] && item['meta'].any?
+    name = build_variation_name(item['meta']) if item['meta'] && item['meta'].any?
     product_types = product.product_types
     product_type = product_types.where('lower(name) = ?', name).try(:first)
 
