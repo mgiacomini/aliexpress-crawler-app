@@ -44,7 +44,7 @@ class Crawler < ActiveRecord::Base
           # First check if shipping is set for Product
           shipping = self.get_product_shipping(product_type, item)
           # When order is completed the errors for these items are removed
-          order_items << { product_type: product_type, shipping: shipping }
+          order_items << {product_type: product_type, shipping: shipping}
           # Set the options (color, size...) for the product
           self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
           # Set Shipping
@@ -295,62 +295,62 @@ class Crawler < ActiveRecord::Base
     puts "========= Finishing Order"
     @log.add_message('Finalizando Pedido')
     sleep 3
-    if @b.span(class:"order-no").exists?
+    if @b.span(class: "order-no").exists?
       # Return the number of the Order if there is no captcha
       @finished = true
-      @b.span(class:"order-no").text
+      @b.span(class: "order-no").text
     else
       puts "========= Captcha detected, going to mobile..."
       @log.add_message('Captcha detectado, indo para carrinho mobile')
       @b.goto 'm.aliexpress.com/shopcart/detail.htm'
-      @b.div(class:"buyall").wait_until_present(timeout: 30)
-      @b.div(class:"buyall").click
+      @b.div(class: "buyall").wait_until_present(timeout: 30)
+      @b.div(class: "buyall").click
       # Create the final order on mobile website to avoid captcha
-      @b.button(id:"create-order").wait_until_present(timeout: 30)
-      @b.button(id:"create-order").click
+      @b.button(id: "create-order").wait_until_present(timeout: 30)
+      @b.button(id: "create-order").click
       @finished = true
-      @b.div(class:"desc_txt").wait_until_present(timeout: 30)
-      @b.div(class:"desc_txt").text
+      @b.div(class: "desc_txt").wait_until_present(timeout: 30)
+      @b.div(class: "desc_txt").text
     end
   end
 
   # Convert state to Brazilian format
   def state
     [
-      ["AC","Acre"],
-      ["AL","Alagoas"],
-      ["AP","Amapa"],
-      ["AM","Amazonas"],
-      ["BA","Bahia"],
-      ["CE","Ceara"],
-      ["DF","Distrito Federal"],
-      ["ES","Espirito Santo"],
-      ["GO","Goias"],
-      ["MA","Maranhao"],
-      ["MT","Mato Grosso"],
-      ["MS","Mato Grosso do Sul"],
-      ["MG","Minas Gerais"],
-      ["PA","Para"],
-      ["PB","Paraiba"],
-      ["PR","Parana"],
-      ["PE","Pernambuco"],
-      ["PI","Piaui"],
-      ["RJ","Rio de Janeiro"],
-      ["RN","Rio Grande do Norte"],
-      ["RS","Rio Grande do Sul"],
-      ["RO","Rondonia"],
-      ["RR","Roraima"],
-      ["SC","Santa Catarina"],
-      ["SP","Sao Paulo"],
-      ["SE","Sergipe"],
-      ["TO","Tocantins"],
+        ["AC", "Acre"],
+        ["AL", "Alagoas"],
+        ["AP", "Amapa"],
+        ["AM", "Amazonas"],
+        ["BA", "Bahia"],
+        ["CE", "Ceara"],
+        ["DF", "Distrito Federal"],
+        ["ES", "Espirito Santo"],
+        ["GO", "Goias"],
+        ["MA", "Maranhao"],
+        ["MT", "Mato Grosso"],
+        ["MS", "Mato Grosso do Sul"],
+        ["MG", "Minas Gerais"],
+        ["PA", "Para"],
+        ["PB", "Paraiba"],
+        ["PR", "Parana"],
+        ["PE", "Pernambuco"],
+        ["PI", "Piaui"],
+        ["RJ", "Rio de Janeiro"],
+        ["RN", "Rio Grande do Norte"],
+        ["RS", "Rio Grande do Sul"],
+        ["RO", "Rondonia"],
+        ["RR", "Roraima"],
+        ["SC", "Santa Catarina"],
+        ["SP", "Sao Paulo"],
+        ["SE", "Sergipe"],
+        ["TO", "Tocantins"],
     ]
   end
 
   # Remove special characters
   def to_english string
     string.tr("ÀÁÂÃÄÅàáâãäåĀāĂăĄąÇçĆćĈĉĊċČčÐðĎďĐđÈÉÊËèéêëĒēĔĕĖėĘęĚěĜĝĞğĠġĢģĤĥĦħÌÍÎÏìíîïĨĩĪīĬĭĮįİıĴĵĶķĸĹĺĻļĽľĿŀŁłÑñŃńŅņŇňŉŊŋÒÓÔÕÖØòóôõöøŌōŎŏŐőŔŕŖŗŘřŚśŜŝŞşŠšſŢţŤťŦŧÙÚÛÜùúûüŨũŪūŬŭŮůŰűŲųŴŵÝýÿŶŷŸŹźŻżŽž", "AAAAAAaaaaaaAaAaAaCcCcCcCcCcDdDdDdEEEEeeeeEeEeEeEeEeGgGgGgGgHhHhIIIIiiiiIiIiIiIiIiJjKkkLlLlLlLlLlNnNnNnNnnNnOOOOOOooooooOoOoOoRrRrRrSsSsSsSssTtTtTtUUUUuuuuUuUuUuUuUuUuWwYyyYyYZzZzZz")
-          .tr("^A-Za-z0-9 ", '')
+        .tr("^A-Za-z0-9 ", '')
   end
 
   # Empty cart after finish an order
@@ -364,6 +364,19 @@ class Crawler < ActiveRecord::Base
     end
   end
 
+  ## Build complex variations name
+  # Example, *order_metadata* come from an array like:
+  #
+  # [
+  #   {"key"=>"opcoes", "label"=>"opções", "value"=>"1"},
+  #   {"key"=>"modelos", "label"=>"Modelos", "value"=>"iPhone 7"}
+  # ]
+  # and return a string "1 iphone 7"
+  def build_variation_name(order_metadata = [])
+    mapped_name = order_metadata.map { |m| m['value'].gsub('-', ' ').downcase }
+    mapped_name.join(' ')
+  end
+
   def find_product_type_by_item(item)
     @log.add_message "Procurando produto: #{item['name']}"
     product = wordpress.products.find_by(id_at_wordpress: item["product_id"])
@@ -375,12 +388,8 @@ class Crawler < ActiveRecord::Base
       raise "Produto não encontrado. Necessário importar do wordpress."
     end
 
-    if item['meta'] && item['meta'].any?
-      name = item['meta'].map { |m| m['value'].gsub('-', ' ').downcase }
-    else
-      name = 'unico'
-    end
-
+    name = 'unico' # default variation name
+    name = build_variation_name item['meta'] if item['meta'] && item['meta'].any?
     product_types = product.product_types
     product_type = product_types.where('lower(name) = ?', name).try(:first)
 
