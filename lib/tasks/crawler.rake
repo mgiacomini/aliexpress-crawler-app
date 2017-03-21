@@ -8,7 +8,10 @@ namespace :crawler do
       amount = crawler.max_amount_of_orders
       page = crawler.orders_starting_from_page
       orders = crawler.wordpress.get_orders(amount, page)
-      crawler.run orders
+      crawler_log = CrawlerLog.create!(crawler: crawler, orders_count: orders.count)
+      orders.each do |order|
+        BuyOrderWorker.perform_async(crawler.id, crawler_log.id, order)
+      end
     end
   end
 

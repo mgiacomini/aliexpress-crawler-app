@@ -5,10 +5,10 @@ class Crawler < ActiveRecord::Base
   has_many :crawler_logs, dependent: :destroy
   has_many :orders, dependent: :destroy
 
-  def run(orders)
+  def run(order, log)
     raise "Não há pedidos a serem executados" if orders.nil? || orders.count.zero?
 
-    @log = CrawlerLog.create!(crawler: self, orders_count: orders.count)
+    @log = log
     @b = Watir::Browser.new :phantomjs
     Watir.default_timeout = 90
     @b.window.maximize
@@ -17,7 +17,7 @@ class Crawler < ActiveRecord::Base
     self.login
     self.set_destination_to_brazil
 
-    orders.reverse_each do |order|
+    #orders.reverse_each do |order|
       @error = nil
       @order = order
       @finished = false
@@ -77,7 +77,7 @@ class Crawler < ActiveRecord::Base
         @b.screenshot.save("screenshots/#{e}-#{rand(1000)}.png") if Rails.env.development?
         @log.add_message(e.message)
       end
-    end
+    #end
     # Close Watir Browser when finish
     @b.close
   end
