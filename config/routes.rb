@@ -1,3 +1,5 @@
+require 'sidekiq/web'
+
 Rails.application.routes.draw do
   devise_for :users
 
@@ -25,4 +27,6 @@ Rails.application.routes.draw do
   resources :orders, only: [:index, :show, :new, :create] do
     collection { post :track }
   end
+
+  mount Sidekiq::Web => '/sidekiq'
 end
