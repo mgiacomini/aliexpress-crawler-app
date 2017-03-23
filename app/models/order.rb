@@ -21,7 +21,4 @@ class Order < ActiveRecord::Base
   def metadata
     crawler.wordpress.get_order wordpress_reference
   end
-
-  alias_method :number_at_aliexpress, :aliexpress_number
-  alias_method :id_at_wordpress, :wordpress_reference
 end
