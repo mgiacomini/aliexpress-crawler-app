@@ -18,65 +18,65 @@ class Crawler < ActiveRecord::Base
     self.set_destination_to_brazil
 
     #orders.reverse_each do |order|
-      @error = nil
-      @order = order
-      @finished = false
+    @error = nil
+    @order = order
+    @finished = false
 
-      tries ||= 3
-      order_items = []
-      # Start processing Order
-      message = "\n------------------- Processando pedido ##{order['id']}\n"
-      puts message
-      @log.add_message(message)
-      # Check if this Order is already processed
-      self.check_order_notes(order)
-      # Start putting items inside the cart and setting options
-      begin
-        # Empty the Cart before go to next Order
-        # empty_cart is inside begin so this way we can rescue the
-        # Net::ReadTimeout problems
-        self.empty_cart
-        order["line_items"].each do |item|
-          # Check if product type was found on database
-          product_type = self.find_product_type_by_item(item)
-          # If found, go to aliexpress link and check for quantities and availability
-          self.check_and_go_to_aliexpress_link(product_type, item)
-          # First check if shipping is set for Product
-          shipping = self.get_product_shipping(product_type, item)
-          # When order is completed the errors for these items are removed
-          order_items << {product_type: product_type, shipping: shipping}
-          # Set the options (color, size...) for the product
-          self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
-          # Set Shipping
-          self.set_item_shipping(shipping)
-          # Set correct quantity
-          self.set_item_quantity(item['quantity'])
-          # Verify if the product is not over the maximum value
-          self.check_max_value(product_type, item['quantity'])
-          # Finally add the current product to cart
-          self.add_item_to_cart
-        end
-
-        # Finish Order if no errors found
-        if @error.present?
-          raise @error
-        else
-          # ali_order_num is the aliexpress order number returned
-          ali_order_num = self.complete_order(order["shipping"])
-          # check if order was successful finished
-          self.check_order_number(ali_order_num, order)
-          # Clean current errors if this order
-          ProductType.clear_errors(order_items)
-        end
-      rescue Net::ReadTimeout => e
-        @log.add_message("Erro de timeout, Tentando mais #{tries-1} vezes")
-        retry unless (tries -= 1).zero? || @finished
-      rescue => e
-        # when you raise and pass message, this message is printed here
-        puts e.message
-        @b.screenshot.save("screenshots/#{e}-#{rand(1000)}.png") if Rails.env.development?
-        @log.add_message(e.message)
+    tries ||= 3
+    order_items = []
+    # Start processing Order
+    message = "\n------------------- Processando pedido ##{order['id']}\n"
+    puts message
+    @log.add_message(message)
+    # Check if this Order is already processed
+    self.check_order_notes(order)
+    # Start putting items inside the cart and setting options
+    begin
+      # Empty the Cart before go to next Order
+      # empty_cart is inside begin so this way we can rescue the
+      # Net::ReadTimeout problems
+      self.empty_cart
+      order["line_items"].each do |item|
+        # Check if product type was found on database
+        product_type = self.find_product_type_by_item(item)
+        # If found, go to aliexpress link and check for quantities and availability
+        self.check_and_go_to_aliexpress_link(product_type, item)
+        # First check if shipping is set for Product
+        shipping = self.get_product_shipping(product_type, item)
+        # When order is completed the errors for these items are removed
+        order_items << {product_type: product_type, shipping: shipping}
+        # Set the options (color, size...) for the product
+        self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
+        # Set Shipping
+        self.set_item_shipping(shipping)
+        # Set correct quantity
+        self.set_item_quantity(item['quantity'])
+        # Verify if the product is not over the maximum value
+        self.check_max_value(product_type, item['quantity'])
+        # Finally add the current product to cart
+        self.add_item_to_cart
       end
+
+      # Finish Order if no errors found
+      if @error.present?
+        raise @error
+      else
+        # ali_order_num is the aliexpress order number returned
+        ali_order_num = self.complete_order(order["shipping"])
+        # check if order was successful finished
+        self.check_order_number(ali_order_num, order)
+        # Clean current errors if this order
+        ProductType.clear_errors(order_items)
+      end
+    rescue Net::ReadTimeout => e
+      @log.add_message("Erro de timeout, Tentando mais #{tries-1} vezes")
+      retry unless (tries -= 1).zero? || @finished
+    rescue => e
+      # when you raise and pass message, this message is printed here
+      puts e.message
+      @b.screenshot.save("screenshots/#{e}-#{rand(1000)}.png") if Rails.env.development?
+      @log.add_message(e.message)
+    end
     #end
     # Close Watir Browser when finish
     @b.close
@@ -435,13 +435,7 @@ class Crawler < ActiveRecord::Base
     if ali_order_num.blank?
       raise "Erro com numero do pedido vazio\n"+self.wordpress.error
     else
-      if Rails.env.development?
-        puts '========= Módo de desenvolvimento - Wordpress não será atualizado'
-      else
-        self.wordpress.update_order(order, ali_order_num)
-        Order.track crawler: self, aliexpress_number: ali_order_num, wordpress_reference: order["id"]
-      end
-
+      self.update_aliexpress_number order, ali_order_num
       message = "Pedido #{order["id"]} processado com sucesso! Pedido aliexpress: #{ali_order_num}"
       puts message
       @log.add_processed(message)
@@ -470,4 +464,18 @@ class Crawler < ActiveRecord::Base
       'default'
     end
   end
+
+  private
+
+  def update_aliexpress_number(order, ali_order_num)
+    if Rails.env.development?
+      puts '========= Módo de desenvolvimento - Wordpress não será atualizado'
+    else
+      self.wordpress.update_order(order, ali_order_num)
+    end
+
+    o = self.orders.find_by(wordpress_reference: order['id'])
+    o.update_attribute(:aliexpress_number, ali_order_num)
+  end
+
 end
