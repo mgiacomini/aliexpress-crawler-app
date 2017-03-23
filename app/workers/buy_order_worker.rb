@@ -8,7 +8,11 @@ class BuyOrderWorker
     if order.enqueued?
       begin
         crawler.run order.metadata, crawler_log
-        order.processed!
+        if order.aliexpress_number.nil?
+          order.failed!
+        else
+          order.processed!
+        end
       rescue
         order.failed!
       end
