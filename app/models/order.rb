@@ -1,6 +1,6 @@
 class Order < ActiveRecord::Base
   belongs_to :crawler
-  enum status: [:created, :enqueued, :processed]
+  enum status: [:created, :enqueued, :processed, :failed]
   validates_presence_of :wordpress_reference, :status
   validates_uniqueness_of :aliexpress_number, unless: Proc.new { |o| o.aliexpress_number.nil? }
 
