@@ -7,12 +7,23 @@ namespace :crawler do
     @crawlers.each do |crawler|
       amount = crawler.max_amount_of_orders
       page = crawler.orders_starting_from_page
-      orders = crawler.wordpress.get_orders(amount, page).reject do |order|
+
+      failed_orders = crawler.orders.failed
+      new_orders = crawler.wordpress.get_orders(amount, page).reject do |order|
         crawler.orders.exists?(wordpress_reference: order['id'])
       end
+
+      orders = failed_orders + new_orders
       crawler_log = CrawlerLog.create!(crawler: crawler, orders_count: orders.count)
+
       orders.each do |order|
-        o = Order.new(status: :enqueued, crawler: crawler, wordpress_reference: order['id'])
+        # retry an failed order
+        if order.instance_of? Order
+          o = order
+          o.enqueued!
+        else # new order
+          o = Order.new(status: :enqueued, crawler: crawler, wordpress_reference: order['id'])
+        end
         BuyOrderWorker.perform_async(crawler.id, crawler_log.id, o.id) if o.save
       end
     end
