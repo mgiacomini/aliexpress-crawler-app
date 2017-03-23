@@ -435,7 +435,7 @@ class Crawler < ActiveRecord::Base
     if ali_order_num.blank?
       raise "Erro com numero do pedido vazio\n"+self.wordpress.error
     else
-      self.update_aliexpress_number order, ali_order_num
+      update_aliexpress_number order, ali_order_num
       message = "Pedido #{order["id"]} processado com sucesso! Pedido aliexpress: #{ali_order_num}"
       puts message
       @log.add_processed(message)
@@ -465,8 +465,6 @@ class Crawler < ActiveRecord::Base
     end
   end
 
-  private
-
   def update_aliexpress_number(order, ali_order_num)
     if Rails.env.development?
       puts '========= Módo de desenvolvimento - Wordpress não será atualizado'
@@ -474,8 +472,8 @@ class Crawler < ActiveRecord::Base
       #self.wordpress.update_order(order, ali_order_num)
     end
 
-    o = self.orders.find_by(wordpress_reference: order['id'])
-    o.update_attribute(:aliexpress_number, ali_order_num)
+    o = orders.find_by(wordpress_reference: order['id'])
+    o.update_attributes(aliexpress_number: ali_order_num)
   end
 
 end
