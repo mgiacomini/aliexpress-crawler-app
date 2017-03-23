@@ -6,7 +6,7 @@ class Crawler < ActiveRecord::Base
   has_many :orders, dependent: :destroy
 
   def run(order, log)
-    raise "Não há pedidos a serem executados" if orders.nil? || orders.count.zero?
+    raise ArgumentError, "Pedido inválido!" if order.blank?
 
     @log = log
     @b = Watir::Browser.new :phantomjs
