@@ -1,7 +1,8 @@
 class Order < ActiveRecord::Base
   belongs_to :crawler
   enum status: [:created, :enqueued, :processed]
-  validates_uniqueness_of :aliexpress_number
+  validates_presence_of :wordpress_reference, :status
+  validates_uniqueness_of :aliexpress_number, unless: Proc.new { |o| o.aliexpress_number.nil? }
 
   scope :tracked, -> { where(tracked: true) }
   scope :untracked, -> { where(tracked: false) }

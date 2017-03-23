@@ -12,8 +12,8 @@ namespace :crawler do
       end
       crawler_log = CrawlerLog.create!(crawler: crawler, orders_count: orders.count)
       orders.each do |order|
-        o = Order.create(status: :enqueued, crawler: crawler, wordpress_reference: order['id'])
-        BuyOrderWorker.perform_async(crawler.id, crawler_log.id, o.id)
+        o = Order.new(status: :enqueued, crawler: crawler, wordpress_reference: order['id'])
+        BuyOrderWorker.perform_async(crawler.id, crawler_log.id, o.id) if o.save
       end
     end
   end
