@@ -471,7 +471,7 @@ class Crawler < ActiveRecord::Base
     if Rails.env.development?
       puts '========= Módo de desenvolvimento - Wordpress não será atualizado'
     else
-      self.wordpress.update_order(order, ali_order_num)
+      #self.wordpress.update_order(order, ali_order_num)
     end
 
     o = self.orders.find_by(wordpress_reference: order['id'])
