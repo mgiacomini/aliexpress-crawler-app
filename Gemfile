@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '2.3.1'
+ruby '2.4.1'
 
 gem 'rails', '4.2.7'
 gem 'pg', '~> 0.18'
@@ -30,6 +30,8 @@ end
 group :development do
   gem 'spring'
   gem 'web-console', '~> 2.0'
+  gem 'derailed_benchmarks'
+  gem 'stackprof'
 end
 
 group :production do
@@ -38,3 +40,4 @@ end
 
 gem 'faraday'
 gem 'sidekiq'
+gem 'puma_worker_killer'
