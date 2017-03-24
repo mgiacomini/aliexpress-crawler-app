@@ -40,4 +40,5 @@ end
 
 gem 'faraday'
 gem 'sidekiq'
+gem 'sidekiq-statistic'
 gem 'puma_worker_killer'

@@ -13,6 +13,8 @@ namespace :crawler do
         crawler.orders.exists?(wordpress_reference: order['id'])
       end
 
+      # merge failed orders with new orders
+      # others existing orders will be enqueued
       orders = failed_orders + new_orders
       crawler_log = CrawlerLog.create!(crawler: crawler, orders_count: orders.count)
 
