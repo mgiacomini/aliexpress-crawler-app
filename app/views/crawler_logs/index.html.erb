@@ -28,7 +28,11 @@
           <td><%= link_to crawler_log.crawler.wordpress.name, crawler_path(crawler_log.crawler) %></td>
           <td><%= "Total: #{crawler_log.orders_count} Sucessos: #{crawler_log.processed}"%></td>
           <td><%=l crawler_log.created_at %></td>
-          <td><%=l crawler_log.updated_at %></td>
+          <% if crawler_log.crawler.orders.enqueued.count > 0 %>
+              <td>Processando, aguarde...</td>
+          <% else %>
+              <td><%=l crawler_log.updated_at %></td>
+          <% end %>
           <td>
             <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
                         crawler_log_path(crawler_log),
