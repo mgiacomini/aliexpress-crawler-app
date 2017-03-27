@@ -10,7 +10,7 @@ environment ENV['RACK_ENV'] || 'development'
 
 before_fork do
   require 'puma_worker_killer'
-  PumaWorkerKiller.enable_rolling_restart(1 * 3600) # 1 hours
+  PumaWorkerKiller.enable_rolling_restart((1/2) * 3600) # 1/2 hours
 end
 
 on_worker_boot do
