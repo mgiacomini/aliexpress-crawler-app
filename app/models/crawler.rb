@@ -19,7 +19,6 @@ class Crawler < ActiveRecord::Base
 
     #orders.reverse_each do |order|
     @error = nil
-    @order = order
     @finished = false
 
     tries ||= 3
@@ -62,7 +61,9 @@ class Crawler < ActiveRecord::Base
         raise @error
       else
         # ali_order_num is the aliexpress order number returned
-        ali_order_num = self.complete_order(order["shipping"])
+        woocommerce = wordpress.woocommerce
+        customer = woocommerce.get("customers/#{order['customer_id']}").parsed_response
+        ali_order_num = self.complete_order(customer['shipping'])
         # check if order was successful finished
         self.check_order_number(ali_order_num, order)
         # Clean current errors if this order
@@ -266,17 +267,22 @@ class Crawler < ActiveRecord::Base
     end
     # Check if current session if up
     self.check_if_session_is_up
+
     # Fill customer's address
     puts "========= Adding customer informations"
     @log.add_message('Adicionando informações do cliente')
     @b.text_field(name: "contactPerson").wait_until_present(timeout: 3)
+    @log.add_message(to_english(customer["first_name"]+" "+customer["last_name"]))
     @b.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
     @b.select_list(name: "country").select "Brazil"
     if customer['number'].nil?
-      @b.text_field(name: "address").set to_english(customer["address_1"])
+      adds = customer["address_1"]
     else
-      @b.text_field(name: "address").set to_english(customer["address_1"]+" "+customer['number'])
+      adds = customer["address_1"]+" "+customer['number']
     end
+    @log.add_message(to_english(adds))
+    @b.text_field(name: "address").set to_english(adds)
+    @log.add_message(to_english(customer["address_2"]))
     @b.text_field(name: "address2").set to_english(customer["address_2"])
     # Wait for States to turn on select
     sleep 1
