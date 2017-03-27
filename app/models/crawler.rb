@@ -474,6 +474,7 @@ class Crawler < ActiveRecord::Base
 
     o = orders.find_by(wordpress_reference: order['id'])
     o.update_attributes(aliexpress_number: ali_order_num)
+    o.processed!
   end
 
 end
