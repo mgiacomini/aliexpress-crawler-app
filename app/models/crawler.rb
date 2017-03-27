@@ -63,7 +63,7 @@ class Crawler < ActiveRecord::Base
         # ali_order_num is the aliexpress order number returned
         woocommerce = wordpress.woocommerce
         customer = woocommerce.get("customers/#{order['customer_id']}").parsed_response
-        ali_order_num = self.complete_order(customer['shipping'])
+        ali_order_num = self.complete_order(customer)
         # check if order was successful finished
         self.check_order_number(ali_order_num, order)
         # Clean current errors if this order
