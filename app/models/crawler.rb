@@ -61,8 +61,8 @@ class Crawler < ActiveRecord::Base
         raise @error
       else
         # ali_order_num is the aliexpress order number returned
-        customer = wordpress.woocommerce.get_order order['id']
-        ali_order_num = self.complete_order(customer['shipping'])
+        #customer = wordpress.woocommerce.get_order order['id']
+        ali_order_num = self.complete_order(order['shipping'])
         # check if order was successful finished
         self.check_order_number(ali_order_num, order)
         # Clean current errors if this order
