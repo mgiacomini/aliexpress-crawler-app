@@ -18,7 +18,7 @@ class Wordpress < ActiveRecord::Base
         self.consumer_secret, #Consumer Secret
         {
             wp_api: true,
-            version: "wc/v1" #Versão da API
+            version: "wc/v2" #Versão da API
         }
     )
     woocommerce
