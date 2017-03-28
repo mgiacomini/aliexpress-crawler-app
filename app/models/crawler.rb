@@ -269,12 +269,14 @@ class Crawler < ActiveRecord::Base
     # Check if current session if up
     self.check_if_session_is_up
 
+    fullname = to_english(customer["first_name"]+" "+customer["last_name"])
+
     # Fill customer's address
     puts "========= Adding customer informations"
     @log.add_message('Adicionando informações do cliente')
     @b.text_field(name: "contactPerson").wait_until_present(timeout: 3)
-    @log.add_message(to_english(customer["first_name"]+" "+customer["last_name"]))
-    @b.text_field(name: "contactPerson").set to_english(customer["first_name"]+" "+customer["last_name"])
+    @log.add_message(fullname)
+    @b.text_field(name: "contactPerson").set fullname
     @b.select_list(name: "country").select "Brazil"
     if customer['number'].nil?
       adds = customer["address_1"]
@@ -295,6 +297,11 @@ class Crawler < ActiveRecord::Base
     @b.text_field(name: "mobileNo").set '941873849'
     @b.text_field(name: "cpf").set '35825265856'
     @b.a(class: "sa-confirm").click
+
+    @b.p(class: "ui-notice-normal").wait_until_present(timeout: 5)
+    if @b.div(class: 'sa-username').text != fullname
+      raise 'Não foi possível atualizar os dados do cliente'
+    end
 
     # Placing order on desktop website
     @b.button(id: "place-order-btn").click
