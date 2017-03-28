@@ -103,18 +103,14 @@ class Crawler < ActiveRecord::Base
   end
 
   def check_if_session_is_up
-    tries ||= 3
     sleep 5
-    # @b.a(class: "sa-edit").wait_until_present(timeout: 30)
     if !@b.a(class: "sa-edit").exists?
       if !@b.a(class: "sa-add-a-new-address").exists?
-        raise 'Não foi possível inserir as informaçoes do cliente'
-        # message = "Sessão desconectada ... logando novamente"
-        # puts message
-        # @log.add_message message
-        #  self.login
-        #else
-        #@b.a(class: "sa-add-a-new-address").click
+        message = 'Não foi possível inserir as informaçoes do cliente'
+        @log.add_message message
+        raise message
+      else
+        @b.a(class: "sa-add-a-new-address").click
       end
     else
       @b.a(class: "sa-edit").click
@@ -298,10 +294,7 @@ class Crawler < ActiveRecord::Base
     @b.text_field(name: "cpf").set '35825265856'
     @b.a(class: "sa-confirm").click
 
-    @b.p(class: "ui-notice-normal").wait_until_present(timeout: 5)
-    if @b.div(class: 'sa-username').text != fullname
-      raise 'Não foi possível atualizar os dados do cliente'
-    end
+    check_costumer_data @b, fullname
 
     # Placing order on desktop website
     @b.button(id: "place-order-btn").click
@@ -359,6 +352,17 @@ class Crawler < ActiveRecord::Base
         ["SE", "Sergipe"],
         ["TO", "Tocantins"],
     ]
+  end
+
+  # if costumer data is right, nothing happens
+  # otherwise, raise a RuntimeError
+  def check_costumer_data(browser, fullname)
+    browser.p(class: "ui-notice-normal").wait_until_present(timeout: 5)
+    if browser.div(class: 'sa-username').text != fullname
+      raise
+    end
+  rescue
+    raise 'Não foi possível atualizar os dados do cliente'
   end
 
   # Remove special characters
