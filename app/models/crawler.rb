@@ -108,12 +108,13 @@ class Crawler < ActiveRecord::Base
     # @b.a(class: "sa-edit").wait_until_present(timeout: 30)
     if !@b.a(class: "sa-edit").exists?
       if !@b.a(class: "sa-add-a-new-address").exists?
-        message = "Sessão desconectada ... logando novamente"
-        puts message
-        @log.add_message message
-        self.login
-      else
-        @b.a(class: "sa-add-a-new-address").click
+        raise 'Não foi possível inserir as informaçoes do cliente'
+        # message = "Sessão desconectada ... logando novamente"
+        # puts message
+        # @log.add_message message
+        #  self.login
+        #else
+        #@b.a(class: "sa-add-a-new-address").click
       end
     else
       @b.a(class: "sa-edit").click
@@ -264,6 +265,7 @@ class Crawler < ActiveRecord::Base
     else
       @b.button(class: "buy-now").click
     end
+
     # Check if current session if up
     self.check_if_session_is_up
 
