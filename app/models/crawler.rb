@@ -6,7 +6,7 @@ class Crawler < ActiveRecord::Base
   has_many :orders, dependent: :destroy
 
   def run(order, log)
-    raise ArgumentError, "Pedido inválido!" if order.blank?
+    raise ArgumentError, "Pedido inválido!" if order.nil?
 
     @log = log
     @b = Watir::Browser.new :phantomjs
@@ -35,7 +35,7 @@ class Crawler < ActiveRecord::Base
       # empty_cart is inside begin so this way we can rescue the
       # Net::ReadTimeout problems
       self.empty_cart
-      order["line_items"].each do |item|
+      order['line_items'].each do |item|
         # Check if product type was found on database
         product_type = self.find_product_type_by_item(item)
         # If found, go to aliexpress link and check for quantities and availability
@@ -61,9 +61,8 @@ class Crawler < ActiveRecord::Base
         raise @error
       else
         # ali_order_num is the aliexpress order number returned
-        woocommerce = wordpress.woocommerce
-        customer = woocommerce.get("customers/#{order['customer_id']}").parsed_response
-        ali_order_num = self.complete_order(customer)
+        customer = wordpress.woocommerce.get_order order['id']
+        ali_order_num = self.complete_order(customer['shipping'])
         # check if order was successful finished
         self.check_order_number(ali_order_num, order)
         # Clean current errors if this order
