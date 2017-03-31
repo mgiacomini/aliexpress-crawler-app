@@ -9,6 +9,8 @@ class BuyOrderWorker
       crawler.run order.metadata, crawler_log
       if order.aliexpress_number.nil?
         order.failed!
+      else
+        order.processed!
       end
     end
   rescue

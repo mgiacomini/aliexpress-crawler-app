@@ -21,11 +21,13 @@ namespace :crawler do
       orders.each do |order|
         # retry an failed order
         if order.instance_of? Order
+          next if !order.failed?
           o = order
-          o.enqueued!
         else # new order
-          o = Order.new(status: :enqueued, crawler: crawler, wordpress_reference: order['id'])
+          o = Order.new(crawler: crawler, wordpress_reference: order['id'])
         end
+
+        o.enqueued!
         BuyOrderWorker.perform_async(crawler.id, crawler_log.id, o.id) if o.save
       end
     end
