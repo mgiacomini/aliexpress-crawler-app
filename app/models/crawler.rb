@@ -28,56 +28,56 @@ class Crawler < ActiveRecord::Base
     puts message
     @log.add_message(message)
     # Check if this Order is already processed
-    self.check_order_notes(order)
-    # Start putting items inside the cart and setting options
-    begin
-      # Empty the Cart before go to next Order
-      # empty_cart is inside begin so this way we can rescue the
-      # Net::ReadTimeout problems
-      self.empty_cart
-      order['line_items'].each do |item|
-        # Check if product type was found on database
-        product_type = self.find_product_type_by_item(item)
-        # If found, go to aliexpress link and check for quantities and availability
-        self.check_and_go_to_aliexpress_link(product_type, item)
-        # First check if shipping is set for Product
-        shipping = self.get_product_shipping(product_type, item)
-        # When order is completed the errors for these items are removed
-        order_items << {product_type: product_type, shipping: shipping}
-        # Set the options (color, size...) for the product
-        self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
-        # Set Shipping
-        self.set_item_shipping(shipping)
-        # Set correct quantity
-        self.set_item_quantity(item['quantity'])
-        # Verify if the product is not over the maximum value
-        self.check_max_value(product_type, item['quantity'])
-        # Finally add the current product to cart
-        self.add_item_to_cart
-      end
+    if !order_processed? order
+      # Start putting items inside the cart and setting options
+      begin
+        # Empty the Cart before go to next Order
+        # empty_cart is inside begin so this way we can rescue the
+        # Net::ReadTimeout problems
+        self.empty_cart
+        order['line_items'].each do |item|
+          # Check if product type was found on database
+          product_type = self.find_product_type_by_item(item)
+          # If found, go to aliexpress link and check for quantities and availability
+          self.check_and_go_to_aliexpress_link(product_type, item)
+          # First check if shipping is set for Product
+          shipping = self.get_product_shipping(product_type, item)
+          # When order is completed the errors for these items are removed
+          order_items << {product_type: product_type, shipping: shipping}
+          # Set the options (color, size...) for the product
+          self.set_item_options([product_type.option_1, product_type.option_2, product_type.option_3])
+          # Set Shipping
+          self.set_item_shipping(shipping)
+          # Set correct quantity
+          self.set_item_quantity(item['quantity'])
+          # Verify if the product is not over the maximum value
+          self.check_max_value(product_type, item['quantity'])
+          # Finally add the current product to cart
+          self.add_item_to_cart
+        end
 
-      # Finish Order if no errors found
-      if @error.present?
-        raise @error
-      else
-        # ali_order_num is the aliexpress order number returned
-        customer = wordpress.get_order order['id']
-        ali_order_num = self.complete_order(customer['shipping'])
-        # check if order was successful finished
-        self.check_order_number(ali_order_num, order)
-        # Clean current errors if this order
-        ProductType.clear_errors(order_items)
+        # Finish Order if no errors found
+        if @error.present?
+          raise @error
+        else
+          # ali_order_num is the aliexpress order number returned
+          customer = wordpress.get_order order['id']
+          ali_order_num = self.complete_order(customer['shipping'])
+          # check if order was successful finished
+          self.check_order_number(ali_order_num, order)
+          # Clean current errors if this order
+          ProductType.clear_errors(order_items)
+        end
+      rescue Net::ReadTimeout => e
+        @log.add_message("Erro de timeout, Tentando mais #{tries-1} vezes")
+        retry unless (tries -= 1).zero? || @finished
+      rescue => e
+        # when you raise and pass message, this message is printed here
+        puts e.message
+        @b.screenshot.save("screenshots/#{e}-#{rand(1000)}.png") if Rails.env.development?
+        @log.add_message(e.message)
       end
-    rescue Net::ReadTimeout => e
-      @log.add_message("Erro de timeout, Tentando mais #{tries-1} vezes")
-      retry unless (tries -= 1).zero? || @finished
-    rescue => e
-      # when you raise and pass message, this message is printed here
-      puts e.message
-      @b.screenshot.save("screenshots/#{e}-#{rand(1000)}.png") if Rails.env.development?
-      @log.add_message(e.message)
     end
-    #end
     # Close Watir Browser when finish
     @b.close
   end
@@ -467,11 +467,13 @@ class Crawler < ActiveRecord::Base
         if note["note"].include? "Concluído"
           self.wordpress.complete_order(order)
           @log.add_message "Pedido ja executado!"
-          next
+          return true
         end
       end
     end
+    false
   end
+  alias_method :order_processed?, :check_order_notes
 
   def get_product_shipping(product_type, item)
     if product_type.shipping.present?
