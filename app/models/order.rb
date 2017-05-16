@@ -8,10 +8,11 @@ class Order < ActiveRecord::Base
   scope :untracked, -> { where(tracked: false) }
 
   def mark_as_tracked(tracking_number)
+    return true if self.tracked
+
     self.tracking_number = tracking_number
     self.tracked = true
     self.save
-
     notify_wordpress
   end
 
