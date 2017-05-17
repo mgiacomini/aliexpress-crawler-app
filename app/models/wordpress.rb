@@ -61,7 +61,7 @@ class Wordpress < ActiveRecord::Base
   # *wordpress_reference* is the wordpress order id
   def update_tracking_number_note wordpress_reference, tracking_number
     #Atualiza o código de rastreio do pedido
-    data = {note: "Código de rastreio: #{tracking_number}"}
+    data = {note: "Código de rastreio: #{tracking_number}", customer_note: true}
     #POST em order notes
     woocommerce.post("orders/#{wordpress_reference}/notes", data).parsed_response
   end
