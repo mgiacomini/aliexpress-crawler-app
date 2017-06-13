@@ -18,4 +18,13 @@ namespace :tracker do
     end
   end
 
+  desc "Send tracked orders to an unique place for search"
+  task send_tracked_orders: :environment do
+    orders = Order.tracked
+    orders.each do |o|
+      p "====== Enviando para a aplicação o pedido: #{o.aliexpress_number}"
+      Orders::SendTrackedService.new(o).send
+    end
+  end
+
 end

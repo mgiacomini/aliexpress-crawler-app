@@ -65,7 +65,6 @@ class Wordpress < ActiveRecord::Base
   end
 
   def complete_order order
-
     data = {status: "completed"}
     #PUT para mudar a ordem para concluída
     woocommerce.put("orders/#{order["id"]}", data).parsed_response
@@ -89,11 +88,11 @@ class Wordpress < ActiveRecord::Base
 
   def get_order order_id
     # This method only exists for debugging porpouses
-    order = woocommerce.get("orders/#{order_id}").parsed_response
+    woocommerce.get("orders/#{order_id}").parsed_response
   end
 
   def get_notes order
-    all_notes = woocommerce.get("orders/#{order["id"]}/notes").parsed_response
+    woocommerce.get("orders/#{order["id"]}/notes").parsed_response
   end
 
   def tracking_number_note_message(tracking_number)
