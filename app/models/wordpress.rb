@@ -60,9 +60,7 @@ class Wordpress < ActiveRecord::Base
   ## Add new wordpress note with tracking number for an order
   # *wordpress_reference* is the wordpress order id
   def update_tracking_number_note wordpress_reference, tracking_number
-    #Atualiza o código de rastreio do pedido
-    data = {note: "Código de rastreio: #{tracking_number}", customer_note: true}
-    #POST em order notes
+    data = {note: tracking_number_note_message(tracking_number), customer_note: true}
     woocommerce.post("orders/#{wordpress_reference}/notes", data).parsed_response
   end
 
@@ -96,5 +94,13 @@ class Wordpress < ActiveRecord::Base
 
   def get_notes order
     all_notes = woocommerce.get("orders/#{order["id"]}/notes").parsed_response
+  end
+
+  def tracking_number_note_message(tracking_number)
+    messages = []
+    messages << "O seu código de rastreio é #{tracking_number}."
+    messages << "Você pode acompanha-lo via site dos correios http://www2.correios.com.br/sistemas/rastreamento/"
+    messages << "e/ou site de rastreio internacional https://global.cainiao.com."
+    messages.join(' ').to_s
   end
 end
