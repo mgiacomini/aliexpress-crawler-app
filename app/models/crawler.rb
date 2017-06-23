@@ -288,7 +288,8 @@ class Crawler < ActiveRecord::Base
     state = self.state.assoc(customer["state"])
     @b.div(class: "sa-province-wrapper").select_list.select state[1]
     @b.text_field(name: "city").set to_english(customer["city"])
-    @b.text_field(name: "zip").set customer["postcode"]
+    postcode = customer['postcode'].gsub(/\D/, '')
+    @b.text_field(name: "zip").set postcode
     @b.text_field(name: "phoneCountry").set '55'
     @b.text_field(name: "mobileNo").set '941873849'
     @b.text_field(name: "cpf").set '35825265856'
