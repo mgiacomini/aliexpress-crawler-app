@@ -28,7 +28,7 @@ namespace :crawler do
         end
 
         o.enqueued!
-        BuyOrderWorker.perform_async(crawler.id, crawler_log.id, o.id) if o.save
+        BuyOrderWorker.new.perform(crawler.id, crawler_log.id, o.id) if o.save
       end
     end
   end
